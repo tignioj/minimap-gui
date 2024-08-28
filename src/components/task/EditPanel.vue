@@ -32,23 +32,35 @@ const pointType = ref(null)
 const pointMoveMode = ref(null)
 const pointAction = ref(null)
 
+
 function saveButton() {
   const index = selectedPointIndex.value
+  // const obj = selectedPoint.value  仍然是引用同一个对象
   if (index !== null) {
     // 官方不推荐直接修改父类数据,而是通过emit通知父类修改。这里偷懒了
-    selectedPoint.value.x = xInput.value;
-    selectedPoint.value.y = yInput.value;
-    selectedPoint.value.type = pointType.value
-    selectedPoint.value.action = pointAction.value
-    selectedPoint.value.move_mode = pointMoveMode.value
-    // const obj = {
-    //   x: parseFloat(xInput.value),
-    //   y: parseFloat(yInput.value),
-    //   type: pointType.value,
-    //   action: pointAction.value,
-    //   move_mode: pointMoveMode.value
-    // }
-    // emit('update-event',selectedPoint)
+    // selectedPoint.value.x = xInput.value;
+    // selectedPoint.value.y = yInput.value;
+    // selectedPoint.value.type = pointType.value
+    // selectedPoint.value.action = pointAction.value
+    // selectedPoint.value.move_mode = pointMoveMode.value
+
+    // 可以使用深拷贝复制对象(失败)
+    // const obj = structuredClone(selectedPoint.value)
+    // obj.x = xInput.value;
+    // obj.y = yInput.value;
+    // obj.type = pointType.value
+    // obj.action = pointAction.value
+    // obj.move_mode = pointMoveMode.value
+
+    // 或者构建一个新的对象
+    const obj = {
+      x: parseFloat(xInput.value),
+      y: parseFloat(yInput.value),
+      type: pointType.value,
+      action: pointAction.value,
+      move_mode: pointMoveMode.value
+    }
+    emit('update-edit-panel',obj)
   }
 }
 function deleteButton() {}

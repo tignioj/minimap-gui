@@ -33,7 +33,6 @@ const iconMapping = {
   undefined: faQuestion,
 };
 const actions=["", "stop_flying", "nahida_collect"];
-
 // 加载数据
 let points = ref([])
 let selectedPointIndex = ref(null);
@@ -43,7 +42,6 @@ const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const selectedPoint = ref(null)
 
 // 接受editPanel的事件
-
 watch(selectedPointIndex, async (nv, ov) => {
   // 更新子模板
   if (points.value.length > 0) {
@@ -461,6 +459,7 @@ onMounted(()=> {
 })
 const updateSelectedPoint = (payLoad) => {
   console.log('接收到更新payload事件', payLoad)
+  points.value[selectedPointIndex.value] = payLoad
 }
 </script>
 <template>
@@ -469,7 +468,7 @@ const updateSelectedPoint = (payLoad) => {
     <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
   </div>
   <EditPanel
-      @update-event="updateSelectedPoint"
+      @update-edit-panel="updateSelectedPoint"
       v-model:selectedPointIndex="selectedPointIndex"
       v-model:selectedPoint="selectedPoint"
       :points="points"
