@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue';
+import {defineProps, onUpdated} from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {
   faWalking,
@@ -20,6 +20,9 @@ const props = defineProps({
   name: {
     type: String,
     required: true
+  },
+  pointMoveMode: {
+    type: String,
   }
 });
 
@@ -37,8 +40,6 @@ const iconMapping = {
   '': faQuestion,
   undefined: faQuestion,
 };
-
-
 
 const cnMap = {
   'normal': '普通',
@@ -58,6 +59,7 @@ const modes = props.moveModes.map((mode, index) => ({
   icon: iconMapping[mode], // 获取对应的图标
   checked: index === 0 // 默认选中第一个
 }));
+
 </script>
 
 <template>
@@ -69,7 +71,7 @@ const modes = props.moveModes.map((mode, index) => ({
             type="radio"
             :name="name"
             :value="mode.value"
-            :checked="mode.checked"
+            :checked="pointMoveMode === mode.value"
         />
         <label :for="mode.id">{{ cnMap[mode.label] }}</label>
         <font-awesome-icon :icon="mode.icon"/>

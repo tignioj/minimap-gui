@@ -1,7 +1,7 @@
 <script setup>
 import {key_event, playback_event, serverURL,playBackStopURL, playBackURL, positionURL, socketURL} from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated} from "vue";
+import {onMounted, ref, onUpdated, watch} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
@@ -17,6 +17,7 @@ import {
   faWalking,
   faWater
 } from "@fortawesome/free-solid-svg-icons";
+import MyCanvas from "@/components/task/MyCanvas.vue";
 
 // https://fontawesome.com/search
 const iconMapping = {
@@ -33,32 +34,36 @@ const iconMapping = {
 };
 const actions=["", "stop_flying", "nahida_collect"];
 
-let startX = 0;
-let startY =0;
-
 // 加载数据
-var pos = { x: 0, y: 0, type: 'start' }
-var points = ref([])
-var isDraggingMap = false
-
-const pointRadius = 4;
-let selectedPointIndex = null;
-let selectedPointIndexRef = ref(0);
-let draggingPointIndex = null;
+let points = ref([])
+let selectedPointIndex = ref(null);
+const refCanvas = ref()
 let pointRadioButtonClick = () => {};
-
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
+const selectedPoint = ref(null)
+
+watch(selectedPointIndex, async (nv, ov) => {
+  // 更新子模板
+  if (points.value.length > 0) {
+    selectedPoint.value = points.value[nv]
+  }
+})
+
+watch(points, async (nv, ov) => {
+    console.log('父类检测到points更新')
+    refCanvas.value.refreshCanvas()
+  },
+  {deep: false})  // deep表示检测完整的对象
 
 onMounted(()=> {
-  let dragOffsetX = 0;
-  let dragOffsetY = 0;
-  let isCtrlPressed = false;
-  let isAltPressed = false;
   let isStartRecord = false;
   let isPlayingRecord = false;
 
-  const canvas = document.getElementById('myCanvas');
-  const ctx = canvas.getContext('2d');
+  watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
+    console.log('检测到子模板变动', nv)
+    selectedPointIndex.value = refCanvas.value.selectedPointIndex;
+  })
+
   const editPanel = document.getElementById('editPanel');
   const xInput = document.getElementById('x');
   const yInput = document.getElementById('y');
@@ -99,44 +104,15 @@ onMounted(()=> {
   }
 
 // 更新画布中心
-  function updateCanvasCenter (newPoint) {
-    pos  = newPoint;
-    // 设置缩放比例和偏移量
-    scale = 1; // 可以根据需要调整缩放比例
-    offsetX = canvas.width / 2 - newPoint.x;
-    offsetY = canvas.height / 2 - newPoint.y;
-    drawMap(newPoint.x, newPoint.y)
-  }
+//   function updateCanvasCenter (newPoint) {
+//     refCanvas.value.updateCanvasCenter(newPoint)
+//   }
+
   pointRadioButtonClick = (event, pos) => {
     console.log(event, pos)
-    selectedPointIndex = Number(event.target.value);
-    selectedPointIndexRef.value = Number(event.target.value);
-    const p = points.value[selectedPointIndex];
-    updateCanvasCenter(p);
+    selectedPointIndex.value = Number(event.target.value);
+    // const p = points.value[selectedPointIndex.value];
     showEditPanel(event.clientX, event.clientY);
-  }
-
-  function drawMap(x,y) {
-    // if (!isStartRecord) return
-    const width = 500
-    let imageUrl = `${serverURL}/minimap/get_region_map?x=${x}&y=${y}&width=${width}`
-    // 创建一个 Image 对象
-    const img = new Image();
-
-    // 设置跨域属性（如果图片服务器允许跨域）
-    img.crossOrigin = 'Anonymous';
-
-    // 设定 image 对象的 src 属性为 HTTP 请求的 URL
-    img.src = imageUrl;
-
-    // 等待图片加载完成
-    img.onload = function() {
-      // 绘制图片到 canvas 上
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      drawPoints()
-      drawUserPoint(x,y)
-    };
   }
 
 // 请求服务器获取新位置
@@ -145,11 +121,8 @@ onMounted(()=> {
     fetch(positionURL) // 替换为实际的服务器地址
         .then(response => response.json())
         .then(data => {
-          const newPosition = {
-            x: data[0],
-            y: data[1]
-          };
-          updateCanvasCenter(newPosition);
+          const newPosition = { x: data[0], y: data[1] };
+          // updateCanvasCenter(newPosition);
           userXInput.value = newPosition.x
           userYInput.value = newPosition.y
           console.info('成功获取位置')
@@ -193,14 +166,6 @@ onMounted(()=> {
       playBackButton.innerText = "回放"
       playBackFromHereButton.disabled = false
     }
-  }
-
-  function getIconHtml(name) {
-    const icon = iconMap[name]
-    if (isUndefinedNullOrEmpty(icon)) {
-      return '<i class="fa-solid fa-circle-question"></i>'
-    }
-    return icon
   }
 
   playBackButton.addEventListener('click',  ()=> {
@@ -266,10 +231,11 @@ onMounted(()=> {
         nameInput.value = obj['name']
         // points = ref(obj['positions'])
         points.value = obj['positions']
-        pos = points.value[0]
+        // pos = points.value[0]
         countrySelect.value = obj['country']
         anchorNameInput.value = obj['anchor_name']
-        updateCanvasCenter(pos)
+        // updateCanvasCenter(points.value[0])
+        selectedPointIndex.value = 0
         info('加载成功')
       } catch (error) {
         errorMsg('json解析错误:', error);
@@ -280,133 +246,21 @@ onMounted(()=> {
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
-//################################## 快捷键
-  document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey) {
-      isCtrlPressed = true;
-      hideEditPanel()
-    }
-    if (event.altKey) {isAltPressed = true;}
-    // console.log(event)
-  });
-  document.addEventListener('keyup', (event) => {
-    if (!event.ctrlKey) { isCtrlPressed = false; }
-    if (event.code) {isAltPressed = false;}
-  });
-  canvas.addEventListener('mousemove', (event) => {
-    const canvasRect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - canvasRect.left;
-    const mouseY = event.clientY - canvasRect.top;
-
-    if (draggingPointIndex !== null) {
-      const { x: newX, y: newY } = getWorldCoords(mouseX, mouseY);
-      updatePointPosition(newX, newY);
-      drawMap(pos.x,pos.y)
-      return;
-    } else if (isDraggingMap ) {
-      const currentX = event.clientX - canvas.getBoundingClientRect().left;
-      const currentY = event.clientY - canvas.getBoundingClientRect().top;
-
-      const dx = currentX - startX;
-      const dy = currentY - startY;
-
-      offsetX += dx;
-      offsetY += dy;
-
-      startX = currentX;
-      startY = currentY;
-      drawPoints()
-      // offsetX = canvasWidth / 2 - x
-      // offsetY = canvasHeight / 2 -y;
-      const nx = canvasWidth /2 - offsetX
-      const ny = canvasHeight/2 - offsetY
-      pos = {x:nx, y:ny}
-      drawMap(nx,ny)
-    }
-
-    let isHovered = false;
-    points.value.forEach((point, index) => {
-      const { x: canvasX, y: canvasY } = getCanvasCoords(point.x, point.y);
-      if (isPointWithin(mouseX, mouseY, canvasX, canvasY)) {
-        canvas.style.cursor = 'pointer';
-        isHovered = true;
-        selectedPointIndex = index;
-        selectedPointIndexRef.value = index;
-        if(!isCtrlPressed) {
-          // showEditPanel(point.x, point.y, point.type, point.move_mode, point.action);
-          showEditPanel(event.clientX, event.clientY);
-        }
-        return;
-      }
-    });
-    if (!isHovered) {
-      canvas.style.cursor = 'default';
-      selectedPointIndex = null;
-      selectedPointIndexRef.value = null;
-      hideEditPanel();
-    }
-  });
-  canvas.addEventListener('mousedown', (event) => {
-    isDraggingMap = true
-    startX = event.clientX - canvas.getBoundingClientRect().left;
-    startY = event.clientY - canvas.getBoundingClientRect().top;
-
-    if (selectedPointIndex !== null) {
-      draggingPointIndex = selectedPointIndex;
-      const canvasRect = canvas.getBoundingClientRect();
-      const mouseX = event.clientX - canvasRect.left;
-      const mouseY = event.clientY - canvasRect.top;
-      const selectedPoint = points.value[selectedPointIndex]
-      const { x: pointX, y: pointY } = getCanvasCoords(selectedPoint.x, selectedPoint.y);
-      dragOffsetX = points.value[selectedPointIndex].x - getWorldCoords(mouseX, mouseY).x;
-      dragOffsetY = points.value[selectedPointIndex].y - getWorldCoords(mouseX, mouseY).y;
-      event.preventDefault(); // Prevent default behavior
-    }
-  });
-
-  canvas.addEventListener('mouseup', () => {
-    draggingPointIndex = null;
-    isDraggingMap = false;
-  });
-  canvas.addEventListener('click', (event) => {
-    if (draggingPointIndex === null) {
-      const canvasRect = canvas.getBoundingClientRect();
-      const mouseX = event.clientX - canvasRect.left;
-      const mouseY = event.clientY - canvasRect.top;
-
-      points.value.forEach((point, index) => {
-        const { x: canvasX, y: canvasY } = getCanvasCoords(point.x, point.y);
-        if (isPointWithin(mouseX, mouseY, canvasX, canvasY)) {
-          selectedPointIndex = index;
-          selectedPointIndexRef.value = index
-          // showEditPanel(point.x, point.y, point.type, point.move_mode, point.action);
-          showEditPanel(event.clientX, event.clientY);
-          return;
-        }
-      });
-    }
-  });
-
   saveButton.addEventListener('click', () => {
-    if (selectedPointIndex !== null) {
-      points.value[selectedPointIndex].x = parseFloat(xInput.value);
-      points.value[selectedPointIndex].y = parseFloat(yInput.value);
-      points.value[selectedPointIndex].type = getSelectedValue('type');
-      points.value[selectedPointIndex].action = getSelectedValue('action')
-      points.value[selectedPointIndex].move_mode = getSelectedValue('moveMode');
+    const index = selectedPointIndex.value
+    if (index !== null) {
+      points.value[index].x = parseFloat(xInput.value);
+      points.value[index].y = parseFloat(yInput.value);
+      points.value[index].type = getSelectedValue('type');
+      points.value[index].action = getSelectedValue('action')
+      points.value[index].move_mode = getSelectedValue('moveMode');
       hideEditPanel();
-      drawPoints();
     }
   });
 
   deleteButton.addEventListener('click', () => {
-    if (selectedPointIndex !== null) {
-      points.value.splice(selectedPointIndex, 1);
-      selectedPointIndex = null;
-      selectedPointIndexRef.value = null;
-      hideEditPanel();
-      drawMap(pos.x, pos.y)
-      // drawPoints();
+    if (selectedPointIndex.value !== null) {
+      points.value.splice(selectedPointIndex.value, 1);
     }
   });
 
@@ -415,16 +269,15 @@ onMounted(()=> {
   });
 
   newButton.addEventListener('click', (event) => {
-    if (selectedPointIndex !== null) {
+    if (selectedPointIndex.value !== null) {
       const newX = parseFloat(xInput.value);
       const newY  = parseFloat(yInput.value);
       const newType = getSelectedValue('type')
       const newAction = getSelectedValue('action')
       const newMoveMode = getSelectedValue('moveMode')
       const point = { x: newX - 10, y: newY , type: newType, action: newAction, move_mode: newMoveMode }
-      points.value.splice(selectedPointIndex+1, 0, point);
+      points.value.splice(selectedPointIndex.value+1, 0, point);
       hideEditPanel();
-      drawPoints();
     }
   })
 
@@ -501,8 +354,8 @@ onMounted(()=> {
   }
   playBackFromHereButton.addEventListener('click', (event) => {
     if (isPlayingRecord) return
-    if (!isUndefinedNullOrEmpty(selectedPointIndex)) {
-      playBack(selectedPointIndex)
+    if (!isUndefinedNullOrEmpty(selectedPointIndex.value)) {
+      playBack(selectedPointIndex.value)
     }
   })
 
@@ -557,102 +410,12 @@ onMounted(()=> {
     }
   }
 
-// =================== 绘画
-// Initialize drawing
-// 获取画布的宽度和高度
-  const canvasWidth = canvas.width;
-  const canvasHeight = canvas.height;
-
-  let scale = 1;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  const { x, y } = pos;
-  offsetX = canvasWidth / 2 - x
-  offsetY = canvasHeight / 2 -y;
-  scale = 1;
-
-  function drawPoints() {
-    // Draw lines
-    for (let i = 0; i < points.value.length - 1; i++) {
-      drawLine(points.value[i], points.value[i + 1]);
-    }
-
-    // Draw points
-    let color;
-    points.value.forEach((point,i) => {
-      if (i === 0) {
-        color = 'red'
-      } else if (point.type === 'path') {
-        color = 'blue'
-      } else {
-        color = 'green'
-      }
-      drawPoint(point.x, point.y, color);
-    });
-  }
-
-  function drawPoint(x, y, color) {
-    const canvasX = x * scale + offsetX;
-    const canvasY = y * scale + offsetY;
-
-    ctx.beginPath();
-    ctx.arc(canvasX, canvasY, pointRadius, 0, 2 * Math.PI);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.fillStyle = color;
-    ctx.fill();
-  }
-
-  function drawUserPoint(x,y) {
-    if (!isStartRecord) return
-    const canvasX = x * scale + offsetX;
-    const canvasY = y * scale + offsetY;
-
-    ctx.beginPath();
-    ctx.arc(canvasX, canvasY, pointRadius, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'orange';
-    ctx.lineWidth = 2;
-    ctx.stroke(); // 绘制圆圈
-  }
-
-  function drawLine(from, to) {
-    const fromX = from.x * scale + offsetX;
-    const fromY = from.y * scale + offsetY;
-    const toX = to.x * scale + offsetX;
-    const toY = to.y * scale + offsetY;
-
-    ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
-    ctx.strokeStyle = 'black';
-    ctx.stroke();
-  }
-
-  function getCanvasCoords(x, y) {
-    return {
-      x: x * scale + offsetX,
-      y: y * scale + offsetY
-    };
-  }
-
-  function getWorldCoords(canvasX, canvasY) {
-    return {
-      x: (canvasX - offsetX) / scale,
-      y: (canvasY - offsetY) / scale
-    };
-  }
-
-  function isPointWithin(px, py, x, y, radius = pointRadius) {
-    return Math.sqrt((px - x) ** 2 + (py - y) ** 2) < radius;
-  }
-
   function showEditPanel(clientX, clientY) {
-    const point = points.value[selectedPointIndex]
-    selectRadio('position', selectedPointIndex)
+    const point = points.value[selectedPointIndex.value]
+    selectRadio('position', selectedPointIndex.value)
     xInput.value = point.x;
     yInput.value = point.y;
-    selectRadio('type',point.type)
+    // selectRadio('type',point.type)
     // moveModeInput.value = moveMode == null ? '': moveMode;
     selectRadio("moveMode",point.move_mode)
     selectRadio('action', point.action)
@@ -667,17 +430,8 @@ onMounted(()=> {
     editPanel.style.display = 'none'
   }
 
-  function updatePointPosition(newX, newY) {
-    if (draggingPointIndex !== null) {
-      const point = points.value[draggingPointIndex];
-      point.x = newX + dragOffsetX;
-      point.y = newY + dragOffsetY;
-      drawPoints();
-    }
-  }
   const socket = io(socketURL);
   socket.on('connect', function() {
-    drawMap(0,0)
     console.log('WebSocket connection established');
   });
 
@@ -687,7 +441,6 @@ onMounted(()=> {
   });
 
   socket.on('key_event', function(data) {
-    console.log(data)
     // 处理从服务器接收到的键盘事件数据
     if (data.key === 'esc') {
       if (isPlayingRecord) {
@@ -714,16 +467,17 @@ onMounted(()=> {
       setPlayingRecord(false)
     }
   })
-  drawPoints();
 })
-
 </script>
 <template>
   <div id="head">
-    <canvas id="myCanvas" width="500" height="500"></canvas>
-    <PointList :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
+    <MyCanvas ref="refCanvas" :selected-point-index="selectedPointIndex" :points="points"/>
+    <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
   </div>
-  <EditPanel :move-modes="moveModes" :actions="actions"/>
+  <EditPanel
+      v-model:selectedPointIndex="selectedPointIndex"
+      v-model:selectedPoint="selectedPoint"
+      :move-modes="moveModes" :actions="actions"/>
   <div>
     <span id="msg">请点击开始追踪获取用户位置</span> <br/>
     <button id="startRecordButton">开始追踪</button>
@@ -741,7 +495,6 @@ onMounted(()=> {
     <label for="nameInput">名称<input type="text" placeholder="未定义" id="nameInput"/></label>
     <label for="countrySelect">传送点所在国家</label>
     <CountrySelect id="countrySelect"/>
-
     <label for="anchorNameInput">传送锚点名称<input type="text" placeholder="传送锚点" id="anchorNameInput"/></label>
     <button id="playBackButton">回放</button>
   </div>
@@ -794,9 +547,7 @@ canvas {
   display: flex;
   align-items: flex-start;
 }
-#myCanvas {
 
-}
 .error-msg {
   color:red;
 }

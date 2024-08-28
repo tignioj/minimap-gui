@@ -1,16 +1,26 @@
 <script setup>
-import {defineProps, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch} from "vue";
+import { defineProps, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch} from "vue";
 import {serverURL} from "@/api.js";
 
 const props = defineProps({
   points: {
     type: Array,
     required: true
+  },
+  selectedPointIndex: {
+    type: [Number, null],
+    required: true,
+    default: null
   }
 });
 const pointRadius = 4
 const canvasWidth = 500
 const canvasHeight = 500
+
+// const emit = defineEmits(['update:model']);  // 定义用于通知父组件更新值的事件
+// function updateValue(value) {
+//   emit('update:model', value);  // 触发事件，通知父组件更新 modelValue
+// }
 
 // 鼠标拖拽时，画板中心位置
 const canvasCenter = reactive({x: 0, y: 0})
@@ -20,7 +30,52 @@ let startY =0;
 let offsetX = canvasWidth / 2 - canvasCenter.x
 let offsetY = canvasHeight / 2 -canvasCenter.y;
 let isDragging = ref(false);
+let isCtrlPressed = false;
 const myCanvas = ref(null)
+let selectedPointIndex = ref(null)
+let draggingPointIndex = null;
+
+defineExpose({  // 暴露给父组件
+  selectedPointIndex,
+  refreshCanvas,
+})
+
+watch(()=> props.selectedPointIndex, (nv, ov) => {
+  console.log('检测到props变化', nv)
+  if(nv === selectedPointIndex.value) return
+  selectedPointIndex.value = nv
+  const newCenter = props.points[nv]
+  updateCanvasCenter(newCenter)
+})
+
+// 更新画布中心
+function updateCanvasCenter(newPoint) {
+  canvasCenter.x = newPoint.x
+  canvasCenter.y = newPoint.y
+  // 设置缩放比例和偏移量
+  offsetX = canvasWidth / 2 - newPoint.x;
+  offsetY = canvasHeight / 2 - newPoint.y;
+  drawMap(newPoint.x, newPoint.y)
+}
+function refreshCanvas() {
+  updateCanvasCenter(canvasCenter)
+}
+
+function isPointWithin(px, py, x, y, radius = pointRadius) {
+  return Math.sqrt((px - x) ** 2 + (py - y) ** 2) < radius;
+}
+function getCanvasCoords(x, y) {
+  return {
+    x: x + offsetX,
+    y: y + offsetY
+  };
+}
+function getWorldCoords(canvasX, canvasY) {
+  return {
+    x: (canvasX - offsetX),
+    y: (canvasY - offsetY)
+  };
+}
 
 function drawMap(x,y) {
   const canvas = myCanvas.value;
@@ -46,14 +101,12 @@ function drawMap(x,y) {
     // drawUserPoint(x,y)
   };
 }
-
 function drawLines() {
   const pointList = props.points
   for (let i = 0; i < pointList.length - 1; i++) {
     drawLine(pointList[i], pointList[i + 1]);
   }
 }
-
 function drawPoints() {
   // Draw points
   let color;
@@ -92,22 +145,46 @@ function drawPoint(x, y, color) {
   ctx.fill();
 }
 
-
 const startDrag = (event) => {
   isDragging.value = true;
   console.log('Drag started at:', getMousePos(event));
   const current =getMousePos(event);
   startX = current.x
   startY = current.y
+
+  if (selectedPointIndex.value!==null) {
+    draggingPointIndex = selectedPointIndex.value
+  }
 };
-
-// console.log('off', offsetX,offsetY)
 const dragging = (event) => {
-  if (!isDragging.value) return;
+  const canvas = myCanvas.value;
+  const mousePos = getMousePos(event)
+  canvas.style.cursor = 'default';
 
-  const pos = getMousePos(event)
-  const currentX = pos.x
-  const currentY = pos.y
+  if (draggingPointIndex !== null && isCtrlPressed) {
+    const { x: newX, y: newY } = getWorldCoords(mousePos.x, mousePos.y)
+    // updatePointPosition(newX, newY);
+    props.points[draggingPointIndex].x = newX;
+    props.points[draggingPointIndex].y = newY;
+    drawMap(canvasCenter.x, canvasCenter.y)
+    return;
+  }
+
+  // 判断鼠标是否在点上面
+  props.points.forEach((point, index) => {
+    const { x: canvasX, y: canvasY } = getCanvasCoords(point.x, point.y);
+    if (isPointWithin(mousePos.x, mousePos.y, canvasX, canvasY)) {
+      canvas.style.cursor = 'pointer';
+      console.log(props.points[index])
+      selectedPointIndex.value = index;
+    }
+  });
+
+  // 下面是拖动地图
+  if(isCtrlPressed) return;
+  if (!isDragging.value) return;
+  const currentX = mousePos.x
+  const currentY = mousePos.y
 
   const dx = currentX - startX;
   const dy = currentY - startY;
@@ -122,9 +199,11 @@ const dragging = (event) => {
   const ny = canvasHeight/2 - offsetY
   canvasCenter.x = nx
   canvasCenter.y = ny
+  updateCanvasCenter(canvasCenter)
 };
 
 const endDrag = (event) => {
+  draggingPointIndex = null
   if (isDragging.value) {
     isDragging.value = false;
     console.log('Drag ended at:', getMousePos(event));
@@ -152,30 +231,32 @@ onBeforeUnmount(() => {
 onMounted(()=> {
   drawMap(0,0)
 })
-onUpdated(()=> {
-  console.log('数据更新了', props.points)
-  const firstPoint = props.points[0]
-
-  offsetX = canvasWidth / 2 - firstPoint.x;
-  offsetY = canvasHeight / 2 - firstPoint.y;
-
-  canvasCenter.x = firstPoint.x
-  canvasCenter.y = firstPoint.y
+const onkeydown = (event)=> {
+  if (event.ctrlKey) {
+    isCtrlPressed = true;
+    // hideEditPanel()
+  }
+}
+const onkeyup = ((event)=> {
+  if (!event.ctrlKey) { isCtrlPressed = false; }
 })
 
-watch(canvasCenter, async (nx, ox)=> {
-  drawMap(nx.x, nx.y)
-})
-// watch(props.points, (np, op) => {
-//   console.log(np)
+// watch(canvasCenter, async (nx, ox)=> {
+//   // offsetX = canvasWidth / 2 - nx.x;
+//   // offsetY = canvasHeight / 2 - nx.y;
+//   drawMap(nx.x, nx.y)
 // })
 
 </script>
 <template>
+  <!--默认情况下canvas无法获取焦点，tabindex=0使得canvas可以获取焦点从而监听键盘-->
   <canvas
       ref="myCanvas"
+      tabindex="0"
       :width="canvasWidth"
       :height="canvasHeight"
+      @keydown="onkeydown"
+      @keyup="onkeyup"
       @mousedown="startDrag"
       @mousemove="dragging"
       @mouseup="endDrag"

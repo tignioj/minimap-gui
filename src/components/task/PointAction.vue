@@ -23,6 +23,8 @@ const props = defineProps({
     required: true
   }
 });
+const pointAction = defineModel()
+
 const cnMap = {
   'nahida_collect':'纳西妲采集',
   'stop_flying': '下落攻击',
@@ -46,7 +48,7 @@ const actions1 = props.actions.map((mode, index) => ({
             type="radio"
             :name="name"
             :value="action.value"
-            :checked="action.checked"
+            :checked="action.value === pointAction"
         />
         <label :for="action.id">{{ action.text }}</label>
         <font-awesome-icon :icon="action.icon"/>

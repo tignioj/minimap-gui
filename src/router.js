@@ -7,7 +7,9 @@ import EditTaskPage from "@/page/EditTaskPage.vue";
 import NewCollectTaskPage from "@/page/NewCollectTaskPage.vue";
 
 const routes = [
-    { path: '/', component: ScriptManagerPage },
+    { path: '/', component: ScriptManagerPage,
+        redirect: '/task/collect/new',
+    },
     { path: '/config/editor', component: ConfigEditorPage},
     { path: '/task/base/new', component: NewTaskPage},
     { path: '/task/collect/new', component: NewCollectTaskPage},

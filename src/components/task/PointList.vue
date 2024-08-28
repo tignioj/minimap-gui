@@ -1,6 +1,6 @@
 <script setup>
 // 定义可接收的 props
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps({
   iconMapping: {
@@ -17,6 +17,14 @@ const props = defineProps({
   }
 });
 
+const model = defineModel('selectedPointIndex')
+const emit = defineEmits(['update:selectedPointIndex']);  // 定义用于通知父组件更新值的事件
+function radioButtonClick(event, value) {
+  console.log(event)
+  emit('update:selectedPointIndex', value);  // 触发事件，通知父组件更新 modelValue
+}
+onMounted(()=> {
+})
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 </script>
 
@@ -30,7 +38,22 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
             'type-path': point.type === 'path',
             'type-target': point.type === 'target'}"
           class="position">
-        <input type="radio" name="position" :value="index" class="radio-btn" @click="pointRadioButtonClick"/>
+<!--      <input type="radio" name="position"-->
+<!--             :value="index"-->
+<!--             class="radio-btn"-->
+<!--             @click="radioButtonClick($event, index)"-->
+<!--             :checked="model === index" />-->
+<!--        <input type="radio" name="position"-->
+<!--               :value="index"-->
+<!--               class="radio-btn"-->
+<!--               @click="$emit('update:selectedPointIndex', index)"-->
+<!--               :checked="model === index" />-->
+
+        <input type="radio" name="position"
+               :value="index"
+               class="radio-btn"
+               @click="pointRadioButtonClick"
+               :checked="model === index" />
         <font-awesome-icon :icon="iconMapping[point.type]"/>
         <font-awesome-icon :icon="iconMapping[point.move_mode]" v-if="point.move_mode"/>
         <font-awesome-icon :icon="iconMapping[point.action]" v-if="point.action"/>
