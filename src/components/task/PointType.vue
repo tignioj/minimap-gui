@@ -22,10 +22,14 @@ import {faBullseye, faMapMarkerAlt} from "@fortawesome/free-solid-svg-icons";
 <template>
   <fieldset>
     <legend>点位类型</legend>
-    <input type="radio" :name="name" value="path"  :checked="pointType ==='path'"/>
+<!--    传参官方教程-->
+<!--    https://cn.vuejs.org/guide/essentials/component-basics.html-->
+<!--    带参数-->
+<!--    https://cn.vuejs.org/guide/components/events.html-->
+    <input type="radio" :name="name" value="path"  :checked="pointType ==='path'" @click="$emit('pointTypeChange', 'path')"/>
     <label for="typePath">路径</label>
     <font-awesome-icon :icon="faMapMarkerAlt"/>
-    <input type="radio" :name="name" value="target" :checked="pointType==='target'"/>
+    <input type="radio" :name="name" value="target" :checked="pointType==='target'" @click="$emit('pointTypeChange', 'target')"/>
     <label for="typeTarget">目标</label> <font-awesome-icon :icon="faBullseye"/>
   </fieldset>
 </template>

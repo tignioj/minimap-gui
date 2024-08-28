@@ -1,11 +1,8 @@
 <script setup>
-import {defineProps, onMounted, onUpdated, ref} from "vue";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {defineProps, onMounted, onUpdated, ref, watch} from "vue";
 import MoveMode from "@/components/task/MoveMode.vue";
-import {faPlaneArrival, faMapMarkerAlt, faBullseye} from "@fortawesome/free-solid-svg-icons";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
-
 // const moveModes = ["normal", "fly", "jump", "swim"]
 const props = defineProps({
   moveModes: {
@@ -16,41 +13,82 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  // selectedPoint: {
-  //   type: Object,
-  //   required: true
-  // }
+  points: {
+    type: Array
+  }
 });
+const editPanel=ref(null)
+
+const xInput = ref(null)
+const yInput = ref(null)
+
 const selectedPoint = defineModel('selectedPoint', { default: null, })
 const selectedPointIndex = defineModel('selectedPointIndex', { default: null, })
+const emit = defineEmits({'update-event': (payLoad) => {
+  return payLoad
+}});
 
 const pointType = ref(null)
 const pointMoveMode = ref(null)
-const pointAction = ref(null) // 和组件名冲突了
+const pointAction = ref(null)
 
-onUpdated(()=> {
+function saveButton() {
+  const index = selectedPointIndex.value
+  if (index !== null) {
+    // 官方不推荐直接修改父类数据,而是通过emit通知父类修改。这里偷懒了
+    selectedPoint.value.x = xInput.value;
+    selectedPoint.value.y = yInput.value;
+    selectedPoint.value.type = pointType.value
+    selectedPoint.value.action = pointAction.value
+    selectedPoint.value.move_mode = pointMoveMode.value
+    // const obj = {
+    //   x: parseFloat(xInput.value),
+    //   y: parseFloat(yInput.value),
+    //   type: pointType.value,
+    //   action: pointAction.value,
+    //   move_mode: pointMoveMode.value
+    // }
+    // emit('update-event',selectedPoint)
+  }
+}
+function deleteButton() {}
+function cancelButton() {
+  editPanel.value.style.display = 'none'
+}
+function newButton() {}
+function playBackFromHereButton() {}
+
+watch(selectedPoint, async (nv,ov)=> {
   if (selectedPoint) {
-    pointType.value = selectedPoint.value.type;
-    pointMoveMode.value = selectedPoint.value.move_mode;
-    pointAction.value = selectedPoint.value.action
+    xInput.value = nv.x
+    yInput.value = nv.y
+    pointType.value = nv.type;
+    pointMoveMode.value = nv.move_mode;
+    pointAction.value = nv.action
   }
 })
+onUpdated(()=> {})
 
+const pointTypeChange = (val) => {
+  console.log(val)
+  // selectedPoint.value.type = val
+}
 </script>
 <template>
-  <div id="editPanel">
-    <label for="x">X: </label><input type="number" id="x" /><br />
-    <label for="y">Y: </label><input type="number" id="y" /><br />
+  <div ref="editPanel" id="editPanel">
+    <label for="x">X: </label><input type="number" v-model="xInput" /><br />
+    <label for="y">Y: </label><input type="number" v-model="yInput" /><br />
     <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
     <!-- 如果v-model:hello="world" 则用defineModel('hello')读取word的数据-->
-    <PointType :point-type="pointType" :name="'type'" />
-    <MoveMode :point-move-mode="pointMoveMode" :name="'moveMode'" :move-modes="moveModes"/>
-    <PointAction :point-action="pointAction" :name="'action'" :actions="actions" />
-    <button id="saveButton">保存</button>
-    <button id="deleteButton">删除</button>
-    <button id="cancelButton">取消</button>
-    <button id="newButton">插入</button>
-    <button id="playBackFromHereButton">从这里开始回放</button>
+    <PointType :point-type="pointType" @pointTypeChange="(val)=> pointType=val" :name="'type'" />
+<!--    <PointType :point-type="pointType" @pointTypeChange="pointTypeChange" :name="'type'" />-->
+    <MoveMode :point-move-mode="pointMoveMode" @moveModeChange="(val)=>pointMoveMode=val" :name="'moveMode'" :move-modes="moveModes"/>
+    <PointAction :point-action="pointAction" @actionChange="(val)=>pointAction=val" :name="'action'" :actions="actions" />
+    <button @click="saveButton">保存</button>
+    <button @click="deleteButton">删除</button>
+    <button @click="cancelButton">取消</button>
+    <button @click="newButton">插入</button>
+    <button @click="playBackFromHereButton">从这里开始回放</button>
   </div>
 </template>
 

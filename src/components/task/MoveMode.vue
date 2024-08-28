@@ -72,6 +72,7 @@ const modes = props.moveModes.map((mode, index) => ({
             :name="name"
             :value="mode.value"
             :checked="pointMoveMode === mode.value"
+            @click="$emit('moveModeChange', mode.value)"
         />
         <label :for="mode.id">{{ cnMap[mode.label] }}</label>
         <font-awesome-icon :icon="mode.icon"/>

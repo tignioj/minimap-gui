@@ -42,6 +42,8 @@ let pointRadioButtonClick = () => {};
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const selectedPoint = ref(null)
 
+// 接受editPanel的事件
+
 watch(selectedPointIndex, async (nv, ov) => {
   // 更新子模板
   if (points.value.length > 0) {
@@ -53,7 +55,7 @@ watch(points, async (nv, ov) => {
     console.log('父类检测到points更新')
     refCanvas.value.refreshCanvas()
   },
-  {deep: false})  // deep表示检测完整的对象
+  {deep: true})  // deep表示检测完整的对象
 
 onMounted(()=> {
   let isStartRecord = false;
@@ -65,8 +67,8 @@ onMounted(()=> {
   })
 
   const editPanel = document.getElementById('editPanel');
-  const xInput = document.getElementById('x');
-  const yInput = document.getElementById('y');
+  // const xInput = document.getElementById('x');
+  // const yInput = document.getElementById('y');
 // const moveModeInput = document.getElementById('moveMode');
   const userXInput = document.getElementById('userX');
   const userYInput = document.getElementById('userY');
@@ -77,12 +79,12 @@ onMounted(()=> {
   const msgElement = document.getElementById("msg")
 
 // 编辑框按钮
-  const saveButton = document.getElementById('saveButton');
-  const deleteButton = document.getElementById('deleteButton');
-  const cancelButton = document.getElementById('cancelButton');
-  const newButton = document.getElementById('newButton');
-  const playBackFromHereButton = document.getElementById('playBackFromHereButton')
-  const insertNodeButton = document.getElementById('insertNodeButton');
+//   const saveButton = document.getElementById('saveButton');
+//   const deleteButton = document.getElementById('deleteButton');
+//   const cancelButton = document.getElementById('cancelButton');
+//   const newButton = document.getElementById('newButton');
+//   const playBackFromHereButton = document.getElementById('playBackFromHereButton')
+//   const insertNodeButton = document.getElementById('insertNodeButton');
 
 // 记录按钮
   const startRecordButton = document.getElementById('startRecordButton');
@@ -211,8 +213,6 @@ onMounted(()=> {
     const count = obj.positions.filter(item => item.type === "target").length;
     saveDictAsJsonFile(obj, `${obj.name}_${obj.country}_${count}个_${formatDateTime()}.json`)
   })
-  loadRecordButton.addEventListener('click', () => {
-  })
 
   function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -246,40 +246,40 @@ onMounted(()=> {
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
-  saveButton.addEventListener('click', () => {
-    const index = selectedPointIndex.value
-    if (index !== null) {
-      points.value[index].x = parseFloat(xInput.value);
-      points.value[index].y = parseFloat(yInput.value);
-      points.value[index].type = getSelectedValue('type');
-      points.value[index].action = getSelectedValue('action')
-      points.value[index].move_mode = getSelectedValue('moveMode');
-      hideEditPanel();
-    }
-  });
+  // saveButton.addEventListener('click', () => {
+  //   const index = selectedPointIndex.value
+  //   if (index !== null) {
+  //     points.value[index].x = parseFloat(xInput.value);
+  //     points.value[index].y = parseFloat(yInput.value);
+  //     points.value[index].type = getSelectedValue('type');
+  //     points.value[index].action = getSelectedValue('action')
+  //     points.value[index].move_mode = getSelectedValue('moveMode');
+  //     hideEditPanel();
+  //   }
+  // });
 
-  deleteButton.addEventListener('click', () => {
-    if (selectedPointIndex.value !== null) {
-      points.value.splice(selectedPointIndex.value, 1);
-    }
-  });
+  // deleteButton.addEventListener('click', () => {
+  //   if (selectedPointIndex.value !== null) {
+  //     points.value.splice(selectedPointIndex.value, 1);
+  //   }
+  // });
 
-  cancelButton.addEventListener('click', () => {
-    hideEditPanel();
-  });
+  // cancelButton.addEventListener('click', () => {
+  //   hideEditPanel();
+  // });
 
-  newButton.addEventListener('click', (event) => {
-    if (selectedPointIndex.value !== null) {
-      const newX = parseFloat(xInput.value);
-      const newY  = parseFloat(yInput.value);
-      const newType = getSelectedValue('type')
-      const newAction = getSelectedValue('action')
-      const newMoveMode = getSelectedValue('moveMode')
-      const point = { x: newX - 10, y: newY , type: newType, action: newAction, move_mode: newMoveMode }
-      points.value.splice(selectedPointIndex.value+1, 0, point);
-      hideEditPanel();
-    }
-  })
+  // newButton.addEventListener('click', (event) => {
+  //   if (selectedPointIndex.value !== null) {
+  //     const newX = parseFloat(xInput.value);
+  //     const newY  = parseFloat(yInput.value);
+  //     const newType = getSelectedValue('type')
+  //     const newAction = getSelectedValue('action')
+  //     const newMoveMode = getSelectedValue('moveMode')
+  //     const point = { x: newX - 10, y: newY , type: newType, action: newAction, move_mode: newMoveMode }
+  //     points.value.splice(selectedPointIndex.value+1, 0, point);
+  //     hideEditPanel();
+  //   }
+  // })
 
   function playBack(fromIndex) {
     if(isPlayingRecord) { return; }
@@ -352,12 +352,12 @@ onMounted(()=> {
           setPlayingRecord(false)
         });
   }
-  playBackFromHereButton.addEventListener('click', (event) => {
-    if (isPlayingRecord) return
-    if (!isUndefinedNullOrEmpty(selectedPointIndex.value)) {
-      playBack(selectedPointIndex.value)
-    }
-  })
+  // playBackFromHereButton.addEventListener('click', (event) => {
+  //   if (isPlayingRecord) return
+  //   if (!isUndefinedNullOrEmpty(selectedPointIndex.value)) {
+  //     playBack(selectedPointIndex.value)
+  //   }
+  // })
 
   function getUserCustomNode() {
     return {
@@ -369,17 +369,17 @@ onMounted(()=> {
     }
   }
 
-  function insertPosition() {
-    if (!isStartRecord) {
-      errorMsg('请先开始追踪再插入用户点位')
-      return
-    }
-    const node = getUserCustomNode()
-    info(`插入点位(${node.x},${node.y})`)
-    points.value.push(node)
-  }
-  insertNodeButton.addEventListener('click', insertPosition)
-
+  // function insertPosition() {
+  //   if (!isStartRecord) {
+  //     errorMsg('请先开始追踪再插入用户点位')
+  //     return
+  //   }
+  //   const node = getUserCustomNode()
+  //   info(`插入点位(${node.x},${node.y})`)
+  //   points.value.push(node)
+  // }
+  // insertNodeButton.addEventListener('click', insertPosition)
+  //
   function getSelectedValue(name) {
     // Get the selected radio button
     const selectedRadio = document.querySelector(`input[name="${name}"]:checked`);
@@ -411,18 +411,9 @@ onMounted(()=> {
   }
 
   function showEditPanel(clientX, clientY) {
-    const point = points.value[selectedPointIndex.value]
-    selectRadio('position', selectedPointIndex.value)
-    xInput.value = point.x;
-    yInput.value = point.y;
-    // selectRadio('type',point.type)
-    // moveModeInput.value = moveMode == null ? '': moveMode;
-    selectRadio("moveMode",point.move_mode)
-    selectRadio('action', point.action)
     editPanel.style.left = `${clientX}px`;
     editPanel.style.top = `${clientY}px`;
     editPanel.style.display = 'block';
-    // editPanel.classList.remove('hidden');
   }
 
   function hideEditPanel() {
@@ -468,6 +459,9 @@ onMounted(()=> {
     }
   })
 })
+const updateSelectedPoint = (payLoad) => {
+  console.log('接收到更新payload事件', payLoad)
+}
 </script>
 <template>
   <div id="head">
@@ -475,8 +469,10 @@ onMounted(()=> {
     <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
   </div>
   <EditPanel
+      @update-event="updateSelectedPoint"
       v-model:selectedPointIndex="selectedPointIndex"
       v-model:selectedPoint="selectedPoint"
+      :points="points"
       :move-modes="moveModes" :actions="actions"/>
   <div>
     <span id="msg">请点击开始追踪获取用户位置</span> <br/>
@@ -511,14 +507,6 @@ onMounted(()=> {
 <style scoped>
 canvas {
   border: 1px solid black;
-}
-#editPanel {
-  display: none;
-  position: absolute;
-  background: white;
-  border: 1px solid black;
-  padding: 10px;
-  z-index: 10;
 }
 
 .file-input-wrapper {
