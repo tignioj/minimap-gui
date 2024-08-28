@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+}
+.file-info, .list-management, .file-management {
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 5px;
+}
+/*.file-info {*/
+/*    width: 30%;*/
+/*}*/
+.list-management {
+  width: 50%;
+}
+.file-management {
+  width: 50%;
+}
+/*.list-management ul li li {*/
+/*    display: none;*/
+/*}*/
+
+.file-management ul {
+  display: none;
+}
+
+.error-msg {
+  color: red;
+}
