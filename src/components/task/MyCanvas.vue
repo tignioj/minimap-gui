@@ -8,11 +8,6 @@ const props = defineProps({
     required: true
   }
 });
-let startX = 0;  // 记录鼠标在画板按下时候的坐标
-let startY =0;
-
-let offsetX = 0;  // 对每个点位做差从而使得绘画的坐标在画板范围内
-let offsetY = 0;
 const pointRadius = 4
 const canvasWidth = 500
 const canvasHeight = 500
@@ -20,7 +15,11 @@ const canvasHeight = 500
 // 鼠标拖拽时，画板中心位置
 const canvasCenter = reactive({x: 0, y: 0})
 
-
+let startX = 0;  // 记录鼠标在画板按下时候的坐标
+let startY =0;
+let offsetX = canvasWidth / 2 - canvasCenter.x
+let offsetY = canvasHeight / 2 -canvasCenter.y;
+let isDragging = ref(false);
 const myCanvas = ref(null)
 
 function drawMap(x,y) {
@@ -49,7 +48,6 @@ function drawMap(x,y) {
 }
 
 function drawLines() {
-  // Draw lines
   const pointList = props.points
   for (let i = 0; i < pointList.length - 1; i++) {
     drawLine(pointList[i], pointList[i + 1]);
@@ -82,7 +80,6 @@ function drawLine(from, to) {
   ctx.strokeStyle = 'black';
   ctx.stroke();
 }
-
 function drawPoint(x, y, color) {
   const canvasX = x + offsetX;
   const canvasY = y + offsetY;
@@ -95,7 +92,6 @@ function drawPoint(x, y, color) {
   ctx.fill();
 }
 
-let isDragging = ref(false);
 
 const startDrag = (event) => {
   isDragging.value = true;
@@ -108,6 +104,7 @@ const startDrag = (event) => {
 // console.log('off', offsetX,offsetY)
 const dragging = (event) => {
   if (!isDragging.value) return;
+
   const pos = getMousePos(event)
   const currentX = pos.x
   const currentY = pos.y
@@ -121,8 +118,8 @@ const dragging = (event) => {
   startX = currentX;
   startY = currentY;
 
-  const nx = -offsetX
-  const ny = -offsetY
+  const nx = canvasWidth /2 - offsetX
+  const ny = canvasHeight/2 - offsetY
   canvasCenter.x = nx
   canvasCenter.y = ny
 };
@@ -170,10 +167,10 @@ watch(canvasCenter, async (nx, ox)=> {
   drawMap(nx.x, nx.y)
 })
 // watch(props.points, (np, op) => {
+//   console.log(np)
 // })
 
 </script>
-
 <template>
   <canvas
       ref="myCanvas"
