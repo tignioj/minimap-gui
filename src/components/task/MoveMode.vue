@@ -1,7 +1,15 @@
 <script setup>
 import { defineProps } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faWalking, faPlane, faArrowTrendUp, faWater } from '@fortawesome/free-solid-svg-icons';
+import {
+  faWalking,
+  faPlane,
+  faArrowTrendUp,
+  faWater,
+  faClover,
+  faPlaneArrival,
+  faMapMarkerAlt, faBullseye, faQuestion, faExpand
+} from '@fortawesome/free-solid-svg-icons';
 
 // 定义可接收的 props
 const props = defineProps({
@@ -20,14 +28,27 @@ const iconMapping = {
   'normal': faWalking,
   'fly': faPlane,
   'jump': faArrowTrendUp,
-  'swim': faWater
+  'swim': faWater,
+  'up_down_grab_leaf': faClover,
+  'stop_flying': faPlaneArrival,
+  'path': faMapMarkerAlt,
+  'target': faBullseye,
+  'nahida_collect': faExpand,
+  '': faQuestion,
+  undefined: faQuestion,
 };
+
+
 
 const cnMap = {
   'normal': '普通',
   'fly': '飞行',
   'jump': '跳跃',
   'swim': '游泳',
+  'up_down_grab_leaf': '四叶印',
+  'path':'路径',
+  'target': '目标',
+  'nahida_collect':'纳西妲采集'
 }
 
 // 处理传入的 moveModes，生成每个模式的配置
@@ -65,6 +86,5 @@ const modes = props.moveModes.map((mode, index) => ({
 
 .item {
   margin-right: 5px; /* 间距，可以根据需要调整 */
-  //margin-bottom: 10px; /* 垂直间距 */
 }
 </style>

@@ -18,8 +18,6 @@ import {
   faWater
 } from "@fortawesome/free-solid-svg-icons";
 
-const moveModes = ["normal", "fly", "jump", "swim"]
-const actions=["", "stop_flying", "nahida_collect"];
 // https://fontawesome.com/search
 const iconMapping = {
   'normal': faWalking,
@@ -33,6 +31,7 @@ const iconMapping = {
   '': faQuestion,
   undefined: faQuestion,
 };
+const actions=["", "stop_flying", "nahida_collect"];
 
 let startX = 0;
 let startY =0;
@@ -48,6 +47,7 @@ let selectedPointIndexRef = ref(0);
 let draggingPointIndex = null;
 let pointRadioButtonClick = () => {};
 
+const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 
 onMounted(()=> {
   let dragOffsetX = 0;

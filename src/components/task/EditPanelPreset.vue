@@ -3,8 +3,18 @@
 import MoveMode from "@/components/task/MoveMode.vue";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
-
-const moveModes = ["normal", "fly", "jump", "swim"]
+import {defineProps} from "vue";
+const props = defineProps({
+  moveModes: {
+    type: Array,
+    required: true
+  },
+  actions: {
+    type: Array,
+    required: true
+  }
+});
+// const moveModes = ["normal", "fly", "jump", "swim"]
 const name = "userMoveMode"
 </script>
 
@@ -14,7 +24,7 @@ const name = "userMoveMode"
     <label for="userX">X: </label><input type="number" id="userX" /> <label for="userY">Y: </label><input type="number" id="userY" />
     <MoveMode :name="name" :move-modes="moveModes"/>
     <PointType name="userType"/>
-    <PointAction name="userAction"/>
+    <PointAction name="userAction" :actions="actions"/>
 
   </fieldset>
 </template>
