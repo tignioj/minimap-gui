@@ -21,13 +21,12 @@ const props = defineProps({
   //   required: true
   // }
 });
-const name = "moveMode"
 const selectedPoint = defineModel('selectedPoint', { default: null, })
 const selectedPointIndex = defineModel('selectedPointIndex', { default: null, })
 
 const pointType = ref(null)
 const pointMoveMode = ref(null)
-const pointAction = ref(null)
+const pointAction = ref(null) // 和组件名冲突了
 
 onUpdated(()=> {
   if (selectedPoint) {
@@ -42,9 +41,11 @@ onUpdated(()=> {
   <div id="editPanel">
     <label for="x">X: </label><input type="number" id="x" /><br />
     <label for="y">Y: </label><input type="number" id="y" /><br />
-    <PointType v-model="selectedPoint" :name="'type'" />
-    <MoveMode v-model="pointMoveMode" :name="name" :move-modes="moveModes"/>
-    <PointAction v-model="pointAction" name="'action'" :actions="actions" />
+    <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
+    <!-- 如果v-model:hello="world" 则用defineModel('hello')读取word的数据-->
+    <PointType :point-type="pointType" :name="'type'" />
+    <MoveMode :point-move-mode="pointMoveMode" :name="'moveMode'" :move-modes="moveModes"/>
+    <PointAction :point-action="pointAction" :name="'action'" :actions="actions" />
     <button id="saveButton">保存</button>
     <button id="deleteButton">删除</button>
     <button id="cancelButton">取消</button>

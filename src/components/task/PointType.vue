@@ -6,25 +6,17 @@ const props = defineProps({
     type: String,
     required: true
   },
-  // selectedPoint: {
-  //   type: Object,
-  // }
+  pointType: {
+    type:String
+  }
 })
 
 import {faBullseye, faMapMarkerAlt} from "@fortawesome/free-solid-svg-icons";
 
 // 注意区分 v-model="xxx"和 v-model:hello="xxx"的区别
 // 前者只需要defineModel()就可以访问xxx，而后者需要defineModel('hello')
-const selectedPoint = defineModel()
-// const selectedPoint = defineModel('selectedPoint')
-let pointType=ref(null);
-onMounted(()=> { })
-onUpdated(()=> {
-  console.log('update', selectedPoint)
-  if (selectedPoint) {
-    pointType.value = selectedPoint.value.type
-  }
-})
+// const pointType = defineModel()
+
 </script>
 
 <template>

@@ -21,9 +21,12 @@ const props = defineProps({
   name: {
     type: String,
     required: true
+  },
+  pointAction: {
+    type: String
   }
 });
-const pointAction = defineModel()
+// const pointAction = defineModel()
 
 const cnMap = {
   'nahida_collect':'纳西妲采集',
