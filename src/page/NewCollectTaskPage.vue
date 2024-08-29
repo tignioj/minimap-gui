@@ -52,6 +52,7 @@ const userYInput = ref(0)
 const countrySelect = ref(null)
 
 const editPanel = ref(null)  // 引用组件
+const editPanelPreset = ref(null)
 const { isCtrlPressed } = useKeyBoardListener()
 
 // 接受editPanel的事件
@@ -207,7 +208,7 @@ onMounted(()=> {
         setPlayingRecord(false)
       }
     } else if (data.key === 'insert') {
-      insertPosition()
+      editPanelPreset.value.insertNewNode()
     } else if (data.key === 'backspace')
       if (isRecording.value) {
         info('你按下了backspace,删除上一个点位')
@@ -384,7 +385,7 @@ const cursorWithinPointIndex = (index) => {
   showEditPanel()
 }
 const appendNewNode = (node) => {
-  info('插入新的点位' + node)
+  info('插入新的点位' + JSON.stringify(node));
   points.value.push(node)
 }
 
@@ -432,6 +433,7 @@ const appendNewNode = (node) => {
   <hr/>
   <div>
     <EditPanelPreset
+        ref="editPanelPreset"
         @append-new-node="appendNewNode"
         :isRecording="isRecording"
         v-model:x-input="userXInput"

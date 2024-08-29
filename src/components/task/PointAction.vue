@@ -22,11 +22,13 @@ const props = defineProps({
     type: String,
     required: true
   },
-  pointAction: {
-    type: String
-  }
+  // pointAction: {
+  //   type: String
+  // }
 });
-// const pointAction = defineModel()
+const pointAction = defineModel('pointAction', {
+  default: ""
+})
 
 const cnMap = {
   'nahida_collect':'纳西妲采集',
@@ -52,7 +54,7 @@ const actions1 = props.actions.map((mode, index) => ({
             :name="name"
             :value="action.value"
             :checked="action.value === pointAction"
-            @click="$emit('actionChange', action.value)"
+            @click="$emit('update:pointAction', action.value)"
         />
         <label :for="action.id">{{ action.text }}</label>
         <font-awesome-icon :icon="action.icon"/>

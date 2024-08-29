@@ -21,10 +21,14 @@ const props = defineProps({
     type: String,
     required: true
   },
-  pointMoveMode: {
-    type: String,
-  }
+  // pointMoveMode: {
+  //   type: String,
+  // }
 });
+
+const pointMoveMode = defineModel('pointMoveMode', {
+  default: 'normal'
+})
 
 // 定义图标映射
 const iconMapping = {
@@ -38,6 +42,7 @@ const iconMapping = {
   'target': faBullseye,
   'nahida_collect': faExpand,
   '': faQuestion,
+  null: faQuestion,
   undefined: faQuestion,
 };
 
@@ -73,7 +78,7 @@ const modes = props.moveModes.map((mode, index) => ({
             :name="name"
             :value="mode.value"
             :checked="pointMoveMode === mode.value"
-            @click="$emit('moveModeChange', mode.value)"
+            @click="$emit('update:pointMoveMode', mode.value)"
         />
         <label :for="mode.id">{{ cnMap[mode.label] }}</label>
         <font-awesome-icon :icon="mode.icon"/>
