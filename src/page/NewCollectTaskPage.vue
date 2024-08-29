@@ -1,13 +1,12 @@
 <script setup>
 import {key_event, playback_event, serverURL,playBackStopURL, playBackURL, positionURL, socketURL} from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated, watch} from "vue";
+import {onMounted, ref, onUpdated, watch, onUnmounted} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
 import PointList from "@/components/task/PointList.vue";
 import CountrySelect from "@/components/task/CountrySelect.vue";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {
   faArrowTrendUp, faBullseye,
   faClover, faExpand,
@@ -18,6 +17,7 @@ import {
   faWater
 } from "@fortawesome/free-solid-svg-icons";
 import MyCanvas from "@/components/task/MyCanvas.vue";
+import {useKeyBoardListener} from "../../utils/keyboard_listener_utils.js";
 
 // https://fontawesome.com/search
 const iconMapping = {
@@ -38,9 +38,11 @@ const actions=["", "stop_flying", "nahida_collect"];
 let points = ref([])
 let selectedPointIndex = ref(null);
 const refCanvas = ref()
-let pointRadioButtonClick = () => {};
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const selectedPoint = ref(null)
+
+const editPanel = ref(null)  // 引用组件
+const { isCtrlPressed } = useKeyBoardListener()
 
 // 接受editPanel的事件
 watch(selectedPointIndex, async (nv, ov) => {
@@ -48,24 +50,36 @@ watch(selectedPointIndex, async (nv, ov) => {
   if (points.value.length > 0) {
     selectedPoint.value = points.value[nv]
   }
+  showEditPanel()
 })
 
 watch(points, async (nv, ov) => {
     console.log('父类检测到points更新')
+  if(nv.length>0) {
     refCanvas.value.refreshCanvas()
+  } else {
+    refCanvas.value.updateCanvasCenter(nv[0])
+  }
   },
   {deep: true})  // deep表示检测完整的对象
+
+function showEditPanel() {
+  if (!isCtrlPressed.value) {
+    editPanel.value.showEditPanel()
+  }
+}
+function hideEditPanel() {
+  editPanel.value.hideEditPanel()
+}
 
 onMounted(()=> {
   let isStartRecord = false;
   let isPlayingRecord = false;
+  // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
+  //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
+  //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
+  // })
 
-  watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
-    console.log('检测到子模板变动', nv)
-    selectedPointIndex.value = refCanvas.value.selectedPointIndex;
-  })
-
-  const editPanel = document.getElementById('editPanel');
   // const xInput = document.getElementById('x');
   // const yInput = document.getElementById('y');
 // const moveModeInput = document.getElementById('moveMode');
@@ -100,13 +114,6 @@ onMounted(()=> {
 //     refCanvas.value.updateCanvasCenter(newPoint)
 //   }
 
-  pointRadioButtonClick = (event, pos) => {
-    console.log(event, pos)
-    selectedPointIndex.value = Number(event.target.value);
-    // const p = points.value[selectedPointIndex.value];
-    showEditPanel(event.clientX, event.clientY);
-  }
-
 // 请求服务器获取新位置
   function fetchNewPosition() {
     if(!isStartRecord) return
@@ -114,7 +121,7 @@ onMounted(()=> {
         .then(response => response.json())
         .then(data => {
           const newPosition = { x: data[0], y: data[1] };
-          // updateCanvasCenter(newPosition);
+          refCanvas.value.updateCanvasCenter(newPosition);
           userXInput.value = newPosition.x
           userYInput.value = newPosition.y
           console.info('成功获取位置')
@@ -124,7 +131,7 @@ onMounted(()=> {
           errorMsg("获取位置失败!")
         });
   }
-
+  console.log('调用一次setInterval')
   setInterval(fetchNewPosition, 100); // 每5秒请求一次
   startRecordButton.addEventListener('click', ()=> {
     info("正在追踪中, 按下insert插入预设点位。不要刷新网页，否则数据丢失")
@@ -145,7 +152,7 @@ onMounted(()=> {
       name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
       anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
       country: isUndefinedNullOrEmpty(countrySelect) ? '蒙德': country,
-      positions: points
+      positions: points.value
     };
   }
   function setPlayingRecord(playing) {
@@ -216,12 +223,9 @@ onMounted(()=> {
       try {
         const json = e.target.result;
         const obj = JSON.parse(json);
-        // JSON.stringify(obj, null, 2);
         console.log(obj); // 打印到控制台
         nameInput.value = obj['name']
-        // points = ref(obj['positions'])
         points.value = obj['positions']
-        // pos = points.value[0]
         countrySelect.value = obj['country']
         anchorNameInput.value = obj['anchor_name']
         // updateCanvasCenter(points.value[0])
@@ -235,30 +239,6 @@ onMounted(()=> {
     reader.readAsText(file);
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-
-
-  // deleteButton.addEventListener('click', () => {
-  //   if (selectedPointIndex.value !== null) {
-  //     points.value.splice(selectedPointIndex.value, 1);
-  //   }
-  // });
-
-  // cancelButton.addEventListener('click', () => {
-  //   hideEditPanel();
-  // });
-
-  // newButton.addEventListener('click', (event) => {
-  //   if (selectedPointIndex.value !== null) {
-  //     const newX = parseFloat(xInput.value);
-  //     const newY  = parseFloat(yInput.value);
-  //     const newType = getSelectedValue('type')
-  //     const newAction = getSelectedValue('action')
-  //     const newMoveMode = getSelectedValue('moveMode')
-  //     const point = { x: newX - 10, y: newY , type: newType, action: newAction, move_mode: newMoveMode }
-  //     points.value.splice(selectedPointIndex.value+1, 0, point);
-  //     hideEditPanel();
-  //   }
-  // })
 
   function playBack(fromIndex) {
     if(isPlayingRecord) { return; }
@@ -348,15 +328,15 @@ onMounted(()=> {
     }
   }
 
-  // function insertPosition() {
-  //   if (!isStartRecord) {
-  //     errorMsg('请先开始追踪再插入用户点位')
-  //     return
-  //   }
-  //   const node = getUserCustomNode()
-  //   info(`插入点位(${node.x},${node.y})`)
-  //   points.value.push(node)
-  // }
+  function insertPosition() {
+    if (!isStartRecord) {
+      errorMsg('请先开始追踪再插入用户点位')
+      return
+    }
+    const node = getUserCustomNode()
+    info(`插入点位(${node.x},${node.y})`)
+    points.value.push(node)
+  }
   // insertNodeButton.addEventListener('click', insertPosition)
   //
   function getSelectedValue(name) {
@@ -374,11 +354,7 @@ onMounted(()=> {
       return ""
     }
   }
-  function showEditPanel(clientX, clientY) {
-    editPanel.style.left = `${clientX}px`;
-    editPanel.style.top = `${clientY}px`;
-    editPanel.style.display = 'block';
-  }
+
   const socket = io(socketURL);
   socket.on('connect', function() {
     console.log('WebSocket connection established');
@@ -389,7 +365,7 @@ onMounted(()=> {
     console.log('WebSocket connection closed');
   });
 
-  socket.on('key_event', function(data) {
+  socket.on(key_event, function(data) {
     // 处理从服务器接收到的键盘事件数据
     if (data.key === 'esc') {
       if (isPlayingRecord) {
@@ -407,7 +383,7 @@ onMounted(()=> {
         // points = []
       }
   });
-  socket.on('playback_event', function (data) {
+  socket.on(playback_event, function (data) {
     if(data.result) {
       info(data.msg)
       setPlayingRecord(false)
@@ -418,7 +394,7 @@ onMounted(()=> {
   })
 })
 const updateSelectedPoint = (payLoad) => {
-  console.log('接收到更新payload事件', payLoad)
+  console.log('接收到updateSelectedPoint事件', payLoad)
   points.value[selectedPointIndex.value] = payLoad
 }
 const deleteSelectedPoint = () => {
@@ -428,6 +404,7 @@ const deleteSelectedPoint = () => {
 }
 const newSelectedPoint = () => {
   const selectedPoint = points.value[selectedPointIndex.value]
+  // const newPoint = copyObject(selectedPoint)
   const newPoint = {
     x: selectedPoint.x - 50,
     y: selectedPoint.y - 50,
@@ -438,19 +415,29 @@ const newSelectedPoint = () => {
   points.value.splice(selectedPointIndex.value+1, 0, newPoint);
 }
 
+const cursorWithinPointIndex = (index) => {
+  console.log('接收到子组件cursorWithinPointIndex事件')
+  selectedPointIndex.value = index
+  showEditPanel()
+}
 </script>
 <template>
   <div id="head">
-    <MyCanvas ref="refCanvas" :selected-point-index="selectedPointIndex" :points="points"/>
-    <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
+    <MyCanvas ref="refCanvas"
+              @updateSelectedPoint="updateSelectedPoint"
+              @cursorWithinPointIndex="cursorWithinPointIndex"
+              @hideEditPanel="hideEditPanel"
+              @showEditPanel="showEditPanel"
+              :selected-point-index="selectedPointIndex"
+              :points="points"/>
+    <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :iconMapping="iconMapping"/>
   </div>
   <EditPanel
+      ref="editPanel"
       @updateSelectedPoint="updateSelectedPoint"
       @deleteSelectedPoint="deleteSelectedPoint"
       @newSelectedPoint="newSelectedPoint"
-      v-model:selectedPointIndex="selectedPointIndex"
       v-model:selectedPoint="selectedPoint"
-      :points="points"
       :move-modes="moveModes" :actions="actions"/>
   <div>
     <span id="msg">请点击开始追踪获取用户位置</span> <br/>
@@ -480,13 +467,10 @@ const newSelectedPoint = () => {
   <hr/>
   <Manual/>
 </template>
-
-
 <style scoped>
 canvas {
   border: 1px solid black;
 }
-
 .file-input-wrapper {
   display: inline-block;
   position: relative;
