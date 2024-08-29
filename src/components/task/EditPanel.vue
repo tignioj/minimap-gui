@@ -28,7 +28,7 @@ defineExpose({
 })
 import {useMouse} from "../../../utils/mouse.js";
 // 自定义组合函数：响应式鼠标坐标，可以通过mouseClientX.value访问
-const {mouseClientX, mouseClientY} = useMouse()
+const {mousePageX, mousePageY} = useMouse()
 const emit = defineEmits(
     ['updateSelectedPoint',
       'deleteSelectedPoint',
@@ -63,8 +63,8 @@ function saveButton() {
 }
 
 function showEditPanel() {
-  editPanel.value.style.left = `${mouseClientX.value}px`;
-  editPanel.value.style.top = `${mouseClientY.value}px`;
+  editPanel.value.style.left = `${mousePageX.value}px`;
+  editPanel.value.style.top = `${mousePageY.value}px`;
   editPanel.value.style.display = 'block';
 }
 function hideEditPanel() {
@@ -98,7 +98,7 @@ watch(selectedPoint, async (nv,ov)=> {
 
 </script>
 <template>
-  <div ref="editPanel" id="editPanel">
+  <div ref="editPanel" class="editPanel">
     <label for="x">X: </label><input type="number" v-model="xInput" /><br />
     <label for="y">Y: </label><input type="number" v-model="yInput" /><br />
     <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
@@ -116,7 +116,7 @@ watch(selectedPoint, async (nv,ov)=> {
 </template>
 
 <style scoped>
-#editPanel {
+.editPanel {
   display: none;
   position: absolute;
   background: white;
