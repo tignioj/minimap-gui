@@ -3,6 +3,7 @@ import {defineProps, onMounted, onUpdated, ref, watch} from "vue";
 import MoveMode from "@/components/task/MoveMode.vue";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
+import MyCanvas from "@/components/task/MyCanvas.vue";
 // const moveModes = ["normal", "fly", "jump", "swim"]
 const props = defineProps({
   moveModes: {
@@ -12,18 +13,18 @@ const props = defineProps({
   actions: {
     type: Array,
     required: true,
-  },
-  points: {
-    type: Array
   }
 });
 const editPanel=ref(null)
 
 const xInput = ref(null)
 const yInput = ref(null)
+const pointType = ref(null)
+const pointMoveMode = ref(null)
+const pointAction = ref(null)
 
 const selectedPoint = defineModel('selectedPoint', { default: null, })
-const selectedPointIndex = defineModel('selectedPointIndex', { default: null, })
+
 const emit = defineEmits(
     ['updateSelectedPoint',
       'deleteSelectedPoint',
@@ -31,34 +32,31 @@ const emit = defineEmits(
         'playBackFromHere'
     ]);
 
-const pointType = ref(null)
-const pointMoveMode = ref(null)
-const pointAction = ref(null)
-
 function saveButton() {
-  const index = selectedPointIndex.value
   // const obj = selectedPoint.value  仍然是引用同一个对象
-  if (index !== null) {
     // 或者构建一个新的对象
-    const obj = {
-      x: parseFloat(xInput.value),
-      y: parseFloat(yInput.value),
-      type: pointType.value,
-      action: pointAction.value,
-      move_mode: pointMoveMode.value
-    }
-    emit('updateSelectedPoint',obj)
-  }
+    // const obj = {
+    //   x: parseFloat(xInput.value),
+    //   y: parseFloat(yInput.value),
+    //   type: pointType.value,
+    //   action: pointAction.value,
+    //   move_mode: pointMoveMode.value
+    // }
+  const newPoint = JSON.parse(JSON.stringify(selectedPoint.value))
+  newPoint.x = parseFloat(xInput.value)
+  newPoint.y = parseFloat(yInput.value)
+  newPoint.type = pointType.value
+  newPoint.action = pointAction.value
+  newPoint.move_mode = pointMoveMode.value
+  emit('updateSelectedPoint',newPoint)
 }
 function deleteButton() {
   emit('deleteSelectedPoint')
-}
-function cancelButton() {
   editPanel.value.style.display = 'none'
 }
+function cancelButton() { editPanel.value.style.display = 'none' }
 function newButton() { emit('newSelectedPoint') }
 function playBackFromHereButton() { emit('playBackFromHere') }
-
 watch(selectedPoint, async (nv,ov)=> {
   if (selectedPoint) {
     xInput.value = nv.x
@@ -68,12 +66,7 @@ watch(selectedPoint, async (nv,ov)=> {
     pointAction.value = nv.action
   }
 })
-onUpdated(()=> {})
 
-const pointTypeChange = (val) => {
-  console.log(val)
-  // selectedPoint.value.type = val
-}
 </script>
 <template>
   <div ref="editPanel" id="editPanel">

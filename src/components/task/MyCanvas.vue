@@ -13,6 +13,9 @@ const props = defineProps({
     default: null
   }
 });
+
+const emit = defineEmits( ['updateSelectedPoint']);
+
 const pointRadius = 4
 const canvasWidth = 500
 const canvasHeight = 500
@@ -37,11 +40,12 @@ let draggingPointIndex = null;
 
 defineExpose({  // 暴露给父组件
   selectedPointIndex,
+  updateCanvasCenter,
   refreshCanvas,
 })
 
 watch(()=> props.selectedPointIndex, (nv, ov) => {
-  console.log('检测到props变化', nv)
+  console.log('子组件canvas检测到父组件selectedPointIndex变化', nv)
   if(nv === selectedPointIndex.value) return
   selectedPointIndex.value = nv
   const newCenter = props.points[nv]
@@ -50,6 +54,7 @@ watch(()=> props.selectedPointIndex, (nv, ov) => {
 
 // 更新画布中心
 function updateCanvasCenter(newPoint) {
+  if(!newPoint) return
   canvasCenter.x = newPoint.x
   canvasCenter.y = newPoint.y
   // 设置缩放比例和偏移量
@@ -94,8 +99,8 @@ function drawMap(x,y) {
   // 等待图片加载完成
   img.onload = function() {
     // 绘制图片到 canvas 上
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
     drawPoints()
     drawLines()
     // drawUserPoint(x,y)
@@ -147,12 +152,13 @@ function drawPoint(x, y, color) {
 
 const startDrag = (event) => {
   isDragging.value = true;
-  console.log('Drag started at:', getMousePos(event));
+  // console.log('Drag started at:', getMousePos(event));
   const current =getMousePos(event);
   startX = current.x
   startY = current.y
 
   if (selectedPointIndex.value!==null) {
+    // 确定要拖动的按钮下标
     draggingPointIndex = selectedPointIndex.value
   }
 };
@@ -164,8 +170,14 @@ const dragging = (event) => {
   if (draggingPointIndex !== null && isCtrlPressed) {
     const { x: newX, y: newY } = getWorldCoords(mousePos.x, mousePos.y)
     // updatePointPosition(newX, newY);
-    props.points[draggingPointIndex].x = newX;
-    props.points[draggingPointIndex].y = newY;
+    // TODO 通知父组件修改而不是子组件直接操作数据
+    // props.points[draggingPointIndex].x = newX;
+    // props.points[draggingPointIndex].y = newY;
+    // 只能复制数据结构不能复制方法, 还有一个structuredClone但是复制不了Proxy对象？
+    const newPoint = JSON.parse(JSON.stringify(props.points[draggingPointIndex]))
+    newPoint.x = newX
+    newPoint.y = newY
+    emit('updateSelectedPoint', newPoint)
     drawMap(canvasCenter.x, canvasCenter.y)
     return;
   }
@@ -175,7 +187,6 @@ const dragging = (event) => {
     const { x: canvasX, y: canvasY } = getCanvasCoords(point.x, point.y);
     if (isPointWithin(mousePos.x, mousePos.y, canvasX, canvasY)) {
       canvas.style.cursor = 'pointer';
-      console.log(props.points[index])
       selectedPointIndex.value = index;
     }
   });
@@ -206,7 +217,7 @@ const endDrag = (event) => {
   draggingPointIndex = null
   if (isDragging.value) {
     isDragging.value = false;
-    console.log('Drag ended at:', getMousePos(event));
+    // console.log('Drag ended at:', getMousePos(event));
   }
 };
 
