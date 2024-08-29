@@ -169,8 +169,11 @@ const dragging = (event) => {
 
   if (draggingPointIndex !== null && isCtrlPressed) {
     const { x: newX, y: newY } = getWorldCoords(mousePos.x, mousePos.y)
-    // updatePointPosition(newX, newY);
-    // TODO 通知父组件修改而不是子组件直接操作数据
+    // 虽然可以直接用下标操作props的引用传递对象，但是Vue官方并不推荐子组件修改props的内容，否则可能会让页面数据变得难以理解
+    // 推荐的做法是通知父组件更新
+    // props单向数据流: https://cn.vuejs.org/guide/components/props.html#one-way-data-flow
+    // 如何自定义事件？ https://cn.vuejs.org/api/sfc-script-setup#defineprops-defineemits
+    // 如何emit？ https://cn.vuejs.org/guide/components/events.html
     // props.points[draggingPointIndex].x = newX;
     // props.points[draggingPointIndex].y = newY;
     // 只能复制数据结构不能复制方法, 还有一个structuredClone但是复制不了Proxy对象？

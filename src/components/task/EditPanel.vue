@@ -42,6 +42,11 @@ function saveButton() {
     //   action: pointAction.value,
     //   move_mode: pointMoveMode.value
     // }
+  // 虽然可以直接用下标操作props的引用传递对象，但是Vue官方并不推荐子组件修改props的内容，否则可能会让页面数据变得难以理解
+  // 推荐的做法是通知父组件更新
+  // props单向数据流: https://cn.vuejs.org/guide/components/props.html#one-way-data-flow
+  // 如何自定义事件？ https://cn.vuejs.org/api/sfc-script-setup#defineprops-defineemits
+  // 如何emit？ https://cn.vuejs.org/guide/components/events.html
   const newPoint = JSON.parse(JSON.stringify(selectedPoint.value))
   newPoint.x = parseFloat(xInput.value)
   newPoint.y = parseFloat(yInput.value)
