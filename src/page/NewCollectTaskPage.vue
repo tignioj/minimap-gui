@@ -44,7 +44,7 @@ const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const selectedPoint = ref(null)
 const isPlaying = ref(false)
 const isRecording = ref(false)
-const nameInput = ref('未定义')
+const nameInput = ref(null)
 const anchorNameInput = ref('传送锚点')
 const msgElement = ref(null)
 
@@ -132,12 +132,15 @@ function fetchNewPosition() {
         return response.json()
       })
       .then(data => {
-        if (!data) {throw "请求位置失败！请检查小地图是否在左上角"}
+        if (!data) {
+          setPlayingRecord(false)
+          throw "请求位置失败！请检查小地图是否在左上角"
+        }
         const newPosition = { x: data[0], y: data[1] };
         refCanvas.value.updateCanvasCenter(newPosition);
         userXInput.value = newPosition.x
         userYInput.value = newPosition.y
-        info('成功获取位置')
+        info(`成功获取位置${newPosition.x},${newPosition.y}`)
       })
       .catch(error => {
         console.error('Error fetching position:', error)
@@ -210,12 +213,15 @@ onMounted(()=> {
       }
     } else if (data.key === 'insert') {
       editPanelPreset.value.insertNewNode()
-    } else if (data.key === 'backspace')
-      if (isRecording.value) {
-        info('你按下了backspace,删除上一个点位')
-        points.value.pop()
+    } else if (data.key === 'backspace') {
+      if (!isRecording.value) {
+        errorMsg("请点击开始记录后再使用快捷键删除点位")
+        return;
       }
-      else if (data.key === 'delete') {
+      info('你按下了backspace,删除上一个点位')
+      points.value.pop()
+
+    } else if (data.key === 'delete') {
         // points = []
       }
   });
@@ -386,6 +392,10 @@ const cursorWithinPointIndex = (index) => {
   showEditPanel()
 }
 const appendNewNode = (node) => {
+  if(!isRecording.value) {
+    errorMsg('请先点击开始记录再插入点位')
+    return
+  }
   info('插入新的点位' + JSON.stringify(node));
   points.value.push(node)
 }
@@ -403,6 +413,7 @@ onUnmounted(()=> {
               @cursorWithinPointIndex="cursorWithinPointIndex"
               @hideEditPanel="hideEditPanel"
               @showEditPanel="showEditPanel"
+              :isRecording="isRecording"
               :selected-point-index="selectedPointIndex"
               :points="points"/>
     <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :iconMapping="iconMapping"/>
@@ -418,8 +429,8 @@ onUnmounted(()=> {
       :move-modes="moveModes" :actions="actions"/>
   <div>
     <div ref="msgElement">路径记录-回放</div>
-    <button @click="startRecordButton">开始追踪</button>
-    <button @click="stopRecordButton">停止追踪</button>
+    <button @click="startRecordButton">开始记录</button>
+    <button @click="stopRecordButton">停止记录</button>
     <button @click="saveRecordButton">保存记录</button>
 
     <div class="file-input-wrapper">
@@ -430,7 +441,7 @@ onUnmounted(()=> {
   </div>
   <hr/>
   <div>
-    <label>名称<input type="text" placeholder="未定义" v-model="nameInput" /></label>
+    <label>名称<input type="text" placeholder="甜甜花_清泉镇左下角" v-model="nameInput" /></label>
     <label>传送点所在国家</label>
     <CountrySelect ref="countrySelect" />
     <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>

@@ -13,6 +13,10 @@ const props = defineProps({
     type: [Number, null],
     required: true,
     default: null
+  },
+  isRecording: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -87,6 +91,19 @@ function getWorldCoords(canvasX, canvasY) {
     y: (canvasY - offsetY)
   };
 }
+function drawUserPoint(x,y) {
+  if (!props.isRecording) return
+  const canvas = myCanvas.value;
+  const ctx = canvas.getContext('2d');
+  const canvasX = x + offsetX;
+  const canvasY = y + offsetY;
+
+  ctx.beginPath();
+  ctx.arc(canvasX, canvasY, pointRadius, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'orange';
+  ctx.lineWidth = 2;
+  ctx.stroke(); // 绘制圆圈
+}
 
 function drawMap(x,y) {
   const canvas = myCanvas.value;
@@ -109,7 +126,7 @@ function drawMap(x,y) {
     ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
     drawPoints()
     drawLines()
-    // drawUserPoint(x,y)
+    drawUserPoint(x,y)
   };
 }
 function drawLines() {
