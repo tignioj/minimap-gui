@@ -18,6 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import MyCanvas from "@/components/task/MyCanvas.vue";
 import {useKeyBoardListener} from "../../utils/keyboard_listener_utils.js";
+let intervalID;
 
 // https://fontawesome.com/search
 const iconMapping = {
@@ -120,37 +121,37 @@ function getPathObject() {
     positions: points.value
   };
 }
+
+// 请求服务器获取新位置
+function fetchNewPosition() {
+  console.log('interval!')
+  if(!isRecording.value) return
+  fetch(positionURL) // 替换为实际的服务器地址
+      .then(response =>{
+        if (!response.ok) { throw "网络错误!" }
+        return response.json()
+      })
+      .then(data => {
+        if (!data) {throw "请求位置失败！请检查小地图是否在左上角"}
+        const newPosition = { x: data[0], y: data[1] };
+        refCanvas.value.updateCanvasCenter(newPosition);
+        userXInput.value = newPosition.x
+        userYInput.value = newPosition.y
+        info('成功获取位置')
+      })
+      .catch(error => {
+        console.error('Error fetching position:', error)
+        errorMsg(error)
+      });
+}
 onMounted(()=> {
   // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
   //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
   //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
   // })
 
-// 记录按钮
-  const saveRecordButton = document.getElementById('saveRecordButton');
-// 请求服务器获取新位置
-  function fetchNewPosition() {
-    if(!isRecording.value) return
-    fetch(positionURL) // 替换为实际的服务器地址
-        .then(response =>{
-          if (!response.ok) { throw "网络错误!" }
-          return response.json()
-        })
-        .then(data => {
-          if (!data) {throw "请求位置失败！请检查小地图是否在左上角"}
-          const newPosition = { x: data[0], y: data[1] };
-          refCanvas.value.updateCanvasCenter(newPosition);
-          userXInput.value = newPosition.x
-          userYInput.value = newPosition.y
-          info('成功获取位置')
-        })
-        .catch(error => {
-          console.error('Error fetching position:', error)
-          errorMsg(error)
-        });
-  }
   console.log('调用一次setInterval')
-  setInterval(fetchNewPosition, 100); // 每5秒请求一次
+  intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
 
   function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -388,6 +389,11 @@ const appendNewNode = (node) => {
   info('插入新的点位' + JSON.stringify(node));
   points.value.push(node)
 }
+
+onUnmounted(()=> {
+  console.log('清除interval')
+  window.clearInterval(intervalID)
+})
 
 </script>
 <template>
