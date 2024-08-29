@@ -2,13 +2,21 @@
 // 展示文件树
 import {onMounted, ref} from "vue";
 import {pathListListURL} from "@/api.js";
-import CountrySelect from "@/components/task/CountrySelect.vue";
 const openFolders =ref([])
-// const fileStructure = ref([])
 const fileStructure = ref([
   {name: '甜甜花', 'files': ['1.json', '2.json']},
   {name: '风车菊', 'files': ['3.json', '4.json']},
 ])
+const todoSelect = defineModel('todoSelect', {
+  default: null  // 设置默认值为null以便于无清单时, 选中”暂无清单“选项
+})
+const todoList = defineModel('todoList', {
+  default: []
+})
+// const todoList = ref([])
+const selectedFolder = ref([])
+const selectedFiles = ref([])
+
 onMounted(()=> {
   fetch(pathListListURL).then(res => {
     if(!res.ok) throw new Error("网络异常");
@@ -35,11 +43,6 @@ function  editFile(fileName) {
   // 在这里添加文件编辑逻辑
   console.log('编辑文件:', fileName);
 }
-const todoSelect = defineModel('todoSelect')
-const todoList = defineModel('todoList')
-const selectedFolder = ref([])
-const selectedFiles = ref([])
-
 // 添加数据到响应数组,禁止重复数据
 function append(array, value) {
   if (array.value.includes(value)) { return false }
@@ -76,7 +79,7 @@ function selectFile(event, file) {
 const emit = defineEmits(['addToList'])
 const addToListBtn = () => {
   const todoItem  = todoSelect.value
-  emit('addToListBtn', todoItem, selectedFiles.value)
+  emit('addToList', todoItem, selectedFiles.value)
 }
 </script>
 
@@ -86,8 +89,14 @@ const addToListBtn = () => {
     <!-- 文件管理功能 -->
     <input type="text" id="fileSearchInput" placeholder="搜索文件">
     <label for="todoSelect">请选择清单</label>
-    <select v-model="todoSelect">
-      <option v-for="(todo, index) in todoList" :key="index" :value="todo" >
+    <select v-model="todoSelect" :disabled="todoList.length===0">
+<!--      当数据为空的时候，如果要显示"暂无清单"选项，必须设置一个value, 否则v-mode可能无法选中该值-->
+<!--      当设置为 :value="null"时，todoSelect=ref(null) 可以正常选择-->
+<!--      当设置为 value=""时，todoSelect=ref("") -->
+      <option :value="null" v-if="todoList.length===0" disabled>暂无清单</option>
+      <option v-for="(todo, index) in todoList"
+              :key="index"
+              :value="todo.name" >
         {{ todo.name }}
       </option>
     </select>
@@ -113,7 +122,6 @@ const addToListBtn = () => {
       </div>
     </div>
   </div>
-  {{ selectedFiles }}
 </template>
 
 <style scoped>
