@@ -7,10 +7,6 @@ const props = defineProps({
     type: Object,
     required: true
   },
-  pointRadioButtonClick: {
-    type: Function,
-    required: true
-  },
   points: {
     type: Array,
     required: true
@@ -19,8 +15,7 @@ const props = defineProps({
 
 const model = defineModel('selectedPointIndex')
 const emit = defineEmits(['update:selectedPointIndex']);  // 定义用于通知父组件更新值的事件
-function radioButtonClick(event, value) {
-  console.log(event)
+function radioButtonClick(value) {
   emit('update:selectedPointIndex', value);  // 触发事件，通知父组件更新 modelValue
 }
 onMounted(()=> {
@@ -38,22 +33,24 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
             'type-path': point.type === 'path',
             'type-target': point.type === 'target'}"
           class="position">
-<!--      <input type="radio" name="position"-->
-<!--             :value="index"-->
-<!--             class="radio-btn"-->
-<!--             @click="radioButtonClick($event, index)"-->
-<!--             :checked="model === index" />-->
+      <input type="radio" name="position"
+             :value="index"
+             class="radio-btn"
+             @click="radioButtonClick(index)"
+             :checked="model === index" />
+
+<!--        模板中可以直接使用 $emit()，而在js里面则需要definedEmit(['xx','xxx', ...]) -->
 <!--        <input type="radio" name="position"-->
 <!--               :value="index"-->
 <!--               class="radio-btn"-->
 <!--               @click="$emit('update:selectedPointIndex', index)"-->
 <!--               :checked="model === index" />-->
 
-        <input type="radio" name="position"
-               :value="index"
-               class="radio-btn"
-               @click="pointRadioButtonClick"
-               :checked="model === index" />
+<!--        <input type="radio" name="position"-->
+<!--               :value="index"-->
+<!--               class="radio-btn"-->
+<!--               @click="pointRadioButtonClick"-->
+<!--               :checked="model === index" />-->
         <font-awesome-icon :icon="iconMapping[point.type]"/>
         <font-awesome-icon :icon="iconMapping[point.move_mode]" v-if="point.move_mode"/>
         <font-awesome-icon :icon="iconMapping[point.action]" v-if="point.action"/>
