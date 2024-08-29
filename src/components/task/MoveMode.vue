@@ -67,6 +67,7 @@ const modes = props.moveModes.map((mode, index) => ({
     <legend>行走方式</legend>
     <div class="container">
       <div v-for="(mode, index) in modes" :key="index" class="item">
+<!--        是否有更简洁的方式添加Node？-->
         <input
             type="radio"
             :name="name"

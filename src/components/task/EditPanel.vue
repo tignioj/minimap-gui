@@ -15,13 +15,14 @@ const props = defineProps({
   }
 });
 const editPanel=ref(null)
-
 const xInput = ref(null)
 const yInput = ref(null)
 const pointType = ref(null)
 const pointMoveMode = ref(null)
 const pointAction = ref(null)
 const selectedPoint = defineModel('selectedPoint', { default: null, })
+const isPlaying = defineModel('isPlaying', { default: false, })
+
 defineExpose({
   hideEditPanel,
   showEditPanel
@@ -33,7 +34,7 @@ const emit = defineEmits(
     ['updateSelectedPoint',
       'deleteSelectedPoint',
       'newSelectedPoint',
-        'playBackFromHere'
+      'playBackFromHere'
     ]);
 
 function saveButton() {
@@ -111,7 +112,7 @@ watch(selectedPoint, async (nv,ov)=> {
     <button @click="deleteButton">删除</button>
     <button @click="cancelButton">取消</button>
     <button @click="newButton">插入</button>
-    <button @click="playBackFromHereButton">从这里开始回放</button>
+    <button @click="playBackFromHereButton" :disabled="isPlaying">从这里开始回放</button>
   </div>
 </template>
 

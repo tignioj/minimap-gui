@@ -34,12 +34,22 @@ const iconMapping = {
   undefined: faQuestion,
 };
 const actions=["", "stop_flying", "nahida_collect"];
+const playBackButton = ref(null)
 // 加载数据
 let points = ref([])
 let selectedPointIndex = ref(null);
-const refCanvas = ref()
+const refCanvas = ref(null)
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const selectedPoint = ref(null)
+const isPlaying = ref(false)
+const isRecording = ref(false)
+const nameInput = ref('未定义')
+const anchorNameInput = ref('传送锚点')
+const msgElement = ref(null)
+
+const userXInput = ref(0)
+const userYInput = ref(0)
+const countrySelect = ref(null)
 
 const editPanel = ref(null)  // 引用组件
 const { isCtrlPressed } = useKeyBoardListener()
@@ -71,145 +81,75 @@ function showEditPanel() {
 function hideEditPanel() {
   editPanel.value.hideEditPanel()
 }
+function info(text) {
+  msgElement.value.classList.remove('error-msg')
+  console.log(text)
+  msgElement.value.innerText = text
+}
+function errorMsg(text) {
+  msgElement.value.classList.add('error-msg')
+  console.error(text)
+  msgElement.value.innerText = text
+}
 
+function isUndefinedNullOrEmpty(value) {
+  return value === undefined || value === null || value === "";
+}
+
+function setPlayingRecord(playing) {
+  if (playing) {
+    isPlaying.value = true
+    playBackButton.value.innerText = "停止"
+    // playBackFromHereButton.disabled = true
+  } else {
+    isPlaying.value = false
+    playBackButton.value.innerText = "回放"
+    // playBackFromHereButton.disabled = false
+  }
+}
+function getPathObject() {
+  const name = nameInput.value
+  const country = countrySelect.value.countrySelect
+  const anchorName = anchorNameInput.value
+  return {
+    name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
+    anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
+    country: isUndefinedNullOrEmpty(countrySelect) ? '蒙德': country,
+    executor: 'CollectPathExecutor',
+    positions: points.value
+  };
+}
 onMounted(()=> {
-  let isStartRecord = false;
-  let isPlayingRecord = false;
   // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
   //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
   //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
   // })
 
-  // const xInput = document.getElementById('x');
-  // const yInput = document.getElementById('y');
-// const moveModeInput = document.getElementById('moveMode');
-  const userXInput = document.getElementById('userX');
-  const userYInput = document.getElementById('userY');
-  const nameInput = document.getElementById('nameInput');
-  const countrySelect = document.getElementById('countrySelect')
-  const anchorNameInput = document.getElementById('anchorNameInput')
-
-  const msgElement = document.getElementById("msg")
-
 // 记录按钮
-  const startRecordButton = document.getElementById('startRecordButton');
-  const stopRecordButton = document.getElementById('stopRecordButton');
   const saveRecordButton = document.getElementById('saveRecordButton');
-  const playBackButton = document.getElementById('playBackButton');
-
-
-  function info(text) {
-    msgElement.classList.remove('error-msg')
-    console.log(text)
-    msgElement.innerText = text
-  }
-  function errorMsg(text) {
-    msgElement.classList.add('error-msg')
-    console.error(text)
-    msgElement.innerText = text
-  }
-
-// 更新画布中心
-//   function updateCanvasCenter (newPoint) {
-//     refCanvas.value.updateCanvasCenter(newPoint)
-//   }
-
 // 请求服务器获取新位置
   function fetchNewPosition() {
-    if(!isStartRecord) return
+    if(!isRecording.value) return
     fetch(positionURL) // 替换为实际的服务器地址
-        .then(response => response.json())
+        .then(response =>{
+          if (!response.ok) { throw "网络错误!" }
+          return response.json()
+        })
         .then(data => {
+          if (!data) {throw "请求位置失败！请检查小地图是否在左上角"}
           const newPosition = { x: data[0], y: data[1] };
           refCanvas.value.updateCanvasCenter(newPosition);
           userXInput.value = newPosition.x
           userYInput.value = newPosition.y
-          console.info('成功获取位置')
+          info('成功获取位置')
         })
         .catch(error => {
           console.error('Error fetching position:', error)
-          errorMsg("获取位置失败!")
+          errorMsg(error)
         });
   }
   console.log('调用一次setInterval')
   setInterval(fetchNewPosition, 100); // 每5秒请求一次
-  startRecordButton.addEventListener('click', ()=> {
-    info("正在追踪中, 按下insert插入预设点位。不要刷新网页，否则数据丢失")
-    isStartRecord = true
-  })
-  stopRecordButton.addEventListener('click', ()=> {
-    info("已停止追踪")
-    isStartRecord = false
-  })
-  function isUndefinedNullOrEmpty(value) {
-    return value === undefined || value === null || value === "";
-  }
-  function getPathObject() {
-    const name = nameInput.value
-    const country = countrySelect.value
-    const anchorName = anchorNameInput.value
-    return {
-      name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
-      anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
-      country: isUndefinedNullOrEmpty(countrySelect) ? '蒙德': country,
-      positions: points.value
-    };
-  }
-  function setPlayingRecord(playing) {
-    if (playing) {
-      isPlayingRecord = true
-      playBackButton.innerText = "停止"
-      playBackFromHereButton.disabled = true
-    } else {
-      isPlayingRecord = false
-      playBackButton.innerText = "回放"
-      playBackFromHereButton.disabled = false
-    }
-  }
-
-  playBackButton.addEventListener('click',  ()=> {
-    if (!isPlayingRecord) playBack()
-    else stopPlayBack();
-  })
-
-  function formatDateTime() {
-    let now = new Date();
-
-    let year = now.getFullYear();
-    let month = (now.getMonth() + 1).toString().padStart(2, '0');
-    let day = now.getDate().toString().padStart(2, '0');
-    let hours = now.getHours().toString().padStart(2, '0');
-    let minutes = now.getMinutes().toString().padStart(2, '0');
-    let seconds = now.getSeconds().toString().padStart(2, '0');
-
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-  }
-  function saveDictAsJsonFile(dict, fileName) {
-    // 将对象转换为 JSON 字符串
-    const jsonString = JSON.stringify(dict, null, 2); // 格式化 JSON 字符串
-
-    // 创建 Blob 对象
-    const blob = new Blob([jsonString], { type: 'application/json' });
-
-    // 创建一个临时的链接
-    const url = URL.createObjectURL(blob);
-
-    // 创建一个隐藏的 <a> 元素
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-
-    // 触发下载
-    a.click();
-
-    // 清理
-    URL.revokeObjectURL(url);
-  }
-  saveRecordButton.addEventListener('click', () => {
-    const obj = getPathObject()
-    const count = obj.positions.filter(item => item.type === "target").length;
-    saveDictAsJsonFile(obj, `${obj.name}_${obj.country}_${count}个_${formatDateTime()}.json`)
-  })
 
   function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -240,120 +180,14 @@ onMounted(()=> {
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
-  function playBack(fromIndex) {
-    if(isPlayingRecord) { return; }
-    if (points.length < 1)  {
-      errorMsg('空路径，无法回放！')
-      return
-    }
-    info('回放中, 已停止追踪')
-    isStartRecord = false  // 停止记录
 
-    setPlayingRecord(true)
-    const data = getPathObject()
-    if (!isUndefinedNullOrEmpty(fromIndex)) {
-      data['from_index'] = Number(fromIndex)
-    }
-    fetch(playBackURL, {
-      method: 'POST', // 请求方法
-      headers: {
-        'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
-      },
-      body: JSON.stringify(data) // 将 JavaScript 对象转换为 JSON 字符串
-    })
-        .then(response => {
-          if (!response.ok) {
-            setPlayingRecord(false)
-            throw new Error('Network response was not ok ' + response.statusText);
-          }
-          return response.json(); // 解析响应为 JSON
-        })
-        .then(data => {
-          console.log('Success:', data); // 处理成功的响应
-          if (data.result === true) {
-            info(data.msg)
-            setPlayingRecord(true)
-          } else {
-            if(data.status === 'playback_already_running') {
-              setPlayingRecord(true)
-            }
-            errorMsg(data.msg)
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error); // 处理错误
-          errorMsg(error)
-          setPlayingRecord(false)
-        });
-  }
-  function stopPlayBack() {
-    fetch(playBackStopURL )
-        .then(response => {
-          if (!response.ok) {
-            setPlayingRecord(false)
-            throw new Error('Network response was not ok ' + response.statusText);
-          }
-          return response.json(); // 解析响应为 JSON
-        })
-        .then(data => {
-          console.log('Success:', data); // 处理成功的响应
-          if (data.result === true) {
-            info(data.msg)
-            setPlayingRecord(false)
-          } else {
-            errorMsg(data.msg)
-            setPlayingRecord(true)
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error); // 处理错误
-          errorMsg(error)
-          setPlayingRecord(false)
-        });
-  }
+
   // playBackFromHereButton.addEventListener('click', (event) => {
   //   if (isPlayingRecord) return
   //   if (!isUndefinedNullOrEmpty(selectedPointIndex.value)) {
   //     playBack(selectedPointIndex.value)
   //   }
   // })
-
-  function getUserCustomNode() {
-    return {
-      x: Number(userXInput.value),
-      y: Number(userYInput.value),
-      type: getSelectedValue('userType'),
-      move_mode: getSelectedValue('userMoveMode'),
-      action: getSelectedValue('userAction')
-    }
-  }
-
-  function insertPosition() {
-    if (!isStartRecord) {
-      errorMsg('请先开始追踪再插入用户点位')
-      return
-    }
-    const node = getUserCustomNode()
-    info(`插入点位(${node.x},${node.y})`)
-    points.value.push(node)
-  }
-  // insertNodeButton.addEventListener('click', insertPosition)
-  //
-  function getSelectedValue(name) {
-    // Get the selected radio button
-    const selectedRadio = document.querySelector(`input[name="${name}"]:checked`);
-
-    // Check if a radio button is selected
-    if (selectedRadio) {
-      const selectedValue = selectedRadio.value;
-      console.log('Selected mode:', selectedValue);
-      // Optionally, do something with the selected value
-      return selectedValue
-    } else {
-      console.log('No radio button selected');
-      return ""
-    }
-  }
 
   const socket = io(socketURL);
   socket.on('connect', function() {
@@ -368,14 +202,14 @@ onMounted(()=> {
   socket.on(key_event, function(data) {
     // 处理从服务器接收到的键盘事件数据
     if (data.key === 'esc') {
-      if (isPlayingRecord) {
+      if (isPlaying.value) {
         info('执行中断')
         setPlayingRecord(false)
       }
     } else if (data.key === 'insert') {
       insertPosition()
     } else if (data.key === 'backspace')
-      if (isStartRecord) {
+      if (isRecording.value) {
         info('你按下了backspace,删除上一个点位')
         points.value.pop()
       }
@@ -415,11 +249,145 @@ const newSelectedPoint = () => {
   points.value.splice(selectedPointIndex.value+1, 0, newPoint);
 }
 
+const playBackFromHere = (fromIndex) => {
+  playBack(fromIndex)
+}
+
+function playBack(fromIndex) {
+  if(isPlaying.value) { return; }
+
+  if (points.value.length < 1)  {
+    errorMsg('空路径，无法回放！')
+    return
+  }
+  info('回放中, 已停止追踪')
+  isRecording.value = false  // 停止记录
+
+  setPlayingRecord(true)
+  const data = getPathObject()
+  if (!isUndefinedNullOrEmpty(fromIndex)) {
+    data['from_index'] = Number(fromIndex)
+  }
+  fetch(playBackURL, {
+    method: 'POST', // 请求方法
+    headers: {
+      'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
+    },
+    body: JSON.stringify(data) // 将 JavaScript 对象转换为 JSON 字符串
+  })
+      .then(response => {
+        if (!response.ok) {
+          setPlayingRecord(false)
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json(); // 解析响应为 JSON
+      })
+      .then(data => {
+        console.log('Success:', data); // 处理成功的响应
+        if (data.result === true) {
+          info(data.msg)
+          setPlayingRecord(true)
+        } else {
+          if(data.status === 'playback_already_running') {
+            setPlayingRecord(true)
+          }
+          errorMsg(data.msg)
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error); // 处理错误
+        errorMsg(error)
+        setPlayingRecord(false)
+      });
+}
+function stopPlayBack() {
+  fetch(playBackStopURL )
+      .then(response => {
+        if (!response.ok) {
+          setPlayingRecord(false)
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json(); // 解析响应为 JSON
+      })
+      .then(data => {
+        console.log('Success:', data); // 处理成功的响应
+        if (data.result === true) {
+          info(data.msg)
+          setPlayingRecord(false)
+        } else {
+          errorMsg(data.msg)
+          setPlayingRecord(true)
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error); // 处理错误
+        errorMsg(error)
+        setPlayingRecord(false)
+      });
+}
+
+const startRecordButton = ()=> {
+  info("正在追踪中, 按下insert插入预设点位。不要刷新网页，否则数据丢失")
+  isRecording.value = true
+}
+const stopRecordButton = ()=> {
+  info("已停止追踪")
+  isRecording.value = false
+}
+
+function formatDateTime() {
+  let now = new Date();
+
+  let year = now.getFullYear();
+  let month = (now.getMonth() + 1).toString().padStart(2, '0');
+  let day = now.getDate().toString().padStart(2, '0');
+  let hours = now.getHours().toString().padStart(2, '0');
+  let minutes = now.getMinutes().toString().padStart(2, '0');
+  let seconds = now.getSeconds().toString().padStart(2, '0');
+
+  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+function saveDictAsJsonFile(dict, fileName) {
+  // 将对象转换为 JSON 字符串
+  const jsonString = JSON.stringify(dict, null, 2); // 格式化 JSON 字符串
+
+  // 创建 Blob 对象
+  const blob = new Blob([jsonString], { type: 'application/json' });
+
+  // 创建一个临时的链接
+  const url = URL.createObjectURL(blob);
+
+  // 创建一个隐藏的 <a> 元素
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+
+  // 触发下载
+  a.click();
+
+  // 清理
+  URL.revokeObjectURL(url);
+}
+const saveRecordButton = () => {
+  const obj = getPathObject()
+  const count = obj.positions.filter(item => item.type === "target").length;
+  saveDictAsJsonFile(obj, `${obj.name}_${obj.country}_${count}个_${formatDateTime()}.json`)
+}
+const playBackClick = ()=> {
+  if (!isPlaying.value) playBack()
+  else stopPlayBack();
+}
+
 const cursorWithinPointIndex = (index) => {
   console.log('接收到子组件cursorWithinPointIndex事件')
   selectedPointIndex.value = index
   showEditPanel()
 }
+const appendNewNode = (node) => {
+  info('插入新的点位' + node)
+  points.value.push(node)
+}
+
 </script>
 <template>
   <div id="head">
@@ -437,13 +405,15 @@ const cursorWithinPointIndex = (index) => {
       @updateSelectedPoint="updateSelectedPoint"
       @deleteSelectedPoint="deleteSelectedPoint"
       @newSelectedPoint="newSelectedPoint"
+      @playBackFromHere="playBackFromHere"
       v-model:selectedPoint="selectedPoint"
+      v-model:isPlaing="isPlaying"
       :move-modes="moveModes" :actions="actions"/>
   <div>
-    <span id="msg">请点击开始追踪获取用户位置</span> <br/>
-    <button id="startRecordButton">开始追踪</button>
-    <button id="stopRecordButton">停止追踪</button>
-    <button id="saveRecordButton">保存记录</button>
+    <div ref="msgElement">路径记录-回放</div>
+    <button @click="startRecordButton">开始追踪</button>
+    <button @click="stopRecordButton">停止追踪</button>
+    <button @click="saveRecordButton">保存记录</button>
 
     <div class="file-input-wrapper">
       <button class="file-input-button" id="loadRecordButton">加载记录</button>
@@ -453,16 +423,21 @@ const cursorWithinPointIndex = (index) => {
   </div>
   <hr/>
   <div>
-    <label for="nameInput">名称<input type="text" placeholder="未定义" id="nameInput"/></label>
-    <label for="countrySelect">传送点所在国家</label>
-    <CountrySelect id="countrySelect"/>
-    <label for="anchorNameInput">传送锚点名称<input type="text" placeholder="传送锚点" id="anchorNameInput"/></label>
-    <button id="playBackButton">回放</button>
+    <label>名称<input type="text" placeholder="未定义" v-model="nameInput" /></label>
+    <label>传送点所在国家</label>
+    <CountrySelect ref="countrySelect" />
+    <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>
+    <button ref="playBackButton" @click="playBackClick" >回放</button>
   </div>
   <hr/>
   <div>
-    <EditPanelPreset :move-modes="moveModes" :actions="actions"/>
-    <button id="insertNodeButton">插入预设点位</button>
+    <EditPanelPreset
+        @append-new-node="appendNewNode"
+        :isRecording="isRecording"
+        v-model:x-input="userXInput"
+        v-model:y-input="userYInput"
+        :move-modes="moveModes"
+        :actions="actions"/>
   </div>
   <hr/>
   <Manual/>
