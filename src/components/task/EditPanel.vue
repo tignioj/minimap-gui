@@ -24,34 +24,21 @@ const yInput = ref(null)
 
 const selectedPoint = defineModel('selectedPoint', { default: null, })
 const selectedPointIndex = defineModel('selectedPointIndex', { default: null, })
-const emit = defineEmits({'update-event': (payLoad) => {
-  return payLoad
-}});
+const emit = defineEmits(
+    ['updateSelectedPoint',
+      'deleteSelectedPoint',
+      'newSelectedPoint',
+        'playBackFromHere'
+    ]);
 
 const pointType = ref(null)
 const pointMoveMode = ref(null)
 const pointAction = ref(null)
 
-
 function saveButton() {
   const index = selectedPointIndex.value
   // const obj = selectedPoint.value  仍然是引用同一个对象
   if (index !== null) {
-    // 官方不推荐直接修改父类数据,而是通过emit通知父类修改。这里偷懒了
-    // selectedPoint.value.x = xInput.value;
-    // selectedPoint.value.y = yInput.value;
-    // selectedPoint.value.type = pointType.value
-    // selectedPoint.value.action = pointAction.value
-    // selectedPoint.value.move_mode = pointMoveMode.value
-
-    // 可以使用深拷贝复制对象(失败)
-    // const obj = structuredClone(selectedPoint.value)
-    // obj.x = xInput.value;
-    // obj.y = yInput.value;
-    // obj.type = pointType.value
-    // obj.action = pointAction.value
-    // obj.move_mode = pointMoveMode.value
-
     // 或者构建一个新的对象
     const obj = {
       x: parseFloat(xInput.value),
@@ -60,15 +47,17 @@ function saveButton() {
       action: pointAction.value,
       move_mode: pointMoveMode.value
     }
-    emit('update-edit-panel',obj)
+    emit('updateSelectedPoint',obj)
   }
 }
-function deleteButton() {}
+function deleteButton() {
+  emit('deleteSelectedPoint')
+}
 function cancelButton() {
   editPanel.value.style.display = 'none'
 }
-function newButton() {}
-function playBackFromHereButton() {}
+function newButton() { emit('newSelectedPoint') }
+function playBackFromHereButton() { emit('playBackFromHere') }
 
 watch(selectedPoint, async (nv,ov)=> {
   if (selectedPoint) {

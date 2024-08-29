@@ -52,6 +52,7 @@ const actions1 = props.actions.map((mode, index) => ({
             :name="name"
             :value="action.value"
             :checked="action.value === pointAction"
+            @click="$emit('actionChange', action.value)"
         />
         <label :for="action.id">{{ action.text }}</label>
         <font-awesome-icon :icon="action.icon"/>

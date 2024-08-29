@@ -10,7 +10,7 @@ import CountrySelect from "@/components/task/CountrySelect.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {
   faArrowTrendUp, faBullseye,
-  faClover,
+  faClover, faExpand,
   faMapMarkerAlt,
   faPlane,
   faPlaneArrival, faQuestion,
@@ -29,6 +29,7 @@ const iconMapping = {
   'stop_flying': faPlaneArrival,
   'path': faMapMarkerAlt,
   'target': faBullseye,
+  'nahida_collect': faExpand,
   '': faQuestion,
   undefined: faQuestion,
 };
@@ -76,19 +77,10 @@ onMounted(()=> {
 
   const msgElement = document.getElementById("msg")
 
-// 编辑框按钮
-//   const saveButton = document.getElementById('saveButton');
-//   const deleteButton = document.getElementById('deleteButton');
-//   const cancelButton = document.getElementById('cancelButton');
-//   const newButton = document.getElementById('newButton');
-//   const playBackFromHereButton = document.getElementById('playBackFromHereButton')
-//   const insertNodeButton = document.getElementById('insertNodeButton');
-
 // 记录按钮
   const startRecordButton = document.getElementById('startRecordButton');
   const stopRecordButton = document.getElementById('stopRecordButton');
   const saveRecordButton = document.getElementById('saveRecordButton');
-  const loadRecordButton = document.getElementById('loadRecordButton')
   const playBackButton = document.getElementById('playBackButton');
 
 
@@ -244,17 +236,6 @@ onMounted(()=> {
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
-  // saveButton.addEventListener('click', () => {
-  //   const index = selectedPointIndex.value
-  //   if (index !== null) {
-  //     points.value[index].x = parseFloat(xInput.value);
-  //     points.value[index].y = parseFloat(yInput.value);
-  //     points.value[index].type = getSelectedValue('type');
-  //     points.value[index].action = getSelectedValue('action')
-  //     points.value[index].move_mode = getSelectedValue('moveMode');
-  //     hideEditPanel();
-  //   }
-  // });
 
   // deleteButton.addEventListener('click', () => {
   //   if (selectedPointIndex.value !== null) {
@@ -393,32 +374,11 @@ onMounted(()=> {
       return ""
     }
   }
-
-
-  function selectRadio(name,value) {
-    // Deselect all radio buttons first
-    document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
-      radio.checked = false;
-    });
-
-    // Select the radio button with the specified value
-    const radioToSelect = document.querySelector(`input[name="${name}"][value="${value}"]`);
-    if (radioToSelect) {
-      radioToSelect.checked = true;
-    }
-  }
-
   function showEditPanel(clientX, clientY) {
     editPanel.style.left = `${clientX}px`;
     editPanel.style.top = `${clientY}px`;
     editPanel.style.display = 'block';
   }
-
-  function hideEditPanel() {
-    // editPanel.classList.add('hidden');
-    editPanel.style.display = 'none'
-  }
-
   const socket = io(socketURL);
   socket.on('connect', function() {
     console.log('WebSocket connection established');
@@ -461,6 +421,23 @@ const updateSelectedPoint = (payLoad) => {
   console.log('接收到更新payload事件', payLoad)
   points.value[selectedPointIndex.value] = payLoad
 }
+const deleteSelectedPoint = () => {
+    if (selectedPointIndex.value !== null) {
+      points.value.splice(selectedPointIndex.value, 1);
+    }
+}
+const newSelectedPoint = () => {
+  const selectedPoint = points.value[selectedPointIndex.value]
+  const newPoint = {
+    x: selectedPoint.x - 50,
+    y: selectedPoint.y - 50,
+    type: selectedPoint.type,
+    action: selectedPoint.action,
+    move_mode: selectedPoint.move_mode
+  }
+  points.value.splice(selectedPointIndex.value+1, 0, newPoint);
+}
+
 </script>
 <template>
   <div id="head">
@@ -468,7 +445,9 @@ const updateSelectedPoint = (payLoad) => {
     <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :pointRadioButtonClick="pointRadioButtonClick" :iconMapping="iconMapping"/>
   </div>
   <EditPanel
-      @update-edit-panel="updateSelectedPoint"
+      @updateSelectedPoint="updateSelectedPoint"
+      @deleteSelectedPoint="deleteSelectedPoint"
+      @newSelectedPoint="newSelectedPoint"
       v-model:selectedPointIndex="selectedPointIndex"
       v-model:selectedPoint="selectedPoint"
       :points="points"
