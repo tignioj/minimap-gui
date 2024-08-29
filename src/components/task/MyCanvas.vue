@@ -1,6 +1,8 @@
 <script setup>
 import { defineProps, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch} from "vue";
 import {serverURL} from "@/api.js";
+import {useKeyBoardListener} from "../../../utils/keyboard_listener_utils.js";
+const {isCtrlPressed} = useKeyBoardListener()
 
 const props = defineProps({
   points: {
@@ -14,7 +16,12 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits( ['updateSelectedPoint']);
+const emit = defineEmits(
+    ['updateSelectedPoint',
+      'cursorWithinPointIndex',
+        'hideEditPanel',
+        'showEditPanel',
+    ]);
 
 const pointRadius = 4
 const canvasWidth = 500
@@ -33,13 +40,12 @@ let startY =0;
 let offsetX = canvasWidth / 2 - canvasCenter.x
 let offsetY = canvasHeight / 2 -canvasCenter.y;
 let isDragging = ref(false);
-let isCtrlPressed = false;
 const myCanvas = ref(null)
 let selectedPointIndex = ref(null)
 let draggingPointIndex = null;
 
 defineExpose({  // 暴露给父组件
-  selectedPointIndex,
+  // selectedPointIndex,
   updateCanvasCenter,
   refreshCanvas,
 })
@@ -153,7 +159,7 @@ function drawPoint(x, y, color) {
 const startDrag = (event) => {
   isDragging.value = true;
   // console.log('Drag started at:', getMousePos(event));
-  const current =getMousePos(event);
+  const current = getMousePos(event);
   startX = current.x
   startY = current.y
 
@@ -167,7 +173,7 @@ const dragging = (event) => {
   const mousePos = getMousePos(event)
   canvas.style.cursor = 'default';
 
-  if (draggingPointIndex !== null && isCtrlPressed) {
+  if (draggingPointIndex !== null && isCtrlPressed.value) {
     const { x: newX, y: newY } = getWorldCoords(mousePos.x, mousePos.y)
     // 虽然可以直接用下标操作props的引用传递对象，但是Vue官方并不推荐子组件修改props的内容，否则可能会让页面数据变得难以理解
     // 推荐的做法是通知父组件更新
@@ -185,18 +191,26 @@ const dragging = (event) => {
     return;
   }
 
+  let pointWithin = false
   // 判断鼠标是否在点上面
   props.points.forEach((point, index) => {
     const { x: canvasX, y: canvasY } = getCanvasCoords(point.x, point.y);
     if (isPointWithin(mousePos.x, mousePos.y, canvasX, canvasY)) {
       canvas.style.cursor = 'pointer';
-      selectedPointIndex.value = index;
+      pointWithin = true
+      // if(index !== selectedPointIndex.value)  {  // 没变化的时候不用发送
+      selectedPointIndex.value = index;  // 修改自身的值
+      emit('cursorWithinPointIndex', index)  // 通知父模板修改
+      // }
     }
   });
 
+  if(!pointWithin) { emit('hideEditPanel') }
+
   // 下面是拖动地图
-  if(isCtrlPressed) return;
+  if(isCtrlPressed.value) return;
   if (!isDragging.value) return;
+
   const currentX = mousePos.x
   const currentY = mousePos.y
 
@@ -245,21 +259,6 @@ onBeforeUnmount(() => {
 onMounted(()=> {
   drawMap(0,0)
 })
-const onkeydown = (event)=> {
-  if (event.ctrlKey) {
-    isCtrlPressed = true;
-    // hideEditPanel()
-  }
-}
-const onkeyup = ((event)=> {
-  if (!event.ctrlKey) { isCtrlPressed = false; }
-})
-
-// watch(canvasCenter, async (nx, ox)=> {
-//   // offsetX = canvasWidth / 2 - nx.x;
-//   // offsetY = canvasHeight / 2 - nx.y;
-//   drawMap(nx.x, nx.y)
-// })
 
 </script>
 <template>
@@ -269,8 +268,6 @@ const onkeyup = ((event)=> {
       tabindex="0"
       :width="canvasWidth"
       :height="canvasHeight"
-      @keydown="onkeydown"
-      @keyup="onkeyup"
       @mousedown="startDrag"
       @mousemove="dragging"
       @mouseup="endDrag"

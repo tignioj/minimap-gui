@@ -3,8 +3,7 @@ import {defineProps, onMounted, onUpdated, ref, watch} from "vue";
 import MoveMode from "@/components/task/MoveMode.vue";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
-import MyCanvas from "@/components/task/MyCanvas.vue";
-// const moveModes = ["normal", "fly", "jump", "swim"]
+import {copyObject} from "../../../utils/objutils.js";
 const props = defineProps({
   moveModes: {
     type: Array,
@@ -22,9 +21,14 @@ const yInput = ref(null)
 const pointType = ref(null)
 const pointMoveMode = ref(null)
 const pointAction = ref(null)
-
 const selectedPoint = defineModel('selectedPoint', { default: null, })
-
+defineExpose({
+  hideEditPanel,
+  showEditPanel
+})
+import {useMouse} from "../../../utils/mouse.js";
+// 自定义组合函数：响应式鼠标坐标，可以通过mouseClientX.value访问
+const {mouseClientX, mouseClientY} = useMouse()
 const emit = defineEmits(
     ['updateSelectedPoint',
       'deleteSelectedPoint',
@@ -47,21 +51,41 @@ function saveButton() {
   // props单向数据流: https://cn.vuejs.org/guide/components/props.html#one-way-data-flow
   // 如何自定义事件？ https://cn.vuejs.org/api/sfc-script-setup#defineprops-defineemits
   // 如何emit？ https://cn.vuejs.org/guide/components/events.html
-  const newPoint = JSON.parse(JSON.stringify(selectedPoint.value))
+  // const newPoint = JSON.parse(JSON.stringify(selectedPoint.value))
+  const newPoint = copyObject(selectedPoint.value)
   newPoint.x = parseFloat(xInput.value)
   newPoint.y = parseFloat(yInput.value)
   newPoint.type = pointType.value
   newPoint.action = pointAction.value
   newPoint.move_mode = pointMoveMode.value
   emit('updateSelectedPoint',newPoint)
+  hideEditPanel()
+}
+
+function showEditPanel() {
+  editPanel.value.style.left = `${mouseClientX.value}px`;
+  editPanel.value.style.top = `${mouseClientY.value}px`;
+  editPanel.value.style.display = 'block';
+}
+function hideEditPanel() {
+  editPanel.value.style.display = 'none'
 }
 function deleteButton() {
   emit('deleteSelectedPoint')
-  editPanel.value.style.display = 'none'
+  hideEditPanel()
 }
-function cancelButton() { editPanel.value.style.display = 'none' }
-function newButton() { emit('newSelectedPoint') }
-function playBackFromHereButton() { emit('playBackFromHere') }
+function cancelButton() {
+  editPanel.value.style.display = 'none'
+  hideEditPanel()
+}
+function newButton() {
+  emit('newSelectedPoint')
+  hideEditPanel()
+}
+function playBackFromHereButton() {
+  emit('playBackFromHere')
+  hideEditPanel()
+}
 watch(selectedPoint, async (nv,ov)=> {
   if (selectedPoint) {
     xInput.value = nv.x
