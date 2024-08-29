@@ -104,10 +104,9 @@ watch(selectedPoint, async (nv,ov)=> {
     <label for="y">Y: </label><input type="number" v-model="yInput" /><br />
     <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
     <!-- 如果v-model:hello="world" 则用defineModel('hello')读取word的数据-->
-    <PointType :point-type="pointType" @pointTypeChange="(val)=> pointType=val" :name="'type'" />
-<!--    <PointType :point-type="pointType" @pointTypeChange="pointTypeChange" :name="'type'" />-->
-    <MoveMode :point-move-mode="pointMoveMode" @moveModeChange="(val)=>pointMoveMode=val" :name="'moveMode'" :move-modes="moveModes"/>
-    <PointAction :point-action="pointAction" @actionChange="(val)=>pointAction=val" :name="'action'" :actions="actions" />
+    <PointType v-model:point-type="pointType" :name="'type'" />
+    <MoveMode v-model:point-move-mode="pointMoveMode" :name="'moveMode'" :move-modes="moveModes"/>
+    <PointAction v-model:point-action="pointAction" :name="'action'" :actions="actions" />
     <button @click="saveButton">保存</button>
     <button @click="deleteButton">删除</button>
     <button @click="cancelButton">取消</button>
