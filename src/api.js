@@ -41,7 +41,7 @@ const getConfigURL = `${serverURL}/config/get`;
 
 // 监听事件
 const key_event = 'key_event';  // 监听服务器的快捷键
-const playback_event = 'key_event';  // 监听回放事件
+const playback_event = 'playback_event';  // 监听回放事件
 
 export {
     serverURL,
