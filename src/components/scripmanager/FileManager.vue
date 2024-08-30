@@ -8,12 +8,14 @@ const fileStructure = ref([
   {name: '甜甜花', 'files': ['1.json', '2.json']},
   {name: '风车菊', 'files': ['3.json', '4.json']},
 ])
-// const todoSelect = defineModel('todoSelect', {
-//   default: null  // 设置默认值为null以便于无清单时, 选中”暂无清单“选项
-// })
-
+// 文件过滤功能
+const fileSearchInput = ref('')
+// 设置默认值为null以便于无清单时, 选中”暂无清单“选项
 const todoSelect = ref(null)
+// const todoList = defineModel('todoList', { default: [] })
 const todoList = defineModel('todoList', { default: [] })
+const selectedFolder = ref([])
+const selectedFiles = ref([])
 
 // 一旦检测到todoList长度发生变化，则选择默认的第一个
 watch(()=> todoList.value?.length, (nv, ov)=> {
@@ -21,28 +23,33 @@ watch(()=> todoList.value?.length, (nv, ov)=> {
     if(todoList.value.length >0) {
       todoSelect.value = todoList.value[0].name
     }
+    else { todoSelect.value = null }
   }
 })
+const filteredFiles = ref([]);
 
-// const todoList = inject('todoList')
-// const todoList = ref([])
-const selectedFolder = ref([])
-const selectedFiles = ref([])
+watch(fileSearchInput, (nv, ov) => {
+  if (nv !== ov) {
+    filteredFiles.value = fileStructure.value
+        .map(category => ({
+          name: category.name,
+          files: category.files.filter(file => file.includes(nv))
+        }))
+        .filter(category => category.files.length > 0);
+  }
+});
 
-onMounted(()=> {
-  console.log('fm mounted', todoList.value)
-  fetch(pathListListURL).then(res => {
-    if(!res.ok) throw new Error("网络异常");
-    return res.json()
-  }).then((data)=> {
-    if(data.success) {
-      fileStructure.value = data.data
-      console.log(fileStructure.value)
-    } else {
-      console.log('加载失败')
-    }
-  }).catch(err=> errorMsg(err))
-})
+fetch(pathListListURL).then(res => {
+  if(!res.ok) throw new Error("网络异常");
+  return res.json()
+}).then((data)=> {
+  if(data.success) {
+    fileStructure.value = data.data
+    console.log(fileStructure.value)
+  } else {
+    console.log('加载失败')
+  }
+}).catch(err=> errorMsg(err))
 
 function toggleFolder(folderName) {
   if (openFolders.value.includes(folderName)) {
@@ -109,11 +116,11 @@ const addToListBtn = () => {
 </script>
 
 <template>
-
   <div class="file-management">
     <!-- 文件管理功能 -->
-    <input type="text" id="fileSearchInput" placeholder="搜索文件">
-    <label for="todoSelect">请选择清单</label>
+    <input type="text" v-model="fileSearchInput" placeholder="搜索文件">
+    <br/>
+    <label for="todoSelect">已选择{{ selectedFiles.length }}个文件</label>
     <select v-model="todoSelect" :disabled="todoList.length===0">
 <!--      当数据为空的时候，如果要显示"暂无清单"选项，必须设置一个value, 否则v-mode可能无法选中该值-->
 <!--      当设置为 :value="null"时，todoSelect=ref(null) 可以正常选择-->
@@ -125,13 +132,15 @@ const addToListBtn = () => {
         {{ todo.name }}
       </option>
     </select>
-
     <button @click="addToListBtn">添加到清单</button>
-    <div id="fileTreeContainer">
-      <div v-for="(folder, index) in fileStructure" :key="index" class="folder">
+    <div v-if="fileSearchInput.length > 0">
+
+
+      <div v-for="(folder, index) in filteredFiles" :key="index" class="folder">
         <div>
           <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
-          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}
+          <!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
+          {{ folder.name }} {{ folder.files.length  }}
           <button class="toggleFolderBtn" @click="toggleFolder(folder.name)"> 显示列表 </button>
         </div>
         <ul v-if="openFolders.includes(folder.name)">
@@ -145,6 +154,35 @@ const addToListBtn = () => {
           </li>
         </ul>
       </div>
+
+    </div>
+
+
+
+    <div v-else >
+
+
+      <div v-for="(folder, index) in fileStructure" :key="index" class="folder">
+        <div>
+          <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
+<!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
+          {{ folder.name }} {{ folder.files.length  }}
+          <button class="toggleFolderBtn" @click="toggleFolder(folder.name)"> 显示列表 </button>
+        </div>
+        <ul v-if="openFolders.includes(folder.name)">
+          <li v-for="fileName in folder.files" :key="fileName">
+            <input type="checkbox" class="file-checkbox"
+                   :value="fileName"
+                   @change="selectFile($event, fileName)"
+                   :checked="selectedFiles.includes(fileName)"/>
+            {{ fileName }}
+            <button class="editBtn" @click="editFile(fileName)">编辑</button>
+          </li>
+        </ul>
+      </div>
+
+
+
     </div>
   </div>
 </template>
