@@ -1,23 +1,36 @@
 <script setup>
 // 展示文件树
-import {onMounted, ref, watch} from "vue";
+import {inject, onMounted, ref, watch} from "vue";
+
 import {pathListListURL} from "@/api.js";
 const openFolders =ref([])
 const fileStructure = ref([
   {name: '甜甜花', 'files': ['1.json', '2.json']},
   {name: '风车菊', 'files': ['3.json', '4.json']},
 ])
-const todoSelect = defineModel('todoSelect', {
-  default: null  // 设置默认值为null以便于无清单时, 选中”暂无清单“选项
+// const todoSelect = defineModel('todoSelect', {
+//   default: null  // 设置默认值为null以便于无清单时, 选中”暂无清单“选项
+// })
+
+const todoSelect = ref(null)
+const todoList = defineModel('todoList', { default: [] })
+
+// 一旦检测到todoList长度发生变化，则选择默认的第一个
+watch(()=> todoList.value?.length, (nv, ov)=> {
+  if(nv!== ov) {
+    if(todoList.value.length >0) {
+      todoSelect.value = todoList.value[0].name
+    }
+  }
 })
-const todoList = defineModel('todoList', {
-  default: []
-})
+
+// const todoList = inject('todoList')
 // const todoList = ref([])
 const selectedFolder = ref([])
 const selectedFiles = ref([])
 
 onMounted(()=> {
+  console.log('fm mounted', todoList.value)
   fetch(pathListListURL).then(res => {
     if(!res.ok) throw new Error("网络异常");
     return res.json()
@@ -79,7 +92,16 @@ function selectFile(event, file) {
 const emit = defineEmits(['addToList'])
 const addToListBtn = () => {
   const todoItem  = todoSelect.value
-  emit('addToList', todoItem, selectedFiles.value)
+  const files = selectedFiles.value
+  // emit('addToList', todoItem, selectedFiles.value)
+  console.log(`FileManager组件往${todoItem}, 添加${files}`)
+  todoList.value.forEach(item => {
+    if(item.name === todoItem) {
+      files.forEach(file=> {
+        item.files.push(file)
+      })
+    }
+  })
 }
 </script>
 
