@@ -9,7 +9,8 @@ const todoRunning = ref(false)
 defineExpose({
   todoList,
   // todoSelect,
-  addFilesToList
+  addFilesToList,
+  setTodoRunning
 })
 
 function addFilesToList(todoItem, files) {
@@ -221,5 +222,9 @@ function errorMsg(msg) {
 </template>
 
 <style scoped>
-
+.list-management {
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 5px;
+}
 </style>
