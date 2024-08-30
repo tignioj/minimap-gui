@@ -28,14 +28,31 @@ watch(()=> todoList.value?.length, (nv, ov)=> {
 })
 const filteredFiles = ref([]);
 
+// 文件过滤
+// watch(fileSearchInput, (nv, ov) => {
+//   if (nv !== ov) {
+//     filteredFiles.value = fileStructure.value
+//         .map(category => ({
+//           name: category.name,
+//           files: category.files.filter(file => file.includes(nv))
+//         }))
+//         .filter(category => category.files.length > 0);
+//   }
+// });
 watch(fileSearchInput, (nv, ov) => {
   if (nv !== ov) {
-    filteredFiles.value = fileStructure.value
-        .map(category => ({
-          name: category.name,
-          files: category.files.filter(file => file.includes(nv))
-        }))
-        .filter(category => category.files.length > 0);
+    if (nv.trim() === '') {
+      // 如果输入为空字符串，显示全部文件
+      filteredFiles.value = fileStructure.value;
+    } else {
+      // 过滤文件
+      filteredFiles.value = fileStructure.value
+          .map(category => ({
+            name: category.name,
+            files: category.files.filter(file => file.includes(nv))
+          }))
+          .filter(category => category.files.length > 0);
+    }
   }
 });
 
@@ -101,6 +118,7 @@ const addToListBtn = () => {
   const todoItem  = todoSelect.value
   if(!todoItem) { return}
   const files = selectedFiles.value
+  if(files.length < 1) return;
   console.log(`FileManager组件往${todoItem}, 添加${files}`)
   emit('addFilesToList', todoItem, selectedFiles.value)
 
@@ -133,13 +151,16 @@ const addToListBtn = () => {
       </option>
     </select>
     <button @click="addToListBtn">添加到清单</button>
-      <div v-for="(folder, index) in (fileSearchInput>0?filteredFiles: fileStructure)" :key="index" class="folder">
+      <div v-for="(folder, index) in (fileSearchInput.length >0?filteredFiles: fileStructure)" :key="index" class="folder">
         <div>
           <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
 <!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
           {{ folder.name }} {{ folder.files.length  }}
-          <button class="toggleFolderBtn" @click="toggleFolder(folder.name)"> 显示列表 </button>
+          <button class="toggleFolderBtn" @click="toggleFolder(folder.name)">
+            {{ openFolders.includes(folder.name) ? '收起列表': '显示列表'}}
+          </button>
         </div>
+
         <ul v-if="openFolders.includes(folder.name)">
           <li v-for="fileName in folder.files" :key="fileName">
             <input type="checkbox" class="file-checkbox"
