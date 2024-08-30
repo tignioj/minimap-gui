@@ -10,3 +10,7 @@
 export function copyObject(sourceObject) {
     return JSON.parse(JSON.stringify(sourceObject))
 }
+
+export function isUndefinedNullOrEmpty(value) {
+    return value === undefined || value === null || value === "";
+}
