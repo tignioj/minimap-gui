@@ -133,36 +133,7 @@ const addToListBtn = () => {
       </option>
     </select>
     <button @click="addToListBtn">添加到清单</button>
-    <div v-if="fileSearchInput.length > 0">
-
-
-      <div v-for="(folder, index) in filteredFiles" :key="index" class="folder">
-        <div>
-          <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
-          <!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
-          {{ folder.name }} {{ folder.files.length  }}
-          <button class="toggleFolderBtn" @click="toggleFolder(folder.name)"> 显示列表 </button>
-        </div>
-        <ul v-if="openFolders.includes(folder.name)">
-          <li v-for="fileName in folder.files" :key="fileName">
-            <input type="checkbox" class="file-checkbox"
-                   :value="fileName"
-                   @change="selectFile($event, fileName)"
-                   :checked="selectedFiles.includes(fileName)"/>
-            {{ fileName }}
-            <button class="editBtn" @click="editFile(fileName)">编辑</button>
-          </li>
-        </ul>
-      </div>
-
-    </div>
-
-
-
-    <div v-else >
-
-
-      <div v-for="(folder, index) in fileStructure" :key="index" class="folder">
+      <div v-for="(folder, index) in (fileSearchInput>0?filteredFiles: fileStructure)" :key="index" class="folder">
         <div>
           <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
 <!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
@@ -180,16 +151,17 @@ const addToListBtn = () => {
           </li>
         </ul>
       </div>
-
-
-
     </div>
-  </div>
 </template>
 
 <style scoped>
 .file-management {
-  width: 50%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 5px;
+}
+
+.file-management {
 }
 .file-management ul {
   display: block;
