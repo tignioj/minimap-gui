@@ -29,15 +29,13 @@ const todoList = ref([]); // 初始化为空数组
 // })
 
 onMounted(()=> {
-  console.log('page mounted', todoList.value)
-
   // 此时与子组件监听同一个todoList
   todoList.value = todoListRef.value.todoList
 
   // 如果子组件调用了todoList.value = "xxx"的赋值，则会触发watch
-  watch(()=> todoListRef.value.todoList, ()=> {
-      todoList.value = todoListRef.value.todoList
-  })
+  // watch(()=> todoListRef.value.todoList, ()=> {
+  //     todoList.value = todoListRef.value.todoList
+  // })
 
   console.log('page todoList updated')
 

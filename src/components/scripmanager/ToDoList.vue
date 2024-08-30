@@ -2,6 +2,7 @@
 import {onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
+import {isUndefinedNullOrEmpty} from "../../../utils/objutils.js";
 const openTodos =ref([])
 const todoList = ref([])
 const todoRunning = ref(false)
@@ -11,16 +12,14 @@ defineExpose({
   addFilesToList
 })
 
-onMounted(()=> {
-  console.log('todo mounted')
-})
-
 function addFilesToList(todoItem, files) {
+  if(!files || isUndefinedNullOrEmpty(todoItem)) return;
+  if(files.length < 1) return
   console.log(`ToDo组件往${todoItem}, 添加${files}`)
   todoList.value.forEach(item => {
     if(item.name === todoItem) {
       files.forEach(file=> {
-        item.files.push(file)
+        if(!item.files.includes(file)) item.files.push(file)
       })
     }
   })
@@ -66,7 +65,7 @@ function toggleTodo(todoName) {
 
 const removeFileFromTodo = (todoItem, fileName) => {
   todoList.value.forEach(item => {
-    if(item.name === item.name) {
+    if(item.name === todoItem) {
       item.files = item.files.filter(file => file !== fileName)
     }
   })
@@ -106,16 +105,16 @@ function deleteTodo() {
   info("确认删除")
   // 注意filter这种删除方式会丢失原来的对象。如果其他组件中监听了旧对象，数据将不同步。
   // 除非其他组件使用watch监听了todoList.value每次更换对象的状态
-  todoList.value = todoList.value.filter(item => !item.enable)
+  // todoList.value = todoList.value.filter(item => !item.enable)
 
   // splice不会丢失原来的对象
-  // for(let i=0; i< todoList.value.length; i++) {
-  //   const item = todoList.value[i]
-  //   if(item.enable) {
-  //     todoList.value.splice(i, 1)
-  //     i--;
-  //   }
-  // }
+  for(let i=0; i< todoList.value.length; i++) {
+    const item = todoList.value[i]
+    if(item.enable) {
+      todoList.value.splice(i, 1)
+      i--;
+    }
+  }
 }
 function stopTodo() {
   fetch(todoStopURL) .then(response => {
