@@ -52,7 +52,7 @@ onMounted(()=> {
     if (data && data.result)  {
       info(data.msg)
       if (data.msg === "结束执行清单了") {
-        // setTodoRunning(false)
+        todoListRef.value.setTodoRunning(false)
       }
     }
     else errorMsg(data.msg)
@@ -69,22 +69,7 @@ onMounted(()=> {
     msgElement.innerText = text;
     msgElement.classList.add('error-msg')
   }
-  function isUndefinedNullOrEmpty(value) {
-    return value === undefined || value === null || value === "";
-  }
 
-// 文件过滤功能
-  document.getElementById('fileSearchInput').addEventListener('input', function(e) {
-    const searchText = e.target.value.toLowerCase();
-    document.querySelectorAll('.file-checkbox').forEach(file => {
-      const fileName = file.parentElement.textContent.toLowerCase();
-      if (fileName.includes(searchText)) {
-        file.parentElement.style.display = 'block';
-      } else {
-        file.parentElement.style.display = 'none';
-      }
-    });
-  });
 })
 
 const addFilesToList = (todoItem, files) => {
@@ -125,18 +110,8 @@ const addFilesToList = (todoItem, files) => {
 
 <style scoped>
 .container {
-  display: flex;
+  display: block;
 }
-.file-info, .list-management, .file-management {
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin: 5px;
-}
-
-.list-management {
-  width: 50%;
-}
-
 .error-msg {
   color: red;
 }
