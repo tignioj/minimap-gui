@@ -1,17 +1,28 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 const openTodos =ref([])
 // const todoList = defineModel('todoList')
-const todoSelect = ref()
+const todoSelect = ref('')
 const todoList = ref([])
 const todoRunning = ref(false)
 defineExpose({
   todoList,
-  todoSelect
+  todoSelect,
+  addToList
 })
 
+function addToList(todoItem, files) {
+  console.log(`ToDo组件往${todoItem}, 添加${files}`)
+  todoList.value.forEach(item => {
+    if(item.name === todoItem) {
+      files.forEach(file=> {
+        item.files.push(file)
+      })
+    }
+  })
+}
 fetch(todoGetURL).then(res => {
   // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
   if(!res.ok) {

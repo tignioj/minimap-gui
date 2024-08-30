@@ -1,6 +1,6 @@
 <script setup>
 // 展示文件树
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {pathListListURL} from "@/api.js";
 const openFolders =ref([])
 const fileStructure = ref([

@@ -1,5 +1,6 @@
 <script setup>
 
+// TODO 提取socketio
 
 import {onMounted, ref, watch} from "vue";
 import {useRoute,useRouter} from "vue-router";
@@ -8,17 +9,21 @@ import {io} from "socket.io-client";
 import FileManager from "@/components/scripmanager/FileManager.vue";
 import ToDoList from "@/components/scripmanager/ToDoList.vue";
 const router = useRouter()
-const todoListRef = ref()
-const todoList = ref()
 const todoSelect = ref()
-watch(()=> {if(todoListRef.value) return todoListRef.value.todoList},
-    async (nv, ov)=> {
-      console.log(nv)
-      todoList.value = nv
-      console.log('父组件检测到子组件todoList修改', nv)
-    })
 
-watch(()=> {if(todoListRef.value) return todoListRef.value.todoSelect}, async (nv, ov)=> {
+const todoListRef = ref(null);  // 初始化为 null
+const todoList = ref([]);       // 初始化为空数组
+
+// 监控 todoListRef.value.todoList 的变化
+// 实际上只会检测到 todoListRef.value.todoList 初始化被赋值的时刻todoList对象发生变化)
+// 后续对todoList对象内部的所有改动不加deep:true时是检测不到的，
+// 因为todoListRef.value.todoList本身对象的地址没有发生
+watch(() => todoListRef.value?.todoList, (nv, ov) => {
+    todoList.value = nv;
+    console.log('父组件检测到子组件 todoList 修改', nv);
+})
+
+watch(()=> todoListRef.value?.todoSelect, async (nv, ov)=> {
   console.log('父组件检测到子组件todoSelect修改', nv)
   todoSelect.value = nv
 })
@@ -73,14 +78,9 @@ onMounted(()=> {
 })
 
 const addToList = (todoItem, files) => {
-  // 这里通过引用对象直接修改了子组件的数据？
-  todoList.value.forEach(item => {
-    if(item.name === todoItem) {
-      files.forEach(file=> {
-        item.files.push(file)
-      })
-    }
-  })
+  // 通知子组件更新
+  console.log("通知子组件更新", todoItem)
+  todoListRef.value?.addToList(todoItem, files);
 }
 
 </script>
@@ -88,11 +88,17 @@ const addToList = (todoItem, files) => {
 <template>
   <div class="container">
     <ToDoList ref="todoListRef" />
+
+<!--    <FileManager-->
+<!--        @add-to-list="todoList"-->
+<!--        v-model:todoSelect="todoSelect"-->
+<!--        v-model:todoList="todoList" />-->
+
+<!--    太香了吧，可以直接访问另一子组件暴露的方法-->
     <FileManager
-        @add-to-list="addToList"
+        @add-to-list="todoListRef?.addToList"
         v-model:todoSelect="todoSelect"
-        v-model:todoList="todoList"
-    />
+        v-model:todoList="todoList" />
   </div>
   <div>
     <p id="msg"></p>
