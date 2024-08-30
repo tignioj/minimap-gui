@@ -212,7 +212,7 @@ function errorMsg(msg) {
         <ul v-if="openTodos.includes(item.name)">
           <li v-for="file in item.files" :key="file">
             {{file}}
-            <button @click="router.push('/test')">编辑</button>
+            <button @click="router.push('/task/edit/' + item.name)">编辑</button>
             <button @click="removeFileFromTodo(item.name, file)">删除</button>
           </li>
         </ul>

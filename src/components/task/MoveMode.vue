@@ -1,64 +1,18 @@
 <script setup>
-import {defineProps, onUpdated} from 'vue';
+import {defineProps, inject, onUpdated} from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import {
-  faWalking,
-  faPlane,
-  faArrowTrendUp,
-  faWater,
-  faClover,
-  faPlaneArrival,
-  faMapMarkerAlt, faBullseye, faQuestion, faExpand
-} from '@fortawesome/free-solid-svg-icons';
+import {injectKeyCNTextMap, injectKeyIconMap, injectKeyPointMoveModes} from "@/keys.js";
 
 // 定义可接收的 props
-const props = defineProps({
-  moveModes: {
-    type: Array,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  // pointMoveMode: {
-  //   type: String,
-  // }
-});
-
 const pointMoveMode = defineModel('pointMoveMode', {
   default: 'normal'
 })
-
-// 定义图标映射
-const iconMapping = {
-  'normal': faWalking,
-  'fly': faPlane,
-  'jump': faArrowTrendUp,
-  'swim': faWater,
-  'up_down_grab_leaf': faClover,
-  'stop_flying': faPlaneArrival,
-  'path': faMapMarkerAlt,
-  'target': faBullseye,
-  'nahida_collect': faExpand,
-  '': faQuestion,
-  null: faQuestion,
-  undefined: faQuestion,
-};
-
-const cnMap = {
-  'normal': '普通',
-  'fly': '飞行',
-  'jump': '跳跃',
-  'swim': '游泳',
-  'up_down_grab_leaf': '四叶印',
-  'path':'路径',
-  'target': '目标',
-  'nahida_collect':'纳西妲采集'
-}
+const moveModes = inject(injectKeyPointMoveModes)
+const iconMapping = inject(injectKeyIconMap)
+const cnTextMap = inject(injectKeyCNTextMap)
 
 // 处理传入的 moveModes，生成每个模式的配置
-const modes = props.moveModes.map((mode, index) => ({
+const modes = moveModes.map((mode, index) => ({
   value: mode.toLowerCase(), // 生成 value
   label: mode, // 使用传入的标签
   icon: iconMapping[mode], // 获取对应的图标
@@ -66,7 +20,6 @@ const modes = props.moveModes.map((mode, index) => ({
 }));
 
 </script>
-
 <template>
   <fieldset>
     <legend>行走方式</legend>
@@ -75,12 +28,11 @@ const modes = props.moveModes.map((mode, index) => ({
 <!--        是否有更简洁的方式添加Node？-->
         <input
             type="radio"
-            :name="name"
             :value="mode.value"
             :checked="pointMoveMode === mode.value"
             @click="$emit('update:pointMoveMode', mode.value)"
         />
-        <label :for="mode.id">{{ cnMap[mode.label] }}</label>
+        <label :for="mode.id">{{ cnTextMap[mode.label] }}</label>
         <font-awesome-icon :icon="mode.icon"/>
       </div>
     </div>
@@ -92,7 +44,6 @@ const modes = props.moveModes.map((mode, index) => ({
   display: flex;
   flex-wrap: wrap; /* 允许换行 */
 }
-
 .item {
   margin-right: 5px; /* 间距，可以根据需要调整 */
 }

@@ -1,19 +1,9 @@
 <script setup>
-import {defineProps, onMounted, onUpdated, ref, watch} from "vue";
+import {defineProps, inject, onMounted, onUpdated, ref, watch} from "vue";
 import MoveMode from "@/components/task/MoveMode.vue";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
 import {copyObject} from "../../../utils/objutils.js";
-const props = defineProps({
-  moveModes: {
-    type: Array,
-    required: true
-  },
-  actions: {
-    type: Array,
-    required: true,
-  }
-});
 const editPanel=ref(null)
 const xInput = ref(null)
 const yInput = ref(null)
@@ -28,6 +18,7 @@ defineExpose({
   showEditPanel
 })
 import {useMouse} from "../../../utils/mouse.js";
+import {injectKeyPointActions, injectKeyPointMoveModes} from "@/keys.js";
 // 自定义组合函数：响应式鼠标坐标，可以通过mouseClientX.value访问
 const {mousePageX, mousePageY} = useMouse()
 const emit = defineEmits(
@@ -105,8 +96,8 @@ watch(selectedPoint, async (nv,ov)=> {
     <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
     <!-- 如果v-model:hello="world" 则用defineModel('hello')读取word的数据-->
     <PointType v-model:point-type="pointType" :name="'type'" />
-    <MoveMode v-model:point-move-mode="pointMoveMode" :name="'moveMode'" :move-modes="moveModes"/>
-    <PointAction v-model:point-action="pointAction" :name="'action'" :actions="actions" />
+    <MoveMode v-model:point-move-mode="pointMoveMode" />
+    <PointAction v-model:point-action="pointAction"/>
     <button @click="saveButton">保存</button>
     <button @click="deleteButton">删除</button>
     <button @click="cancelButton">取消</button>

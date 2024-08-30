@@ -1,12 +1,19 @@
 <script setup>
 import {key_event, playback_event, serverURL,playBackStopURL, playBackURL, positionURL, socketURL} from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated, watch, onUnmounted} from "vue";
+import {onMounted, ref, onUpdated, watch, onUnmounted, provide} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
 import PointList from "@/components/task/PointList.vue";
 import CountrySelect from "@/components/task/CountrySelect.vue";
+import {
+  injectKeyCNTextMap,
+  injectKeyIconMap,
+  injectKeyPointActions,
+  injectKeyPointMoveModes,
+  injectKeyPointTypes, injectKeyRegions
+} from "../keys.js"
 import {
   faArrowTrendUp, faBullseye,
   faClover, faExpand,
@@ -33,14 +40,40 @@ const iconMapping = {
   'nahida_collect': faExpand,
   '': faQuestion,
   undefined: faQuestion,
+  null: faQuestion,
 };
+
+const cnTextMap = {
+  'normal': '普通',
+  'fly': '飞行',
+  'jump': '跳跃',
+  'swim': '游泳',
+  'up_down_grab_leaf': '四叶印',
+  'path':'路径',
+  'target': '目标',
+  'nahida_collect':'纳西妲采集',
+  '': '无',
+  'stop_flying': '下落攻击'
+}
 const actions=["", "stop_flying", "nahida_collect"];
+const pointTypes=["path", "target"];
+const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
+const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹"];
+const executor = ref('CollectPathExecutor')
+
+provide(injectKeyIconMap, iconMapping);
+provide(injectKeyPointMoveModes, moveModes);
+provide(injectKeyPointTypes, pointTypes);
+provide(injectKeyPointActions, actions)
+provide(injectKeyCNTextMap, cnTextMap)
+provide(injectKeyRegions, regions)
+
 const playBackButton = ref(null)
 // 加载数据
 let points = ref([])
 let selectedPointIndex = ref(null);
 const refCanvas = ref(null)
-const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
+
 const selectedPoint = ref(null)
 const isPlaying = ref(false)
 const isRecording = ref(false)
@@ -50,7 +83,7 @@ const msgElement = ref(null)
 
 const userXInput = ref(0)
 const userYInput = ref(0)
-const countrySelect = ref(null)
+const countrySelect = ref(regions[0])
 
 const editPanel = ref(null)  // 引用组件
 const editPanelPreset = ref(null)
@@ -111,13 +144,13 @@ function setPlayingRecord(playing) {
 }
 function getPathObject() {
   const name = nameInput.value
-  const country = countrySelect.value.countrySelect
+  const country = countrySelect.value
   const anchorName = anchorNameInput.value
   return {
     name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
     anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
-    country: isUndefinedNullOrEmpty(countrySelect) ? '蒙德': country,
-    executor: 'CollectPathExecutor',
+    country: isUndefinedNullOrEmpty(country) ? '蒙德': country,
+    executor: executor.value,
     positions: points.value
   };
 }
@@ -161,7 +194,6 @@ onMounted(()=> {
     if (!file) {
       return;
     }
-
     // 读取文件内容
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -180,19 +212,9 @@ onMounted(()=> {
         errorMsg('json解析错误:', error);
       }
     };
-
     reader.readAsText(file);
   }
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-
-
-
-  // playBackFromHereButton.addEventListener('click', (event) => {
-  //   if (isPlayingRecord) return
-  //   if (!isUndefinedNullOrEmpty(selectedPointIndex.value)) {
-  //     playBack(selectedPointIndex.value)
-  //   }
-  // })
 
   const socket = io(socketURL);
   socket.on('connect', function() {
@@ -416,7 +438,7 @@ onUnmounted(()=> {
               :isRecording="isRecording"
               :selected-point-index="selectedPointIndex"
               :points="points"/>
-    <PointList v-model:selected-point-index="selectedPointIndex" :points="points" :iconMapping="iconMapping"/>
+    <PointList v-model:selected-point-index="selectedPointIndex" :points="points"/>
   </div>
   <EditPanel
       ref="editPanel"
@@ -426,7 +448,7 @@ onUnmounted(()=> {
       @playBackFromHere="playBackFromHere"
       v-model:selectedPoint="selectedPoint"
       v-model:isPlaing="isPlaying"
-      :move-modes="moveModes" :actions="actions"/>
+     />
   <div>
     <div ref="msgElement">路径记录-回放</div>
     <button @click="startRecordButton">开始记录</button>
@@ -443,7 +465,7 @@ onUnmounted(()=> {
   <div>
     <label>名称<input type="text" placeholder="甜甜花_清泉镇左下角" v-model="nameInput" /></label>
     <label>传送点所在国家</label>
-    <CountrySelect ref="countrySelect" />
+    <CountrySelect v-model="countrySelect" />
     <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>
     <button ref="playBackButton" @click="playBackClick" >回放</button>
   </div>
@@ -462,9 +484,7 @@ onUnmounted(()=> {
   <Manual/>
 </template>
 <style scoped>
-canvas {
-  border: 1px solid black;
-}
+
 .file-input-wrapper {
   display: inline-block;
   position: relative;
@@ -483,15 +503,11 @@ canvas {
   cursor: pointer;
   /*z-index: 1; !* Ensure file input is on top of other elements *!*/
 }
-.position { display: flex; align-items: center; }
 .icon { margin-right: 10px; }
-.radio-btn { margin-right: 10px; }
-
 #head {
   display: flex;
   align-items: flex-start;
 }
-
 .error-msg {
   color:red;
 }

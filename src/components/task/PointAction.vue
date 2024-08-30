@@ -1,45 +1,29 @@
 <script setup>
-import { defineProps } from 'vue';
+import {defineProps, inject} from 'vue';
 import {
   faBan,
   faExpand,
   faPlaneArrival, faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {injectKeyCNTextMap, injectKeyPointActions} from "@/keys.js";
 const iconMapping = {
   'stop_flying': faPlaneArrival,
   '': faBan,
   'nahida_collect': faExpand,
   undefined: faQuestion,
 };
-
-const props = defineProps({
-  actions: {
-    type: Array,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  // pointAction: {
-  //   type: String
-  // }
-});
 const pointAction = defineModel('pointAction', {
   default: ""
 })
+const actions = inject(injectKeyPointActions)
+const cnTextMap = inject(injectKeyCNTextMap)
 
-const cnMap = {
-  'nahida_collect':'纳西妲采集',
-  'stop_flying': '下落攻击',
-  '': '无'
-}
 // 处理传入的 moveModes，生成每个模式的配置
-const actions1 = props.actions.map((mode, index) => ({
+const actions1 = actions.map((mode, index) => ({
   value: mode.toLowerCase(), // 生成 value
   label: mode, // 使用传入的标签
-  text: cnMap[mode],
+  text: cnTextMap[mode],
   icon: iconMapping[mode], // 获取对应的图标
   checked: index === 0 // 默认选中第一个
 }));
@@ -51,7 +35,6 @@ const actions1 = props.actions.map((mode, index) => ({
       <div v-for="(action, index) in actions1" :key="index" class="item">
         <input
             type="radio"
-            :name="name"
             :value="action.value"
             :checked="action.value === pointAction"
             @click="$emit('update:pointAction', action.value)"
