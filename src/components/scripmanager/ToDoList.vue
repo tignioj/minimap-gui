@@ -8,14 +8,14 @@ const todoRunning = ref(false)
 defineExpose({
   todoList,
   // todoSelect,
-  addToList
+  addFilesToList
 })
 
 onMounted(()=> {
   console.log('todo mounted')
 })
 
-function addToList(todoItem, files) {
+function addFilesToList(todoItem, files) {
   console.log(`ToDo组件往${todoItem}, 添加${files}`)
   todoList.value.forEach(item => {
     if(item.name === todoItem) {
@@ -25,6 +25,7 @@ function addToList(todoItem, files) {
     }
   })
 }
+
 fetch(todoGetURL).then(res => {
   // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
   if(!res.ok) {

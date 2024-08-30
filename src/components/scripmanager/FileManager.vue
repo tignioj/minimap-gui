@@ -89,19 +89,22 @@ function selectFile(event, file) {
   }
 }
 
-const emit = defineEmits(['addToList'])
+const emit = defineEmits(['addFilesToList'])
 const addToListBtn = () => {
   const todoItem  = todoSelect.value
+  if(!todoItem) { return}
   const files = selectedFiles.value
-  // emit('addToList', todoItem, selectedFiles.value)
   console.log(`FileManager组件往${todoItem}, 添加${files}`)
-  todoList.value.forEach(item => {
-    if(item.name === todoItem) {
-      files.forEach(file=> {
-        item.files.push(file)
-      })
-    }
-  })
+  emit('addFilesToList', todoItem, selectedFiles.value)
+
+  // 不要直接操作不属于自己的数据源, 而是通过通知的方式
+  // todoList.value.forEach(item => {
+  //   if(item.name === todoItem) {
+  //     files.forEach(file=> {
+  //       item.files.push(file)
+  //     })
+  //   }
+  // })
 }
 </script>
 

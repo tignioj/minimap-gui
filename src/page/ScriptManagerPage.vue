@@ -89,10 +89,10 @@ onMounted(()=> {
   });
 })
 
-const addToList = (todoItem, files) => {
+const addFilesToList = (todoItem, files) => {
   // 通知子组件更新
-  console.log("通知子组件更新", todoItem)
-  todoListRef.value?.addToList(todoItem, files);
+  console.log("调用子组件暴露的添加方法,添加到", todoItem)
+  todoListRef.value?.addFilesToList(todoItem, files);
 }
 
 </script>
@@ -101,7 +101,7 @@ const addToList = (todoItem, files) => {
   <div class="container">
     <ToDoList ref="todoListRef" />
     <FileManager
-        @add-to-list="addToList"
+        @add-files-to-list="addFilesToList"
         v-model:todoList="todoList" />
 
 <!--    太香了吧，可以直接访问另一子组件暴露的方法-->
