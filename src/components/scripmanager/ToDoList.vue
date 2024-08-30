@@ -3,14 +3,16 @@ import {onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 const openTodos =ref([])
-// const todoList = defineModel('todoList')
-const todoSelect = ref('')
 const todoList = ref([])
 const todoRunning = ref(false)
 defineExpose({
   todoList,
-  todoSelect,
+  // todoSelect,
   addToList
+})
+
+onMounted(()=> {
+  console.log('todo mounted')
 })
 
 function addToList(todoItem, files) {
@@ -33,8 +35,6 @@ fetch(todoGetURL).then(res => {
   if(data.success) {
     for (let todo of data.data) {
       todoList.value.push(todo)
-      // 设置默认值
-      if (!todoSelect.value) todoSelect.value = todo.name
     }
     console.log(todoList.value)
   } else {
@@ -49,8 +49,13 @@ function append(array, value) {
   array.value.push(value)
   return true
 }
-function remove(array, value) {
-  array.value = array.value.filter(name => name !== value)
+function remove(array, valueToRemove) {
+  // 不要用这种方式删除，这会创建一个新的数组，使得原数组丢失！
+  // array.value = array.value.filter(name => name !== value)
+  const index = array.value.indexOf(valueToRemove);
+  if (index !== -1) {
+    array.value.splice(index, 1);
+  }
 }
 
 function toggleTodo(todoName) {
@@ -68,6 +73,8 @@ const removeFileFromTodo = (todoItem, fileName) => {
 
 function createTodo() {
   const listName = prompt('请输入清单名称:');
+  if(!listName) { return; }
+
   let success = true
   todoList.value.forEach(item => {
     if (listName === item.name) {
@@ -96,7 +103,18 @@ function setTodoRunning(bool) {
 function deleteTodo() {
   if(!confirm("确认删除？")){ return }
   info("确认删除")
+  // 注意filter这种删除方式会丢失原来的对象。如果其他组件中监听了旧对象，数据将不同步。
+  // 除非其他组件使用watch监听了todoList.value每次更换对象的状态
   todoList.value = todoList.value.filter(item => !item.enable)
+
+  // splice不会丢失原来的对象
+  // for(let i=0; i< todoList.value.length; i++) {
+  //   const item = todoList.value[i]
+  //   if(item.enable) {
+  //     todoList.value.splice(i, 1)
+  //     i--;
+  //   }
+  // }
 }
 function stopTodo() {
   fetch(todoStopURL) .then(response => {
