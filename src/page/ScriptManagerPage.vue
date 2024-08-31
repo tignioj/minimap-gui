@@ -8,6 +8,7 @@ import {pathListListURL,pathListEditURL, socketURL, todoGetURL, todoRunURL, todo
 import {io} from "socket.io-client";
 import FileManager from "@/components/scripmanager/FileManager.vue";
 import ToDoList from "@/components/scripmanager/ToDoList.vue";
+import {useWebSocket} from "../../utils/websocket_listener_utils.js";
 const router = useRouter()
 
 const todoListRef = ref();  // 初始化为 null
@@ -28,48 +29,39 @@ const todoList = ref([]); // 初始化为空数组
 //   todoSelect.value = nv
 // })
 
+const msgElement = ref(null)
+function info(text) {
+  msgElement.value.classList.remove('error-msg')
+  msgElement.value.innerText = text;
+  console.log(text)
+}
+function errorMsg(text) {
+  console.log('异常:', text)
+  msgElement.value.innerText = text;
+  msgElement.value.classList.add('error-msg')
+}
+const {isConnected, socket} = useWebSocket(
+    socketURL,
+    {
+      onKeyEvent: (data)=> {},
+      onPlaybackEvent: (data)=> {
+        if (data && data.result)  {
+          info(data.msg)
+          if (data.msg === "结束执行清单了") {
+            todoListRef.value.setTodoRunning(false)
+          }
+        }
+        else errorMsg(data.msg)
+      }
+    }
+)
 onMounted(()=> {
   // 此时与子组件监听同一个todoList
   todoList.value = todoListRef.value.todoList
-
   // 如果子组件调用了todoList.value = "xxx"的赋值，则会触发watch
   // watch(()=> todoListRef.value.todoList, ()=> {
   //     todoList.value = todoListRef.value.todoList
   // })
-
-  console.log('page todoList updated')
-
-  const socket = io(socketURL);
-  socket.on('connect', function() {
-    // drawMap(0,0)
-    console.log('WebSocket connection established');
-  });
-  socket.on('disconnect', function() {
-    errorMsg('已断开服务器')
-    console.log('WebSocket connection closed');
-  });
-  socket.on('playback_event', function (data) {
-    if (data && data.result)  {
-      info(data.msg)
-      if (data.msg === "结束执行清单了") {
-        todoListRef.value.setTodoRunning(false)
-      }
-    }
-    else errorMsg(data.msg)
-  })
-
-  const msgElement = document.getElementById('msg')
-  function info(text) {
-    msgElement.classList.remove('error-msg')
-    msgElement.innerText = text;
-    console.log(text)
-  }
-  function errorMsg(text) {
-    console.log('异常:', text)
-    msgElement.innerText = text;
-    msgElement.classList.add('error-msg')
-  }
-
 })
 
 const addFilesToList = (todoItem, files) => {
@@ -77,9 +69,7 @@ const addFilesToList = (todoItem, files) => {
   console.log("调用子组件暴露的添加方法,添加到", todoItem)
   todoListRef.value?.addFilesToList(todoItem, files);
 }
-
 </script>
-
 <template>
   <div class="container">
     <ToDoList ref="todoListRef" />
@@ -94,7 +84,7 @@ const addFilesToList = (todoItem, files) => {
 <!--        v-model:todoList="todoListRef?.todoList" />-->
   </div>
   <div>
-    <p id="msg"></p>
+    <p ref="msgElement"></p>
   </div>
   <div>
     <h2>使用手册</h2>

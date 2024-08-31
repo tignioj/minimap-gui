@@ -1,4 +1,5 @@
 const serverURL = "http://127.0.0.1:5000";
+const socketURL = 'ws://127.0.0.1:5000';
 
 /**
  * 返回[
@@ -24,8 +25,6 @@ const pathListFileURL = `${serverURL}/pathlist/get`;
 const pathListSaveURL= `${serverURL}/pathlist/save`;
 
 // 需要服务器允许跨域请求
-const socketURL = `${serverURL}`;
-
 const playBackURL= `${serverURL}/playback`;
 const playBackStopURL = `${serverURL}/playback/stop`;
 

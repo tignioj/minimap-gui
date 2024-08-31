@@ -26,6 +26,7 @@ import {
 import MyCanvas from "@/components/task/MyCanvas.vue";
 import {useKeyBoardListener} from "../../utils/keyboard_listener_utils.js";
 import {isUndefinedNullOrEmpty} from "../../utils/objutils.js";
+import {useWebSocket} from "../../utils/websocket_listener_utils.js";
 let intervalID;
 
 // https://fontawesome.com/search
@@ -241,28 +242,9 @@ function fetchNewPosition() {
         errorMsg(error)
       });
 }
-onMounted(()=> {
-  // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
-  //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
-  //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
-  // })
 
-  console.log('调用一次setInterval')
-  intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
-
-
-  // TODO，这里的socket会内存泄露,当切换到其他组件时，仍然在监听，这时候可能无法找到msgElement
-  const socket = io(socketURL);
-  socket.on('connect', function() {
-    console.log('WebSocket connection established');
-  });
-
-  socket.on('disconnect', function() {
-    errorMsg('已断开服务器')
-    console.log('WebSocket connection closed');
-  });
-
-  socket.on(key_event, function(data) {
+useWebSocket(socketURL, {
+  onKeyEvent: (data)=> {
     // 处理从服务器接收到的键盘事件数据
     if (data.key === 'esc') {
       if (isPlaying.value) {
@@ -278,12 +260,11 @@ onMounted(()=> {
       }
       info('你按下了backspace,删除上一个点位')
       points.value.pop()
-
     } else if (data.key === 'delete') {
-        // points = []
-      }
-  });
-  socket.on(playback_event, function (data) {
+      // points = []
+    }
+  },
+  onPlaybackEvent: (data)=> {
     if(data.result) {
       info(data.msg)
       setPlayingRecord(false)
@@ -291,7 +272,17 @@ onMounted(()=> {
       errorMsg(data.msg)
       setPlayingRecord(false)
     }
-  })
+  }
+});
+
+onMounted(()=> {
+  // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
+  //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
+  //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
+  // })
+
+  console.log('调用一次setInterval')
+  intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
 })
 const updateSelectedPoint = (payLoad) => {
   console.log('接收到updateSelectedPoint事件', payLoad)
