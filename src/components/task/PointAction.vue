@@ -1,22 +1,12 @@
 <script setup>
-import {defineProps, inject} from 'vue';
-import {
-  faBan,
-  faExpand,
-  faPlaneArrival, faQuestion,
-} from "@fortawesome/free-solid-svg-icons";
+import {inject, reactive, ref} from 'vue';
+
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {injectKeyCNTextMap, injectKeyPointActions} from "@/keys.js";
-const iconMapping = {
-  'stop_flying': faPlaneArrival,
-  '': faBan,
-  'nahida_collect': faExpand,
-  undefined: faQuestion,
-};
-const pointAction = defineModel('pointAction', {
-  default: ""
-})
+import {injectKeyCNTextMap, injectKeyIconMap, injectKeyPointActions} from "@/keys.js";
 const actions = inject(injectKeyPointActions)
+const iconMap = inject(injectKeyIconMap)
+const pointAction = defineModel('pointAction')
+pointAction.value = actions[0]
 const cnTextMap = inject(injectKeyCNTextMap)
 
 // 处理传入的 moveModes，生成每个模式的配置
@@ -24,7 +14,7 @@ const actions1 = actions.map((mode, index) => ({
   value: mode.toLowerCase(), // 生成 value
   label: mode, // 使用传入的标签
   text: cnTextMap[mode],
-  icon: iconMapping[mode], // 获取对应的图标
+  icon: iconMap[mode], // 获取对应的图标
   checked: index === 0 // 默认选中第一个
 }));
 </script>

@@ -3,13 +3,11 @@ import {defineProps, inject, onUpdated} from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {injectKeyCNTextMap, injectKeyIconMap, injectKeyPointMoveModes} from "@/keys.js";
 
-// 定义可接收的 props
-const pointMoveMode = defineModel('pointMoveMode', {
-  default: 'normal'
-})
 const moveModes = inject(injectKeyPointMoveModes)
 const iconMapping = inject(injectKeyIconMap)
 const cnTextMap = inject(injectKeyCNTextMap)
+const pointMoveMode = defineModel('pointMoveMode')
+pointMoveMode.value = moveModes[0]
 
 // 处理传入的 moveModes，生成每个模式的配置
 const modes = moveModes.map((mode, index) => ({

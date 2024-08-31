@@ -1,3 +1,4 @@
+
 <script setup>
 import {faBullseye, faMapMarkerAlt} from "@fortawesome/free-solid-svg-icons";
 import {inject} from "vue";
@@ -5,12 +6,16 @@ import {injectKeyCNTextMap, injectKeyIconMap, injectKeyPointTypes} from "@/keys.
 
 // 注意区分 v-model="xxx"和 v-model:hello="xxx"的区别
 // 前者只需要defineModel()就可以访问xxx，而后者需要defineModel('hello')
-const pointType = defineModel('pointType', {
-  default: 'path'
-})
 const iconMap = inject(injectKeyIconMap)
 const cnTextMap = inject(injectKeyCNTextMap)
 const pointTypes = inject(injectKeyPointTypes)
+// const pointType = defineModel('pointType',
+//     {default: pointTypes[0]} ) // 报错: 不允许使用变量；
+const pointType = defineModel('pointType')
+// 这里不用default属性，而是手动设置value好处很多
+// 1. 假设父模板没有设置默认参数，而子组件用了default设置默认值，此时他们的数据就是不一致的。
+// 2. 通过.value赋值的方法手动设置一次，这样就能保持同步
+pointType.value = pointTypes[0]
 
 </script>
 <template>
@@ -29,7 +34,7 @@ const pointTypes = inject(injectKeyPointTypes)
 
     <div class="container">
       <div v-for="(pt, index) in pointTypes" :key="pt" class="item">
-        <input type="radio" :value="pt" :checked="pointType==='target'" @click="$emit('update:pointType', pt)"/>
+        <input type="radio" :value="pt" :checked="pointType===pt" @click="$emit('update:pointType', pt)"/>
         <label for="typeTarget">{{ cnTextMap[pt] }}</label>
         <font-awesome-icon :icon="iconMap[pt]"/>
       </div>

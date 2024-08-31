@@ -15,7 +15,7 @@ import {
   injectKeyPointTypes, injectKeyRegions
 } from "../keys.js"
 import {
-  faArrowTrendUp, faBullseye,
+  faArrowTrendUp, faBan, faBullseye,
   faClover, faExpand,
   faMapMarkerAlt,
   faPlane,
@@ -38,11 +38,10 @@ const iconMapping = {
   'path': faMapMarkerAlt,
   'target': faBullseye,
   'nahida_collect': faExpand,
-  '': faQuestion,
+  '': faBan,
   undefined: faQuestion,
   null: faQuestion,
 };
-
 const cnTextMap = {
   'normal': '普通',
   'fly': '飞行',
@@ -149,7 +148,7 @@ function getPathObject() {
   return {
     name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
     anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
-    country: isUndefinedNullOrEmpty(country) ? '蒙德': country,
+    country: isUndefinedNullOrEmpty(country) ? country[0] : country,
     executor: executor.value,
     positions: points.value
   };
