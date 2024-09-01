@@ -15,14 +15,13 @@ function saveConfig() {
       'Content-Type': 'text/plain',  // 使用纯文本格式上传
     },
     body: yamlContent,  // 直接发送 YAML 文本
-  })
-      .then(response => response.json())
+  }).then(response => response.json())
       .then(data => {
-        alert(data.msg);
+        alert(data.message);
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('Failed to save configuration');
+        alert('保存失败' + String(error))
       });
 }
 fetch(getConfigURL)

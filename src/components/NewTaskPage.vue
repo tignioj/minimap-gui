@@ -1,8 +1,5 @@
 <script setup>
 import {
-  key_event,
-  playback_event,
-  serverURL,
   playBackStopURL,
   playBackURL,
   positionURL,
@@ -10,7 +7,7 @@ import {
   pathListFileURL, pathListSaveURL
 } from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated, watch, onUnmounted, provide} from "vue";
+import {onMounted, ref, onUpdated, watch, onUnmounted, provide, onActivated, onDeactivated} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
@@ -35,9 +32,15 @@ import {
 import MyCanvas from "@/components/task/MyCanvas.vue";
 import {useKeyBoardListener} from "../../utils/keyboard_listener_utils.js";
 import {isUndefinedNullOrEmpty} from "../../utils/objutils.js";
-import {useWebSocket} from "../../utils/websocket_listener_utils.js";
+import {
+  SOCKET_EVENT_PLAYBACK_END, SOCKET_EVENT_PLAYBACK_EXCEPTION,
+  SOCKET_EVENT_PLAYBACK_START,
+  SOCKET_EVENT_PLAYBACK_UPDATE,
+  useWebSocket
+} from "../../utils/websocket_listener_utils.js";
 import {useRoute} from "vue-router";
 import router from "@/router.js";
+import { store } from '@/store.js'
 let intervalID;
 
 // https://fontawesome.com/search
@@ -145,14 +148,15 @@ watch(selectedPointIndex, async (nv, ov) => {
 watch(points, async (nv, ov) => {
     console.log('父类检测到points更新')
   if(!nv) { return }
-
   if(nv.length>0) {
     refCanvas.value.refreshCanvas()
-  } else {
-    refCanvas.value.updateCanvasCenter(nv[0])
   }
-  },
-  {deep: true})  // deep表示检测完整的对象
+  // else {
+  //   refCanvas.value.updateCanvasCenter(nv[0])
+  // }
+},
+  {deep: true})
+// deep表示检测完整的对象
 
 function showEditPanel() {
   if (!isCtrlPressed.value) { editPanel.value.showEditPanel() }
@@ -212,8 +216,25 @@ function handleFileSelect(event) {
 const route = useRoute()
 
 
-function loadFileFromServer() {
-  const fileURL = `${pathListFileURL}/` + editFileName
+onActivated(()=> {
+  console.log(route.fullPath)
+  // 如果新的路径不是正在编辑的文件，则刷新数据
+  let routerFileName = route.fullPath.substring(route.fullPath.lastIndexOf('/')+1);
+  if(!routerFileName.endsWith(".json")) return
+  if(routerFileName!== editFileName) {
+    console.log('检测到新的路由路径', routerFileName, '，重新请求数据')
+    loadFileFromServer(routerFileName)
+  }
+  console.log('activated')
+})
+onDeactivated(()=> {
+  console.log("deactivated")
+})
+
+
+
+function loadFileFromServer(fileName) {
+  const fileURL = `${pathListFileURL}/` + fileName
   fetch(fileURL).then(response => {
     if (!response.ok) {
       throw new Error('Network response was not ok ' + response.statusText);
@@ -224,7 +245,20 @@ function loadFileFromServer() {
         console.log('Success:', data); // 处理成功的响应
         if(data.success) {
           info("成功加载")
-          loadDataToPage(data.data)
+          const executor = data.data['executor']
+          // TODO 跳转到对应的执行器编辑器
+          console.log(executor)
+          // 如果执行器是当前页面的执行器加载数据
+          if(!executor || executor === props.executor) {
+            loadDataToPage(data.data)
+            editFileName = fileName
+          } else {
+            // 否则跳转到对应的执行器
+            let target = executorRouterMap[executor]
+            if(fileName) target = target + '/' + fileName
+            console.log('跳转到', target)
+            router.replace(target)
+          }
         } else {
           errorMsg('加载错误！')
         }
@@ -244,32 +278,21 @@ const executorRouterMap = {
 }
 
 function loadDataToPage(data) {
-  const executor = data['executor']
-  // TODO 跳转到对应的执行器编辑器
-  console.log(executor)
-  if(executor && executor!==props.executor) {
-    let target = executorRouterMap[executor]
-    if(editFileName) target= target + '/' + editFileName
-    console.log('跳转到', target)
-    router.push(target)
-  }
-
   const positions = data['positions']
   const name = data['name'];
   const country = data['country']
   const anchorName = data['anchor_name']
 
-
   countrySelect.value = isUndefinedNullOrEmpty(country)? '蒙德':country
   nameInput.value = isUndefinedNullOrEmpty(name) ? 'undefined': name
   anchorNameInput.value = isUndefinedNullOrEmpty(anchorName)?'传送锚点': anchorName
   points.value.length = 0
-  if(positions && positions.length > 0)
+  if(positions && positions.length > 0) {
     points.value.push(...positions)
-  selectedPointIndex.value = 0
-
+    refCanvas.value.updateCanvasCenter(positions[0]);
+    selectedPointIndex.value = 0
+  }
   // executor.value = isUndefinedNullOrEmpty(executor) ? 'BasePathExecutor': executor
-
   // updateCanvasCenter(points.value[0])
 }
 
@@ -300,7 +323,7 @@ function fetchNewPosition() {
       });
 }
 
-useWebSocket(socketURL, {
+const { socket } = useWebSocket(socketURL, {
   onKeyEvent: (data)=> {
     // 处理从服务器接收到的键盘事件数据
     if (data.key === 'esc') {
@@ -312,7 +335,7 @@ useWebSocket(socketURL, {
       editPanelPreset.value.insertNewNode()
     } else if (data.key === 'backspace') {
       if (!isRecording.value) {
-        errorMsg("请点击开始记录后再使用快捷键删除点位")
+        // errorMsg("请点击开始记录后再使用快捷键删除点位")
         return;
       }
       info('你按下了backspace,删除上一个点位')
@@ -321,15 +344,6 @@ useWebSocket(socketURL, {
       // points = []
     }
   },
-  onPlaybackEvent: (data)=> {
-    if(data.result) {
-      info(data.msg)
-      setPlayingRecord(false)
-    }else {
-      errorMsg(data.msg)
-      setPlayingRecord(false)
-    }
-  }
 });
 let editFileName = route.params.fileName
 onMounted(()=> {
@@ -338,9 +352,14 @@ onMounted(()=> {
   //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
   // })
 
+  socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> { console.log(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_UPDATE, (data)=> { console.log(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_END, (data)=> { console.log(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_EXCEPTION, (data)=> { console.log(data) })
+
   console.log('editFileName', editFileName)
-  if(editFileName) {
-    loadFileFromServer()
+  if(editFileName && editFileName.endsWith(".json")) {
+    loadFileFromServer(editFileName)
   }
 
   console.log('调用一次setInterval')
@@ -404,14 +423,14 @@ function playBack(fromIndex) {
       })
       .then(data => {
         console.log('Success:', data); // 处理成功的响应
-        if (data.result === true) {
-          info(data.msg)
+        if (data.success === true) {
+          info(data.message)
           setPlayingRecord(true)
         } else {
           if(data.status === 'playback_already_running') {
             setPlayingRecord(true)
           }
-          errorMsg(data.msg)
+          errorMsg(data.message)
         }
       })
       .catch(error => {
@@ -431,11 +450,11 @@ function stopPlayBack() {
       })
       .then(data => {
         console.log('Success:', data); // 处理成功的响应
-        if (data.result === true) {
-          info(data.msg)
+        if (data.success === true) {
+          info(data.message)
           setPlayingRecord(false)
         } else {
-          errorMsg(data.msg)
+          errorMsg(data.message)
           setPlayingRecord(true)
         }
       })
@@ -516,7 +535,6 @@ onUnmounted(()=> {
   window.clearInterval(intervalID)
 })
 
-
 // 保存到服务器
 function saveRecordButtonClick() {
   const data = getPathObject()
@@ -547,15 +565,19 @@ function saveRecordButtonClick() {
         if (data.success === true) {
           info('保存到了' + result.full_path)
           const currentPath = route.fullPath
-          let newPath = currentPath + '/'  + result.new_filename
-          if(editFileName) {
-              newPath = currentPath.replace(editFileName, result.new_filename);
-          }
+          let newPath;
+          if(currentPath.includes(".json"))  // 说明正在编辑文件
+            // 替换掉旧的文件名称
+            newPath = currentPath.substring(0,currentPath.lastIndexOf("/")+1) + result.new_filename;
+          else
+            newPath = currentPath + '/' +  result.new_filename
           editFileName = result.new_filename
           router.replace(newPath)
+          // 通知ScripManager更新数据
+          store.updateFileStructure()
 
         } else {
-          errorMsg('保存失败' + data.msg)
+          errorMsg('保存失败' + data.message)
         }
       })
       .catch(error => {

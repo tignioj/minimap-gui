@@ -2,7 +2,7 @@
 
 // TODO 提取socketio
 
-import {onMounted, ref, watch} from "vue";
+import {onActivated, onDeactivated, onMounted, ref, watch} from "vue";
 import {useRoute,useRouter} from "vue-router";
 import {pathListListURL,pathListEditURL, socketURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {io} from "socket.io-client";
@@ -62,6 +62,13 @@ onMounted(()=> {
   // watch(()=> todoListRef.value.todoList, ()=> {
   //     todoList.value = todoListRef.value.todoList
   // })
+})
+
+onActivated(()=> {
+  console.log('activated')
+})
+onDeactivated(()=> {
+  console.log("deactivated")
 })
 
 const addFilesToList = (todoItem, files) => {
