@@ -69,11 +69,16 @@ const addFilesToList = (todoItem, files) => {
   console.log("调用子组件暴露的添加方法,添加到", todoItem)
   todoListRef.value?.addFilesToList(todoItem, files);
 }
+function updateAllData() {
+  console.log('更新所有数据')
+  todoListRef.value.updateTodoList()
+}
 </script>
 <template>
   <div class="container">
     <ToDoList ref="todoListRef" />
     <FileManager
+        @filesChanged="updateAllData"
         @add-files-to-list="addFilesToList"
         v-model:todoList="todoList" />
 
