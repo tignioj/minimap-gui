@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref, watch} from "vue";
+import {onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "../../../utils/objutils.js";
@@ -26,6 +26,7 @@ function addFilesToList(todoItem, files) {
     }
   })
 }
+  updateTodoList()
 
 function updateTodoList() {
   fetch(todoGetURL).then(res => {
@@ -46,7 +47,6 @@ function updateTodoList() {
     }
   }).catch(err => errorMsg(err));
 }
-updateTodoList()
 
 // 添加数据到响应数组,禁止重复数据
 function append(array, value) {

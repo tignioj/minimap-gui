@@ -1,14 +1,12 @@
 <script setup>
 // 展示文件树
-import {inject, onMounted, ref, watch} from "vue";
+import {inject, onActivated, onMounted, ref, watch} from "vue";
 
 import {pathListRemoveURL, pathListListURL, pathListSaveURL, playBackURL} from "@/api.js";
 import router from "@/router.js";
+import {store} from "@/store.js";
 const openFolders =ref([])
-const fileStructure = ref([
-  {name: '甜甜花', 'files': ['1.json', '2.json']},
-  {name: '风车菊', 'files': ['3.json', '4.json']},
-])
+const fileStructure = store.fileStructure
 // 文件过滤功能
 const fileSearchInput = ref('')
 // 设置默认值为null以便于无清单时, 选中”暂无清单“选项
@@ -58,18 +56,7 @@ watch(fileSearchInput, (nv, ov) => {
 });
 
 function fetchFiles() {
-  fetch(pathListListURL).then(res => {
-    if(!res.ok) throw new Error("网络异常");
-    return res.json()
-  }).then((data)=> {
-    if(data.success) {
-      fileStructure.value = data.data
-
-      console.log(fileStructure.value)
-    } else {
-      console.log('加载失败')
-    }
-  }).catch(err=> errorMsg(err))
+  store.updateFileStructure()
 }
 fetchFiles()
 
@@ -169,7 +156,6 @@ function removeFiles() {
             debugger
             selectedFolder.value.splice(selectedFolder.value.indexOf(folder), 1)
           })
-
           emit('filesChanged')
           fetchFiles()
         } else {
