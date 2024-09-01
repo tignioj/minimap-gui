@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref, watch} from "vue";
 import router from "@/router.js";
-import {todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
+import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "../../../utils/objutils.js";
 const openTodos =ref([])
 const todoList = ref([])
@@ -10,7 +10,8 @@ defineExpose({
   todoList,
   // todoSelect,
   addFilesToList,
-  setTodoRunning
+  setTodoRunning,
+  updateTodoList
 })
 
 function addFilesToList(todoItem, files) {
@@ -26,23 +27,26 @@ function addFilesToList(todoItem, files) {
   })
 }
 
-fetch(todoGetURL).then(res => {
-  // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
-  if(!res.ok) {
-    throw new Error("网络异常");
-  }
-  return res.json()
-}).then(data=> {
-  if(data.success) {
-    for (let todo of data.data) {
-      todoList.value.push(todo)
+function updateTodoList() {
+  fetch(todoGetURL).then(res => {
+    // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
+    if(!res.ok) {
+      throw new Error("网络异常");
     }
-    console.log(todoList.value)
-  } else {
-    // errorMsg('获取失败:' + data.data)
-  }
-}).catch(err => errorMsg(err));
-
+    return res.json()
+  }).then(data=> {
+    if(data.success) {
+      todoList.value.length = 0
+      for (let todo of data.data) {
+        todoList.value.push(todo)
+      }
+      console.log(todoList.value)
+    } else {
+      // errorMsg('获取失败:' + data.data)
+    }
+  }).catch(err => errorMsg(err));
+}
+updateTodoList()
 
 // 添加数据到响应数组,禁止重复数据
 function append(array, value) {
@@ -196,6 +200,11 @@ function errorMsg(msg) {
   console.error(msg)
 }
 
+
+function editJson(fileName) {
+  // TODO 只有文件名，如何知道应该跳转到哪个路由？
+  router.push('/task/collect/edit/' + fileName)
+}
 </script>
 <template>
   <div class="list-management">
@@ -212,8 +221,8 @@ function errorMsg(msg) {
         <ul v-if="openTodos.includes(item.name)">
           <li v-for="file in item.files" :key="file">
             {{file}}
-            <button @click="router.push('/task/edit/' + item.name)">编辑</button>
-            <button @click="removeFileFromTodo(item.name, file)">删除</button>
+            <button @click="editJson(file)">编辑</button>
+            <button @click="removeFileFromTodo(item.name, file)">移出清单</button>
           </li>
         </ul>
       </li>

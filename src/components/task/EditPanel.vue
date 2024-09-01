@@ -12,6 +12,7 @@ const pointMoveMode = ref(null)
 const pointAction = ref(null)
 const selectedPoint = defineModel('selectedPoint', { default: null, })
 const isPlaying = defineModel('isPlaying', { default: false, })
+const isShowEditPanel = ref(false)
 
 defineExpose({
   hideEditPanel,
@@ -55,19 +56,18 @@ function saveButton() {
 }
 
 function showEditPanel() {
+  isShowEditPanel.value = true
   editPanel.value.style.left = `${mousePageX.value}px`;
   editPanel.value.style.top = `${mousePageY.value}px`;
-  editPanel.value.style.display = 'block';
 }
 function hideEditPanel() {
-  editPanel.value.style.display = 'none'
+  isShowEditPanel.value = false
 }
 function deleteButton() {
   emit('deleteSelectedPoint')
   hideEditPanel()
 }
 function cancelButton() {
-  editPanel.value.style.display = 'none'
   hideEditPanel()
 }
 function newButton() {
@@ -87,10 +87,9 @@ watch(selectedPoint, async (nv,ov)=> {
     pointAction.value = nv.action
   }
 })
-
 </script>
 <template>
-  <div ref="editPanel" class="editPanel">
+  <div ref="editPanel" class="editPanel" v-show="isShowEditPanel" >
     <label for="x">X: </label><input type="number" v-model="xInput" /><br />
     <label for="y">Y: </label><input type="number" v-model="yInput" /><br />
     <!--可以用v-mode，也可以用:custom-param, 前者可以在子模板使用defineModel()读取-->
@@ -102,13 +101,13 @@ watch(selectedPoint, async (nv,ov)=> {
     <button @click="deleteButton">删除</button>
     <button @click="cancelButton">取消</button>
     <button @click="newButton">插入</button>
-    <button @click="playBackFromHereButton" :disabled="isPlaying">从这里开始回放</button>
+    <button @click="playBackFromHereButton" :disabled="isPlaying">{{ isPlaying?"停止":"从这里开始回放" }}</button>
   </div>
 </template>
 
 <style scoped>
 .editPanel {
-  display: none;
+  display: block;
   position: absolute;
   background: white;
   border: 1px solid black;

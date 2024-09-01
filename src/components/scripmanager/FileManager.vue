@@ -2,7 +2,8 @@
 // 展示文件树
 import {inject, onMounted, ref, watch} from "vue";
 
-import {pathListListURL} from "@/api.js";
+import {pathListRemoveURL, pathListListURL, pathListSaveURL, playBackURL} from "@/api.js";
+import router from "@/router.js";
 const openFolders =ref([])
 const fileStructure = ref([
   {name: '甜甜花', 'files': ['1.json', '2.json']},
@@ -56,17 +57,21 @@ watch(fileSearchInput, (nv, ov) => {
   }
 });
 
-fetch(pathListListURL).then(res => {
-  if(!res.ok) throw new Error("网络异常");
-  return res.json()
-}).then((data)=> {
-  if(data.success) {
-    fileStructure.value = data.data
-    console.log(fileStructure.value)
-  } else {
-    console.log('加载失败')
-  }
-}).catch(err=> errorMsg(err))
+function fetchFiles() {
+  fetch(pathListListURL).then(res => {
+    if(!res.ok) throw new Error("网络异常");
+    return res.json()
+  }).then((data)=> {
+    if(data.success) {
+      fileStructure.value = data.data
+
+      console.log(fileStructure.value)
+    } else {
+      console.log('加载失败')
+    }
+  }).catch(err=> errorMsg(err))
+}
+fetchFiles()
 
 function toggleFolder(folderName) {
   if (openFolders.value.includes(folderName)) {
@@ -78,7 +83,8 @@ function toggleFolder(folderName) {
 }
 function  editFile(fileName) {
   // 在这里添加文件编辑逻辑
-  console.log('编辑文件:', fileName);
+  // TODO 只有文件名，如何知道应该跳转到哪个路由？
+  router.push('/task/collect/edit/' + fileName)
 }
 // 添加数据到响应数组,禁止重复数据
 function append(array, value) {
@@ -113,7 +119,7 @@ function selectFile(event, file) {
   }
 }
 
-const emit = defineEmits(['addFilesToList'])
+const emit = defineEmits(['addFilesToList', 'filesChanged'])
 const addToListBtn = () => {
   const todoItem  = todoSelect.value
   if(!todoItem) { return}
@@ -130,6 +136,57 @@ const addToListBtn = () => {
   //     })
   //   }
   // })
+}
+
+function removeFiles() {
+  const files = selectedFiles.value
+  const folders = selectedFolder.value
+
+  if(files.length === 0 && folders.length === 0) {return;}
+  if(!confirm(`确定删除${files.length}个文件?以及${folders.length}个文件夹?`)){ return }
+
+  console.log('确定删除文件', files,folders)
+  fetch(pathListRemoveURL, {
+    method: 'POST', // 请求方法
+    headers: {
+      'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
+    },
+    body: JSON.stringify({'files': files, 'folders': folders})
+  }).then(response => {
+      if (!response.ok) { throw new Error('Network response was not ok ' + response.statusText); }
+      return response.json(); // 解析响应为 JSON
+      }).then(data => {
+        console.log('Success:', data); // 处理成功的响应
+        if (data.success) {
+          info(data.msg)
+          const result = data.data
+          const folders_removed = result.folders_removed
+          const files_removed = result.files_removed
+          files_removed?.forEach((file) => {
+            selectedFiles.value.splice(selectedFiles.value.indexOf(file), 1)
+          })
+          folders_removed?.forEach((folder)=> {
+            debugger
+            selectedFolder.value.splice(selectedFolder.value.indexOf(folder), 1)
+          })
+
+          emit('filesChanged')
+          fetchFiles()
+        } else {
+          errorMsg(data.msg)
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error); // 处理错误
+        errorMsg(error)
+      });
+}
+
+function info(msg) {
+  console.log(msg)
+}
+function errorMsg(msg) {
+  console.error(msg)
 }
 </script>
 
@@ -151,9 +208,10 @@ const addToListBtn = () => {
       </option>
     </select>
     <button @click="addToListBtn">添加到清单</button>
+    <button @click="removeFiles">删除选中文件</button>
       <div v-for="(folder, index) in (fileSearchInput.length >0?filteredFiles: fileStructure)" :key="index" class="folder">
         <div>
-          <input type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
+          <input :checked="selectedFolder.includes(folder.name)" type="checkbox" class="folder-checkbox" :value="folder.name" @change="selectFolder($event,folder)" />
 <!--          {{ folder.name }}, {{ selectedFolder.includes(folder.name) }}-->
           {{ folder.name }} {{ folder.files.length  }}
           <button class="toggleFolderBtn" @click="toggleFolder(folder.name)">

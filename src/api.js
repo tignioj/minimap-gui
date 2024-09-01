@@ -23,6 +23,7 @@ const pathListEditURL= `${serverURL}/pathlist/edit`;
 const pathListListURL = `${serverURL}/pathlist/list`;
 const pathListFileURL = `${serverURL}/pathlist/get`;
 const pathListSaveURL= `${serverURL}/pathlist/save`;
+const pathListRemoveURL= `${serverURL}/pathlist/delete`;
 
 // 需要服务器允许跨域请求
 const playBackURL= `${serverURL}/playback`;
@@ -50,6 +51,7 @@ export {
     pathListListURL,
     pathListFileURL,
     pathListSaveURL,
+    pathListRemoveURL,
     socketURL,
     playBackURL,
     playBackStopURL,
