@@ -7,7 +7,8 @@ const {isCtrlPressed} = useKeyBoardListener()
 const props = defineProps({
   points: {
     type: Array,
-    required: true
+    required: true,
+    default: []
   },
   selectedPointIndex: {
     type: [Number, null],
@@ -124,9 +125,11 @@ function drawMap(x,y) {
     // 绘制图片到 canvas 上
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-    drawPoints()
-    drawLines()
-    drawUserPoint(x,y)
+    if(myCanvas.value) {
+      drawPoints()
+      drawLines()
+      drawUserPoint(x,y)
+    }
   };
 }
 function drawLines() {
