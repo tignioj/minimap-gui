@@ -6,7 +6,7 @@ import {pathListRemoveURL, pathListListURL, pathListSaveURL, playBackURL} from "
 import router from "@/router.js";
 import {store} from "@/store.js";
 const openFolders =ref([])
-const fileStructure = store.fileStructure
+const fileStructure = ref(store.fileStructure)
 // 文件过滤功能
 const fileSearchInput = ref('')
 // 设置默认值为null以便于无清单时, 选中”暂无清单“选项

@@ -388,8 +388,8 @@ const newSelectedPoint = () => {
   points.value.splice(selectedPointIndex.value+1, 0, newPoint);
 }
 
-const playBackFromHere = (fromIndex) => {
-  playBack(fromIndex)
+const playBackFromHere = () => {
+  playBack(selectedPointIndex.value)
 }
 
 function playBack(fromIndex) {
@@ -575,7 +575,7 @@ function saveRecordButtonClick() {
           router.replace(newPath)
           // 通知ScripManager更新数据
           store.updateFileStructure()
-
+          store.updateTodoList()
         } else {
           errorMsg('保存失败' + data.message)
         }
