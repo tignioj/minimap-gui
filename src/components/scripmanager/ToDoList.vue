@@ -3,8 +3,9 @@ import {onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "../../../utils/objutils.js";
+import {store} from "@/store.js";
 const openTodos =ref([])
-const todoList = ref([])
+const todoList = store.todoList
 const todoRunning = ref(false)
 defineExpose({
   todoList,
@@ -29,23 +30,7 @@ function addFilesToList(todoItem, files) {
   updateTodoList()
 
 function updateTodoList() {
-  fetch(todoGetURL).then(res => {
-    // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
-    if(!res.ok) {
-      throw new Error("网络异常");
-    }
-    return res.json()
-  }).then(data=> {
-    if(data.success) {
-      todoList.value.length = 0
-      for (let todo of data.data) {
-        todoList.value.push(todo)
-      }
-      console.log(todoList.value)
-    } else {
-      // errorMsg('获取失败:' + data.data)
-    }
-  }).catch(err => errorMsg(err));
+  store.updateTodoList()
 }
 
 // 添加数据到响应数组,禁止重复数据

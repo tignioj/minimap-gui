@@ -20,10 +20,13 @@ const updateFileStructure = (onSuccess, onError)=> {
             if(onError) onError(data)
         }
     }).catch(err=> {
+        console.error(err)
         if(onError) onError(err)
     })
 }
-const todoList = ref([])
+const todoList = ref([
+    // {"name":"test", "enable": false, "files": [ "月莲_卡扎莱宫_须弥_5个.json", "月莲_桓那兰那_须弥_4个_20240826_063626.json", ] }
+])
 const updateTodoList = (onSuccess, onError) => {
     fetch(todoGetURL).then(res => {
         // 如果是net::ERR_CONNECTION_REFUSED网络异常，则不会走这里
@@ -39,13 +42,16 @@ const updateTodoList = (onSuccess, onError) => {
         } else {
             if(onError)onError(data);
         }
-    }).catch(err => { if(onError)onError(err)});
+    }).catch(err => {
+        console.error(err)
+        if(onError)onError(err)
+    });
 }
 
 
-export const store = reactive({
+export const store = {
     fileStructure,
     updateFileStructure,
     todoList,
     updateTodoList
-})
+}
