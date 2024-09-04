@@ -11,6 +11,9 @@ import {
   faWater
 } from "@fortawesome/free-solid-svg-icons";
 import Manual from "@/components/task/Manual.vue";
+import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
+import CountrySelect from "@/components/task/CountrySelect.vue";
+import {ref} from "vue";
 // https://fontawesome.com/search
 const iconMapping = {
   'normal': faWalking,
@@ -44,6 +47,13 @@ const pointTypes=["path", "target"];
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
 const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹"];
 const executor = 'FightPathExecutor'
+const fightTeamSelectModel = ref(null)
+const pathObjectExtend = ref( {
+  'fight_team': fightTeamSelectModel
+})
+const afterDataLoaded = (data) => {
+  fightTeamSelectModel.value = data['fight_team'];
+}
 </script>
 <template>
 <NewTaskPage :executor="executor"
@@ -53,7 +63,14 @@ const executor = 'FightPathExecutor'
              :cn-text-map="cnTextMap"
              :icon-mapping="iconMapping"
              :regions="regions"
-             />
+             :path-object-extend="pathObjectExtend"
+             @after-data-loaded="afterDataLoaded"
+             >
+  <div>
+    请选择战斗队伍:
+    <FightTeamSelect v-model="fightTeamSelectModel"/>
+  </div>
+</NewTaskPage>
 
 <!--  <Manual/>-->
 </template>
