@@ -7,12 +7,14 @@ import {
   pathListFileURL, pathListSaveURL
 } from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated, watch, onUnmounted, provide, onActivated, onDeactivated} from "vue";
+import {onMounted, ref, onUpdated, watch, onUnmounted, provide} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
 import PointList from "@/components/task/PointList.vue";
 import CountrySelect from "@/components/task/CountrySelect.vue";
+import 'ace-builds/src-noconflict/mode-json'; // Load the language definition file used below
+import 'ace-builds/src-noconflict/theme-monokai';
 import {
   injectKeyCNTextMap,
   injectKeyIconMap,
@@ -41,7 +43,9 @@ import {
 import {useRoute} from "vue-router";
 import router from "@/router.js";
 import { store } from '@/store.js'
+import {VAceEditor} from "vue3-ace-editor";
 let intervalID;
+let jsonContent = ref('')
 
 // https://fontawesome.com/search
 const iconMapping = {
@@ -70,6 +74,7 @@ const cnTextMap = {
   '': '无',
   'stop_flying': '下落攻击'
 }
+
 // let actions=["", "stop_flying", "nahida_collect"];
 // let pointTypes=["path", "target"];
 // let moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
@@ -106,9 +111,30 @@ const props = defineProps({
     type: String,
     required: true,
     default: 'CollectPathExecutor',
-  }
+  },
+  // 点击保存的时候，父组件有一些信息需要加进来
+  pathObjectExtend: {
+    type: Object,
+    default: {}
+  },
+  // 文件数据从服务器加载成功后，将数据传递给父组件继续加载
+  // loadExtendData: {
+  //   type: Function,
+  //   default: (data)=> {}
+  // }
 })
 
+const emit = defineEmits({
+  // 校验 submit 事件
+  afterDataLoaded: (data) => {
+    if (data) {
+      return true
+    } else {
+      console.warn('Invalid submit event payload!')
+      return false
+    }
+  }
+})
 
 provide(injectKeyPointMoveModes, props.moveModes);
 provide(injectKeyPointTypes, props.pointTypes);
@@ -127,12 +153,12 @@ const refCanvas = ref(null)
 const selectedPoint = ref(null)
 const isPlaying = ref(false)
 const isRecording = ref(false)
-const nameInput = ref(null)
+const nameInput = ref('')
 const anchorNameInput = ref('传送锚点')
 const msgElement = ref(null)
 const userXInput = ref(0)
 const userYInput = ref(0)
-const countrySelect = ref(props.regions[0])
+const countrySelect = ref(String(props.regions[0]))
 const editPanel = ref(null)  // 引用组件
 const editPanelPreset = ref(null)
 const { isCtrlPressed } = useKeyBoardListener()
@@ -181,16 +207,17 @@ function setPlayingRecord(playing) {
   isPlaying.value = playing;
 }
 function getPathObject() {
-  const name = nameInput.value
-  const country = countrySelect.value
-  const anchorName = anchorNameInput.value
-  return {
+  const name = nameInput.value.trim()
+  const country = countrySelect.value.trim()
+  const anchorName = anchorNameInput.value.trim()
+  const poj =  {
     name: isUndefinedNullOrEmpty(name) ? 'undefined' : name,
     anchor_name: isUndefinedNullOrEmpty(anchorName) ? '传送锚点': anchorName,
     country: isUndefinedNullOrEmpty(country) ? country[0] : country,
     executor: props.executor,
     positions: points.value
   };
+  return Object.assign(poj, props.pathObjectExtend)
 }
 
 function handleFileSelect(event) {
@@ -206,6 +233,7 @@ function handleFileSelect(event) {
       const obj = JSON.parse(json);
       console.log(obj); // 打印到控制台
       loadDataToPage(obj)
+      editFileName = file.name;
       info('加载成功')
     } catch (error) {
       errorMsg('json解析错误:', error);
@@ -216,20 +244,25 @@ function handleFileSelect(event) {
 const route = useRoute()
 
 
-onActivated(()=> {
-  console.log(route.fullPath)
-  // 如果新的路径不是正在编辑的文件，则刷新数据
-  let routerFileName = route.fullPath.substring(route.fullPath.lastIndexOf('/')+1);
-  if(!routerFileName.endsWith(".json")) return
-  if(routerFileName!== editFileName) {
-    console.log('检测到新的路由路径', routerFileName, '，重新请求数据')
-    loadFileFromServer(routerFileName)
-  }
-  console.log('activated')
-})
-onDeactivated(()=> {
-  console.log("deactivated")
-})
+// onActivated(()=> {
+//   console.log(route.fullPath)
+//   // 如果新的路径不是正在编辑的文件，则刷新数据
+//   const editFileName = route.params.fileName
+//   if(editFileName && editFileName.endsWith(".json")) {
+//     loadFileFromServer(editFileName)
+//   } else {
+//     // 应当清空数据
+//     console.log('请清空数据')
+//   }
+//   console.log('activated')
+//   console.log('调用一次setInterval')
+//   intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
+// })
+// onDeactivated(()=> {
+//   console.log("deactivated")
+//   console.log('清除interval')
+//   window.clearInterval(intervalID)
+// })
 
 
 
@@ -251,7 +284,6 @@ function loadFileFromServer(fileName) {
           // 如果执行器是当前页面的执行器加载数据
           if(!executor || executor === props.executor) {
             loadDataToPage(data.data)
-            editFileName = fileName
           } else {
             // 否则跳转到对应的执行器
             let target = executorRouterMap[executor]
@@ -292,8 +324,8 @@ function loadDataToPage(data) {
     refCanvas.value.updateCanvasCenter(positions[0]);
     selectedPointIndex.value = 0
   }
-  // executor.value = isUndefinedNullOrEmpty(executor) ? 'BasePathExecutor': executor
-  // updateCanvasCenter(points.value[0])
+  emit('afterDataLoaded', data)
+  // loadExtendData(data)
 }
 
 
@@ -345,25 +377,35 @@ const { socket } = useWebSocket(socketURL, {
     }
   },
 });
-let editFileName = route.params.fileName
+let editFileName;
 onMounted(()=> {
   // watch(()=> (refCanvas.value.selectedPointIndex), async (nv, ov)=> {
   //   console.log('检测到canvas子组件数据selectedPointIndex变动', nv)
   //   selectedPointIndex.value = refCanvas.value.selectedPointIndex;
   // })
 
-  socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> { console.log(data) })
-  socket.value.on(SOCKET_EVENT_PLAYBACK_UPDATE, (data)=> { console.log(data) })
-  socket.value.on(SOCKET_EVENT_PLAYBACK_END, (data)=> { console.log(data) })
-  socket.value.on(SOCKET_EVENT_PLAYBACK_EXCEPTION, (data)=> { console.log(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_END, (data)=> {
+    info(data)
+    isPlaying.value = false
+  })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_EXCEPTION, (data)=> {
+    errorMsg(data)
+    isPlaying.value = false
+  })
 
-  console.log('editFileName', editFileName)
-  if(editFileName && editFileName.endsWith(".json")) {
-    loadFileFromServer(editFileName)
-  }
-
+  console.log(route.fullPath)
+  // 如果新的路径不是正在编辑的文件，则刷新数据
+  editFileName = route.params.fileName
+  if(editFileName && editFileName.endsWith(".json")) { loadFileFromServer(editFileName) }
+  console.log('activated')
   console.log('调用一次setInterval')
   intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
+})
+onUnmounted(()=> {
+  console.log('清除interval')
+  window.clearInterval(intervalID)
 })
 const updateSelectedPoint = (payLoad) => {
   console.log('接收到updateSelectedPoint事件', payLoad)
@@ -530,10 +572,7 @@ const appendNewNode = (node) => {
   info('插入新的点位' + JSON.stringify(node));
   points.value.push(node)
 }
-onUnmounted(()=> {
-  console.log('清除interval')
-  window.clearInterval(intervalID)
-})
+
 
 // 保存到服务器
 function saveRecordButtonClick() {
@@ -572,10 +611,13 @@ function saveRecordButtonClick() {
           else
             newPath = currentPath + '/' +  result.new_filename
           editFileName = result.new_filename
-          router.replace(newPath)
-          // 通知ScripManager更新数据
+
           store.updateFileStructure()
           store.updateTodoList()
+          console.log('又跳转一次', newPath)
+          router.replace(newPath)
+          // router.push(newPath)
+          // 通知ScripManager更新数据
         } else {
           errorMsg('保存失败' + data.message)
         }
@@ -585,6 +627,18 @@ function saveRecordButtonClick() {
         errorMsg(error)
       });
 }
+
+onUpdated(()=> {
+  if(isShowJSONContent.value) {
+    jsonContent.value = JSON.stringify(getPathObject(), null, 2);
+  }
+})
+// function checkJson() {
+//   const poj = getPathObject()
+//   jsonContent.value = JSON.stringify(poj, null, 2)
+//   console.log(poj)
+// }
+const isShowJSONContent = ref(false)
 </script>
 <template>
   <div id="head">
@@ -613,21 +667,31 @@ function saveRecordButtonClick() {
     <button @click="stopRecordButtonClick">停止记录</button>
     <button @click="saveRecordButtonClick">保存到服务器</button>
     <button @click="downloadRecordButtonClick">下载记录</button>
-
     <div class="file-input-wrapper">
       <button class="file-input-button" id="loadRecordButton">加载记录</button>
       <!--   <button class="file-input-button">Choose JSON File</button>-->
       <input type="file" id="fileInput" @change="handleFileSelect"  class="file-input" accept=".json">
     </div>
+    <button @click="isShowJSONContent=!isShowJSONContent">{{ isShowJSONContent?'关闭查看':'查看json'}}</button>
   </div>
   <hr/>
-  <div>
-    <label>名称<input type="text" placeholder="名称_附近标识" v-model="nameInput" /></label>
-    <label>传送点所在国家</label>
-    <CountrySelect v-model="countrySelect" />
-    <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>
-    <button ref="playBackButton" @click="playBackClick" >{{ isPlaying?"停止":"回放" }}</button>
+  <div v-if="isShowJSONContent" style="display: block;">
+    <v-ace-editor
+        readonly
+        v-if="isShowJSONContent"
+        :value="jsonContent"
+        lang="json"
+        theme="monokai"
+        style="height: 300px;" />
   </div>
+    <div>
+      <label>名称<input type="text" placeholder="名称_附近标识" v-model="nameInput" /></label>
+      <label>传送点所在国家</label>
+      <CountrySelect v-model="countrySelect" />
+      <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>
+      <button ref="playBackButton" @click="playBackClick" >{{ isPlaying?"停止":"回放" }}</button>
+      <slot></slot>
+    </div>
   <hr/>
   <div>
     <EditPanelPreset
