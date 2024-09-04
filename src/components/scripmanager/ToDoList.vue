@@ -62,8 +62,9 @@ const removeFileFromTodo = (todoItem, fileName) => {
 }
 
 function createTodo() {
-  const listName = prompt('请输入清单名称:');
+  let listName = prompt('请输入清单名称:');
   if(!listName) { return; }
+  listName = listName.trim()
 
   let success = true
   todoList.value.forEach(item => {
