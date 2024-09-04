@@ -8,7 +8,12 @@ import {pathListListURL,pathListEditURL, socketURL, todoGetURL, todoRunURL, todo
 import {io} from "socket.io-client";
 import FileManager from "@/components/scripmanager/FileManager.vue";
 import ToDoList from "@/components/scripmanager/ToDoList.vue";
-import {useWebSocket} from "../../utils/websocket_listener_utils.js";
+import {
+  SOCKET_EVENT_PLAYBACK_END, SOCKET_EVENT_PLAYBACK_EXCEPTION,
+  SOCKET_EVENT_PLAYBACK_START,
+  SOCKET_EVENT_PLAYBACK_UPDATE,
+  useWebSocket
+} from "../../utils/websocket_listener_utils.js";
 const router = useRouter()
 
 const todoListRef = ref();  // 初始化为 null
@@ -42,18 +47,7 @@ function errorMsg(text) {
 }
 const {isConnected, socket} = useWebSocket(
     socketURL,
-    {
-      onKeyEvent: (data)=> {},
-      onPlaybackEvent: (data)=> {
-        if (data && data.result)  {
-          info(data.msg)
-          if (data.msg === "结束执行清单了") {
-            todoListRef.value.setTodoRunning(false)
-          }
-        }
-        else errorMsg(data.msg)
-      }
-    }
+    {}
 )
 onMounted(()=> {
   // 此时与子组件监听同一个todoList
@@ -62,10 +56,27 @@ onMounted(()=> {
   // watch(()=> todoListRef.value.todoList, ()=> {
   //     todoList.value = todoListRef.value.todoList
   // })
+
 })
 
 onActivated(()=> {
   console.log('activated')
+  socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> {
+    info(data)
+    todoListRef.value.setTodoRunning(true)
+  })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_UPDATE, (data)=> {
+    info(data)
+    todoListRef.value.setTodoRunning(true)
+  })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_END, (data)=> {
+    info(data)
+    todoListRef.value.setTodoRunning(false)
+  })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_EXCEPTION, (data)=> {
+    errorMsg(data)
+    todoListRef.value.setTodoRunning(false)
+  })
 })
 onDeactivated(()=> {
   console.log("deactivated")
@@ -101,7 +112,7 @@ function updateAllData() {
   <div>
     <h2>使用手册</h2>
     <h3>新建清单</h3>
-    <p>例如"打怪清单"、“采集清单", 用于存放将要执行的文件名称, 可以从右边的文件列表中添加文件到清单</p>
+    <p>例如"打怪清单"、“采集清单", 用于存放将要执行的文件名称, 可以从文件列表中添加文件到清单</p>
     <h3>执行清单</h3>
     <p>选中勾选框后，点击执行清单，则会执行清单下的所有json任务</p>
     <h3>保存清单</h3>
