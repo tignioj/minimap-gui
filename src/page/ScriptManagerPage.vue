@@ -13,7 +13,7 @@ import {
   SOCKET_EVENT_PLAYBACK_START,
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
-} from "../../utils/websocket_listener_utils.js";
+} from "@/utils/websocket_listener_utils.js";
 const router = useRouter()
 
 const todoListRef = ref();  // 初始化为 null

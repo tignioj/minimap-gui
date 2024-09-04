@@ -2,7 +2,7 @@
 import {onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
-import {isUndefinedNullOrEmpty} from "../../../utils/objutils.js";
+import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
 import {store} from "@/store.js";
 const openTodos =ref([])
 const todoList = store.todoList

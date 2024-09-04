@@ -1,7 +1,7 @@
 <script setup>
 import { defineProps, onBeforeUnmount, onMounted, onUpdated, reactive, ref, watch} from "vue";
 import {serverURL} from "@/api.js";
-import {useKeyBoardListener} from "../../../utils/keyboard_listener_utils.js";
+import {useKeyBoardListener} from "@/utils/keyboard_listener_utils.js";
 const {isCtrlPressed} = useKeyBoardListener()
 
 const props = defineProps({

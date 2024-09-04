@@ -32,14 +32,14 @@ import {
   faWater
 } from "@fortawesome/free-solid-svg-icons";
 import MyCanvas from "@/components/task/MyCanvas.vue";
-import {useKeyBoardListener} from "../../utils/keyboard_listener_utils.js";
-import {isUndefinedNullOrEmpty} from "../../utils/objutils.js";
+import {useKeyBoardListener} from "@/utils/keyboard_listener_utils.js";
+import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
 import {
   SOCKET_EVENT_PLAYBACK_END, SOCKET_EVENT_PLAYBACK_EXCEPTION,
   SOCKET_EVENT_PLAYBACK_START,
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
-} from "../../utils/websocket_listener_utils.js";
+} from "@/utils/websocket_listener_utils.js";
 import {useRoute} from "vue-router";
 import router from "@/router.js";
 import { store } from '@/store.js'

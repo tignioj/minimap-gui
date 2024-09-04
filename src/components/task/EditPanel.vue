@@ -3,7 +3,7 @@ import {defineProps, inject, onMounted, onUpdated, ref, watch} from "vue";
 import MoveMode from "@/components/task/MoveMode.vue";
 import PointAction from "@/components/task/PointAction.vue";
 import PointType from "@/components/task/PointType.vue";
-import {copyObject} from "../../../utils/objutils.js";
+import {copyObject} from "@/utils/objutils.js";
 const editPanel=ref(null)
 const xInput = ref(null)
 const yInput = ref(null)
@@ -18,7 +18,7 @@ defineExpose({
   hideEditPanel,
   showEditPanel
 })
-import {useMouse} from "../../../utils/mouse.js";
+import {useMouse} from "@/utils/mouse.js";
 import {injectKeyPointActions, injectKeyPointMoveModes} from "@/keys.js";
 // 自定义组合函数：响应式鼠标坐标，可以通过mouseClientX.value访问
 const {mousePageX, mousePageY} = useMouse()
