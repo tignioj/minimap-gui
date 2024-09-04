@@ -38,7 +38,7 @@ const todoStopURL= `${serverURL}/todo/stop`;
 //
 const saveConfigURL = `${serverURL}/config/save`;
 const getConfigURL = `${serverURL}/config/get`;
-
+const getFightTeamListURL = `${serverURL}/fight_team/list`;
 export {
     serverURL,
     positionURL,
@@ -57,4 +57,5 @@ export {
     todoStopURL,
     saveConfigURL,
     getConfigURL,
+    getFightTeamListURL
 };
