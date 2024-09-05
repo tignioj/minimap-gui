@@ -3,14 +3,14 @@
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
 import {onMounted, reactive, ref, watch} from "vue";
 import {
-  createFightTeamListURL,
+  createFightTeamListURL, deleteFightTeamListURL,
   getFightTeamContentURL,
-  getFightTeamListURL,
-  saveConfigURL,
+  getFightTeamListURL, runFightTeamListURL,
+  saveConfigURL, stopFightTeamListURL,
   updateFightTeamListURL,
 } from "@/api.js";
 import { pinyin } from "pinyin-pro";
-import ace from 'ace-builds'
+import ace, {edit} from 'ace-builds'
 // ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/')
 ace.config.set('basePath', '/node_modules/ace-builds/src-min-noconflict');
 import 'ace-builds/src-noconflict/ext-language_tools';
@@ -26,6 +26,16 @@ const teamAlias = ref('', { type: String })
 
 const msgElement = ref('')
 const fightTeamContent = ref('')
+
+
+function info(msg) {
+  msgElement.value.classList.remove("error-msg")
+  msgElement.value.innerText = msg
+}
+function errorMsg(msg) {
+  msgElement.value.classList.add("error-msg")
+  msgElement.value.innerText = msg
+}
 
 // function trim(txt) {
 //   return txt.replace(/[\s*?:"|<>\\\/\[\]\(\)_\.（）。]+/g, '');
@@ -51,9 +61,7 @@ const fightTeamContent = ref('')
 function updateFightTeamList() {
   fetch(getFightTeamListURL)
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        if (!response.ok) { throw new Error('Network response was not ok'); }
         return response.json();
       })
       .then(json => {
@@ -71,16 +79,8 @@ function updateFightTeamList() {
         console.error('There was a problem with the fetch operation:', error);
       });
 }
-
-function info(msg) {
-  msgElement.value.classList.remove("error-msg")
-  msgElement.value.innerText = msg
-}
-function errorMsg(msg) {
-  msgElement.value.classList.add("error-msg")
-  msgElement.value.innerText = msg
-}
 updateFightTeamList()
+
 function showFightTeam(team_name) {
   selectedFightTeam.value = team_name
       fetch(getFightTeamContentURL + '/' + team_name)
@@ -114,6 +114,11 @@ watch(selectedFightTeam, (nv, ov)=> {
 })
 function saveFightTeam() {
   const textContent = fightTeamContent.value
+  if (character1.value.length === 0 || character2.value.length === 0 || character3.value.length === 0)  {
+    errorMsg("名字不允许为空")
+    return
+  }
+
   const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
   let url;
   let method;
@@ -124,6 +129,8 @@ function saveFightTeam() {
     url = `${createFightTeamListURL}/${newTeamName}`
     method = 'POST'
   }
+  // const editor = ace.edit(aceRef.value);
+  // const content = editor.getValue();
   fetch(url,
       {
     method: method,
@@ -136,10 +143,10 @@ function saveFightTeam() {
         if (data.success) {
           info(data.message);
           selectedFightTeam.value = newTeamName
+          updateFightTeamList()
         } else {
           errorMsg(data.message)
         }
-        updateFightTeamList()
       })
       .catch(error => {
         console.error('Error:', error);
@@ -148,6 +155,10 @@ function saveFightTeam() {
 }
 function newFightTeam() {
   // 清空数据
+  cleanContent()
+}
+
+function cleanContent() {
   selectedFightTeam.value = ''
   fightTeamContent.value = ''
   character1.value = ''
@@ -156,18 +167,14 @@ function newFightTeam() {
   character4.value = ''
   teamAlias.value = ''
 }
-const aceOptions = ref({
-  enableBasicAutocompletion: true,
-  enableSnippets: true,
-  enableLiveAutocompletion: true,
-})
+
 
 function generateCompletions () {
   const character_arr = [ character1.value, character2.value, character3.value, character4.value ]
   const character_pinyin_map_arr = []
   character_arr.forEach(item=> {
     character_pinyin_map_arr.push(
-        {caption: pinyin(item, {'toneType':'none'}), value: item, meta: item}
+        {caption: pinyin(item, {toneType:'none', separator: ""}), value: item, meta: item}
     )
   })
   return character_pinyin_map_arr
@@ -180,13 +187,80 @@ const customCompleter = reactive({
   }
 });
 const aceRef = ref(null)
+
+function runFightTeam() {
+  const url = `${runFightTeamListURL}/${selectedFightTeam.value}`
+  fetch(url)
+      .then(response => {
+        if (!response.ok) { throw new Error('Network response was not ok'); }
+        return response.json(); })
+      .then(json => {
+        if (json.success === true)  info(json.message)
+        else errorMsg(json.message)
+      })
+      .catch(error => { errorMsg(error) });
+}
+function stopFightTeam() {
+  fetch(stopFightTeamListURL).then(response => {
+        if (!response.ok) { throw new Error('Network response was not ok'); }
+        return response.json();
+      })
+      .then(json => {
+        if (json.success === true)  info(json.message)
+        else errorMsg(json.message)
+      })
+      .catch(error => { errorMsg(error) });
+}
+function deleteFightTeam(item) {
+  if(!confirm(`确认删除${item}`)) return
+  const url = `${deleteFightTeamListURL}/${item}`
+  fetch(url, {
+    method: 'DELETE',
+  }).then(response => {
+      if (!response.ok) { throw new Error('Network response was not ok'); }
+      return response.json();
+    })
+    .then(json => {
+      if (json.success === true)  {
+        info(json.message)
+        cleanContent()
+        updateFightTeamList()
+      }
+      else errorMsg(json.message)
+    })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+}
+
 onMounted(()=> {
-  const editor = ace.edit("editor10")
+  // const editor = ace.edit("editor10")
+  const editor = ace.edit(aceRef.value)
   editor.session.setMode("ace/mode/c_cpp");
   editor.setTheme('ace/theme/monokai');
-  editor.setOptions(aceOptions.value);
+  editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true,
+      });
   editor.completers = [customCompleter]
-  const langTools = ace.require('ace/ext/language_tools');
+  // watch(()=>editor.getValue(), (nv, ov)=> {
+  //   console.log('编辑器内容改变:', nv)
+  // })
+
+  // 监听 Ace 编辑器内容变化，并同步到 fightTeamContent
+  editor.session.on('change', () => {
+    fightTeamContent.value = editor.getValue();
+  });
+
+  // 监听 fightTeamContent 变化，并同步更新到编辑器
+  watch(fightTeamContent, (newValue) => {
+    if (editor.getValue() !== newValue) {
+      editor.setValue(newValue, 1); // 第二个参数 1 用于保持光标位置
+    }
+  });
+
+  // const langTools = ace.require('ace/ext/language_tools');
   // langTools.addCompleter(customCompleter)
 })
 </script>
@@ -194,15 +268,14 @@ onMounted(()=> {
   <ul>
     <li v-for="team in teams" :key="team">
       <input v-model="selectedFightTeam" type="radio" name="team" :value="team" /> {{ team }}
+      <button @click="deleteFightTeam(team)">删除</button>
     </li>
   </ul>
   <div>
-    <fieldset>
+
+  </div>
+  <div>
       <div>
-<!--        1号:<input v-model="character1" type="text" />-->
-<!--        2号:<input v-model="character2" type="text" /><br/>-->
-<!--        3号:<input v-model="character3" type="text" />-->
-<!--        4号:<input v-model="character4" type="text" /><br/>-->
         <PinYinAutoComplete v-model="character1" >1号:</PinYinAutoComplete>
         <PinYinAutoComplete v-model="character2" >2号:</PinYinAutoComplete>
         <PinYinAutoComplete v-model="character3" >3号:</PinYinAutoComplete>
@@ -211,14 +284,16 @@ onMounted(()=> {
       <div>
         队伍简称:<input v-model="teamAlias" type="text" /> <br/>
       </div>
-    </fieldset>
   </div>
 
   <div>
     <button @click="newFightTeam">新建</button>
     <button @click="saveFightTeam">保存</button>
+    <button @click="runFightTeam" v-if="selectedFightTeam">运行战斗测试</button>
+    <button @click="stopFightTeam" v-if="selectedFightTeam">停止运行战斗测试</button>
     <div ref="msgElement"> </div>
-    <div id="editor10" style="width: 100%; height: 200px"></div>
+<!--    <div id="editor10" style="width: 100%; height: 200px"></div>-->
+    <div ref="aceRef" style="width: 100%; height: 200px"></div>
   </div>
 </template>
 
