@@ -38,7 +38,21 @@ const todoStopURL= `${serverURL}/todo/stop`;
 //
 const saveConfigURL = `${serverURL}/config/save`;
 const getConfigURL = `${serverURL}/config/get`;
+
 const getFightTeamListURL = `${serverURL}/fight_team/list`;
+const getFightTeamContentURL= `${serverURL}/fight_team/get`;
+const createFightTeamListURL = `${serverURL}/fight_team/create`;
+const deleteFightTeamListURL = `${serverURL}/fight_team/delete`;
+const updateFightTeamListURL = `${serverURL}/fight_team/update`;
+
+// get方法，传送一个文件名称给服务器，服务器从本地读取文件运行战斗脚本
+const runFightTeamFromSavedTextURL = `${serverURL}/fight_team/run`;
+// post方法，传输文件名以及文本内容，加载到服务器内存，从内存中解析战斗脚本
+const runFightTeamFromMemoryRL = `${serverURL}/fight_team/run_memory`;
+
+const stopFightTeamListURL = `${serverURL}/fight_team/stop`;
+const setDefaultFightTeamURL = `${serverURL}/fight_team/set_default`;
+
 export {
     serverURL,
     positionURL,
@@ -57,5 +71,15 @@ export {
     todoStopURL,
     saveConfigURL,
     getConfigURL,
-    getFightTeamListURL
+
+    getFightTeamListURL,
+    createFightTeamListURL,
+    deleteFightTeamListURL,
+    runFightTeamFromSavedTextURL,
+    runFightTeamFromMemoryRL,
+    updateFightTeamListURL,
+    stopFightTeamListURL,
+    getFightTeamContentURL,
+    setDefaultFightTeamURL,
+
 };
