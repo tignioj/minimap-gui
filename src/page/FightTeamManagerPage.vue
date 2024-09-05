@@ -6,7 +6,7 @@ import {
   createFightTeamListURL, deleteFightTeamListURL,
   getFightTeamContentURL,
   getFightTeamListURL, runFightTeamListURL,
-  saveConfigURL, stopFightTeamListURL,
+  setDefaultFightTeamURL, stopFightTeamListURL,
   updateFightTeamListURL,
 } from "@/api.js";
 import { pinyin } from "pinyin-pro";
@@ -57,7 +57,7 @@ function errorMsg(msg) {
 // watch(teamAlias, (nv,ov)=> {
 //   if(nv!==ov) { teamAlias.value = trim(nv); }
 // })
-
+const defaultTeam = ref('')
 function updateFightTeamList() {
   fetch(getFightTeamListURL)
       .then(response => {
@@ -66,8 +66,11 @@ function updateFightTeamList() {
       })
       .then(json => {
         if (json.success === true) {
+          const result = json.data
           teams.value.length = 0
-          teams.value.push(...json.data)
+          teams.value.push(...result.files)
+          defaultTeam.value = result.default
+
           if(teams.value.length > 0) {
             if (selectedFightTeam.value === '') {
               selectedFightTeam.value = teams.value[0]
@@ -233,6 +236,26 @@ function deleteFightTeam(item) {
       });
 }
 
+function setAsDefaultFightTeam(file_name) {
+  const url = `${setDefaultFightTeamURL}/${file_name}`
+  fetch(url, {
+    method: 'PUT',
+  }).then(response => {
+    if (!response.ok) { throw new Error('Network response was not ok'); }
+    return response.json();
+  }).then(json => {
+    if (json.success === true)  {
+        info(json.message)
+        defaultTeam.value = file_name
+        // updateFightTeamList()
+      }
+      else errorMsg(json.message)
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error);
+    });
+}
+
 onMounted(()=> {
   // const editor = ace.edit("editor10")
   const editor = ace.edit(aceRef.value)
@@ -269,10 +292,10 @@ onMounted(()=> {
     <li v-for="team in teams" :key="team">
       <input v-model="selectedFightTeam" type="radio" name="team" :value="team" /> {{ team }}
       <button @click="deleteFightTeam(team)">删除</button>
+      <button @click="setAsDefaultFightTeam(team)" :disabled="team===defaultTeam"> {{ team === defaultTeam?'当前默认':'设为默认' }}</button>
     </li>
   </ul>
   <div>
-
   </div>
   <div>
       <div>
