@@ -5,6 +5,7 @@ import {getFightTeamListURL} from "@/api.js";
 import {ref} from "vue";
 
 const teams = ref([])
+const defaultFightTeam = ref('')
 fetch(getFightTeamListURL)
     .then(response => {
       if (!response.ok) {
@@ -14,8 +15,10 @@ fetch(getFightTeamListURL)
     })
     .then(json => {
       if (json.success === true) {
+        const result = json.data
+        defaultFightTeam.value = result.default
         teams.value.length = 0
-        teams.value.push(...json.data)
+        teams.value.push(...result.files)
       }
     })
     .catch(error => {
@@ -28,7 +31,7 @@ const fightTeamSelectModel = defineModel({
 </script>
 <template>
   <select v-model="fightTeamSelectModel">
-    <option :value="null" selected >使用默认队伍(请在配置中设置)</option>
+    <option :value="null" selected >使用默认队伍({{ defaultFightTeam }})</option>
     <option v-for="(team, index) in teams" :key="index" :value="team">
       {{ team }}
     </option>
