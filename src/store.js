@@ -158,6 +158,30 @@ const charactersName = [
     "凯亚",
     "重云"
 ]
+const supportSkills = [
+    ['wait','wait(秒):等待多少秒'],
+    ['walk', 'walk(方向, 秒):方向包括wsad'],
+    ['j', 'jump简写，跳跃'],
+    ['jump', '跳跃'],
+    ['dash', 'dash(秒)冲刺'],
+    ['e', 'skill的别称,e技能元素战技'],
+    ['q', 'burst的别称, 元素爆发'],
+    ['skill', '元素战技，可以用字母e简写'],
+    ['w', 'w(秒)向前走多少秒'],
+    ['s', 's(秒)向后走多少秒'],
+    ['a', 'a(秒)向左走多少秒'],
+    ['d','d(s)向右走多少秒'],
+    ['burst', '元素爆发，可以用q简写'],
+    ['attack', 'attack(秒):连续攻击多少秒,不传参就是点一下'],
+    ['charge', 'charge(秒):长按攻击多少秒，特殊角色会自动处理'],
+    ['keyup', 'keyup(key):抬起按键'],
+    ['keydown', 'keydown(key):按下按键'],
+    ['keypress', 'keyprees(key):也就是先按下再松开'],
+    ['mousedown', 'mousedown(left|middle|right):按下鼠标, 不传参数就是左键left'],
+    ['mouseup', 'mouseup(left|middle|right):松开鼠标'],
+    ['click', 'click(left|middle|right):点击按钮, 不传参数就是左键left']
+]
+
 
 export const store = {
     fileStructure,
@@ -169,5 +193,6 @@ export const store = {
     logs,
     appendLogs,
     cleanLogs,
-    charactersName
+    charactersName,
+    supportSkills
 }
