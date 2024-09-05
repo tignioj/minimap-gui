@@ -30,7 +30,7 @@ const onInputChange = () => {
   });
 
   filteredSuggestions.value = suggestions;
-  highlightedIndex.value = -1; // 每次输入时重置高亮
+  highlightedIndex.value = 0; // 每次输入时重置高亮
 };
 
 // 监听Tab、ArrowDown和ArrowUp键，自动选择和移动高亮建议
