@@ -5,7 +5,7 @@ import {onMounted, reactive, ref, watch} from "vue";
 import {
   createFightTeamListURL, deleteFightTeamListURL,
   getFightTeamContentURL,
-  getFightTeamListURL, runFightTeamListURL,
+  getFightTeamListURL, runFightTeamFromMemoryRL, runFightTeamFromSavedTextURL,
   setDefaultFightTeamURL, stopFightTeamListURL,
   updateFightTeamListURL,
 } from "@/api.js";
@@ -117,10 +117,8 @@ watch(selectedFightTeam, (nv, ov)=> {
 })
 function saveFightTeam() {
   const textContent = fightTeamContent.value
-  if (character1.value.length === 0 || character2.value.length === 0 || character3.value.length === 0)  {
-    errorMsg("名字不允许为空")
-    return
-  }
+  // 校验
+  if (!verifyContent())  return;
 
   const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
   let url;
@@ -174,10 +172,16 @@ function cleanContent() {
 
 function generateCompletions () {
   const character_arr = [ character1.value, character2.value, character3.value, character4.value ]
+
   const character_pinyin_map_arr = []
   character_arr.forEach(item=> {
     character_pinyin_map_arr.push(
         {caption: pinyin(item, {toneType:'none', separator: ""}), value: item, meta: item}
+    )
+  })
+  store.supportSkills.forEach(item=> {
+    character_pinyin_map_arr.push(
+        {caption: pinyin(item[0], {toneType:'none', separator: ""}), value: item[0], meta: item[1]}
     )
   })
   return character_pinyin_map_arr
@@ -192,7 +196,7 @@ const customCompleter = reactive({
 const aceRef = ref(null)
 
 function runFightTeam() {
-  const url = `${runFightTeamListURL}/${selectedFightTeam.value}`
+  const url = `${runFightTeamFromSavedTextURL}/${selectedFightTeam.value}`
   fetch(url)
       .then(response => {
         if (!response.ok) { throw new Error('Network response was not ok'); }
@@ -203,6 +207,29 @@ function runFightTeam() {
       })
       .catch(error => { errorMsg(error) });
 }
+
+function runFightTeamFromMemory() {
+  if(!verifyContent()) { return }
+
+  const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
+  const url = `${runFightTeamFromMemoryRL}/${newTeamName}`
+  fetch(url, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'text/plain' // 指定发送的数据格式为纯文本
+    },
+    body: fightTeamContent.value
+  })
+      .then(response => {
+        if (!response.ok) { throw new Error('Network response was not ok'); }
+        return response.json(); })
+      .then(json => {
+        if (json.success === true)  info(json.message)
+        else errorMsg(json.message)
+      })
+      .catch(error => { errorMsg(error) });
+}
+
 function stopFightTeam() {
   fetch(stopFightTeamListURL).then(response => {
         if (!response.ok) { throw new Error('Network response was not ok'); }
@@ -286,6 +313,16 @@ onMounted(()=> {
   // const langTools = ace.require('ace/ext/language_tools');
   // langTools.addCompleter(customCompleter)
 })
+function verifyContent() {
+  // 检查名字
+  if (character1.value.length === 0 || character2.value.length === 0 || character3.value.length === 0)  {
+    errorMsg("名字不允许为空")
+    return false
+  }
+  // 检查文本是否出现了输入框中没有的名字
+
+  return true
+}
 </script>
 <template>
   <ul>
@@ -312,8 +349,8 @@ onMounted(()=> {
   <div>
     <button @click="newFightTeam">新建</button>
     <button @click="saveFightTeam">保存</button>
-    <button @click="runFightTeam" v-if="selectedFightTeam">运行战斗测试</button>
-    <button @click="stopFightTeam" v-if="selectedFightTeam">停止运行战斗测试</button>
+    <button @click="runFightTeamFromMemory" v-if="verifyContent">运行战斗测试</button>
+    <button @click="stopFightTeam" v-if="verifyContent">停止运行战斗测试</button>
     <div ref="msgElement"> </div>
 <!--    <div id="editor10" style="width: 100%; height: 200px"></div>-->
     <div ref="aceRef" style="width: 100%; height: 200px"></div>
