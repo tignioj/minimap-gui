@@ -267,15 +267,7 @@ const getMousePos = (event) => {
   };
 };
 
-// 为了防止内存泄漏，可以在组件卸载前移除事件监听器
-onBeforeUnmount(() => {
-  if (myCanvas.value) {
-    myCanvas.value.removeEventListener('mousedown', startDrag);
-    myCanvas.value.removeEventListener('mousemove', dragging);
-    myCanvas.value.removeEventListener('mouseup', endDrag);
-    myCanvas.value.removeEventListener('mouseleave', endDrag);
-  }
-});
+
 onMounted(()=> {
   drawMap(0,0)
 })
