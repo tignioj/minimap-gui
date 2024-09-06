@@ -14,8 +14,6 @@ import {
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
-const router = useRouter()
-
 const todoListRef = ref();  // 初始化为 null
 const todoList = ref([]); // 初始化为空数组
 // 监控 todoListRef.value.todoList 的变化
@@ -45,7 +43,7 @@ function errorMsg(text) {
   msgElement.value.innerText = text;
   msgElement.value.classList.add('error-msg')
 }
-const {isConnected, socket} = useWebSocket(
+const {isConnected, socket, disconnectSocket} = useWebSocket(
     socketURL,
     {}
 )
@@ -80,6 +78,7 @@ onActivated(()=> {
 })
 onDeactivated(()=> {
   console.log("deactivated")
+  disconnectSocket()
 })
 
 const addFilesToList = (todoItem, files) => {
@@ -94,6 +93,9 @@ function updateAllData() {
 </script>
 <template>
   <div class="container">
+    <div>
+      <p ref="msgElement"></p>
+    </div>
     <ToDoList ref="todoListRef" />
     <FileManager
         @filesChanged="updateAllData"
@@ -105,9 +107,6 @@ function updateAllData() {
 <!--        @add-to-list="todoListRef?.addToList"-->
 <!--        v-model:todoSelect="todoSelect"-->
 <!--        v-model:todoList="todoListRef?.todoList" />-->
-  </div>
-  <div>
-    <p ref="msgElement"></p>
   </div>
   <div>
     <h2>使用手册</h2>
