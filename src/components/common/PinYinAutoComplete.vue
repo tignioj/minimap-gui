@@ -1,10 +1,23 @@
 
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {pinyin} from 'pinyin-pro';
 import {store} from "@/store.js";
+const props = defineProps({
+  dataList: {
+    type: Array,
+    required: true
+  },
+  validator: {
+    type: Function,
+  },
+  placeholder: {
+    type: String,
+    default: null
+  }
+})
 
-const dataList = store.charactersName
+const dataList = props.dataList
 
 // const inputValue = ref('');
 const inputValue = defineModel({
@@ -79,19 +92,33 @@ const hideSuggestions = () => {
 const showSuggestions = () => {
   showDropdown.value = true;
 };
+const inputRef = ref(null)
+onMounted(()=> {
+  if(props.validator) {
+    watch(inputValue, (newVal, oldVal) => {
+      if(props.validator(newVal, oldVal)) {
+        inputRef.value.classList.remove("invalid-input")
+        inputRef.value.classList.add("valid-input")
+      } else {
+        inputRef.value.classList.remove("valid-input")
+        inputRef.value.classList.add("invalid-input")
+      }
+    })
+  }
+
+})
 </script>
 
-
 <template>
-  <div>
     <slot></slot>
     <input
+        ref="inputRef"
         v-model="inputValue"
         @input="onInputChange"
         @keydown="onKeyDown"
         @blur="hideSuggestions"
         @focus="showSuggestions"
-        placeholder="输入汉字或拼音"
+        :placeholder="placeholder"
     />
     <ul v-if="showDropdown && filteredSuggestions.length > 0" class="suggestions">
       <li
@@ -103,7 +130,6 @@ const showSuggestions = () => {
         {{ suggestion }}
       </li>
     </ul>
-  </div>
 </template>
 
 <style scoped>
@@ -118,6 +144,12 @@ const showSuggestions = () => {
 
 .suggestions li {
   cursor: pointer;
+}
+.invalid-input {
+  border: 2px solid red;
+}
+.valid-input {
+  border: 2px solid green;
 }
 
 .suggestions li.highlighted {
