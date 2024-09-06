@@ -1,7 +1,7 @@
 <script setup>
 
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
-import {onMounted, reactive, ref, watch} from "vue";
+import {computed, onMounted, reactive, ref, watch} from "vue";
 import {
   createFightTeamListURL, deleteFightTeamListURL,
   getFightTeamContentURL,
@@ -9,7 +9,7 @@ import {
   setDefaultFightTeamURL, stopFightTeamListURL,
   updateFightTeamListURL,
 } from "@/api.js";
-import { pinyin } from "pinyin-pro";
+import {html, pinyin} from "pinyin-pro";
 import ace, {edit} from 'ace-builds'
 // ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/')
 ace.config.set('basePath', '/node_modules/ace-builds/src-min-noconflict');
@@ -115,10 +115,25 @@ watch(selectedFightTeam, (nv, ov)=> {
     showFightTeam(nv)
   }
 })
+// 自定义异常类
+class ContentError extends Error {
+  constructor(message) {
+    // 调用父类的构造函数并传递错误消息
+    super(message);
+
+    // 为了保持自定义错误类的名称
+    this.name = this.constructor.name;
+
+    // 如果需要，可以添加额外的属性
+    this.timestamp = new Date();
+  }
+}
+
 function saveFightTeam() {
   const textContent = fightTeamContent.value
   // 校验
-  if (!verifyContent())  return;
+  try{ verifyContent() }
+  catch(error) { if(error instanceof ContentError) { errorMsg(error.message); return; } }
 
   const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
   let url;
@@ -179,9 +194,9 @@ function generateCompletions () {
         {caption: pinyin(item, {toneType:'none', separator: ""}), value: item, meta: item}
     )
   })
-  store.supportSkills.forEach(item=> {
+  docs.forEach(item=> {
     character_pinyin_map_arr.push(
-        {caption: pinyin(item[0], {toneType:'none', separator: ""}), value: item[0], meta: item[1]}
+        {caption: pinyin(item.method_name, {toneType:'none', separator: ""}), value: item.method_name, meta: item.summary}
     )
   })
   return character_pinyin_map_arr
@@ -209,7 +224,9 @@ function runFightTeam() {
 }
 
 function runFightTeamFromMemory() {
-  if(!verifyContent()) { return }
+  // 校验
+  try{ verifyContent() }
+  catch(error) { if(error instanceof ContentError) { errorMsg(error.message); return; } }
 
   const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
   const url = `${runFightTeamFromMemoryRL}/${newTeamName}`
@@ -315,14 +332,182 @@ onMounted(()=> {
 })
 function verifyContent() {
   // 检查名字
-  if (character1.value.length === 0 || character2.value.length === 0 || character3.value.length === 0)  {
-    errorMsg("名字不允许为空")
-    return false
+  if (character1.value.length === 0 || character2.value.length === 0 || character3.value.length === 0 || character4.value.length === 0)  {
+    throw ContentError("名字不允许为空")
   }
-  // 检查文本是否出现了输入框中没有的名字
-
   return true
+  // 检查文本是否出现了输入框中没有的名字
 }
+const shouldShow = computed(()=> {
+  return !(character1.value.length === 0 || character2.value.length === 0
+      || character3.value.length === 0 || character4.value.length === 0)
+})
+
+const docs = [
+  {
+    "method_name": "wait",
+    "summary": "等待",
+    "params": [
+      "duration: required, 等待持续时间"
+    ],
+    "return": [
+      "success: 是否成功"
+    ]
+  },
+  {
+    "method_name": "j",
+    "summary": "跳跃，jump的简写",
+    "params": [],
+    "return": null
+  },
+  {
+    "method_name": "jump",
+    "summary": "跳跃，可以用字符'j'简写",
+    "params": [],
+    "return": null
+  },
+  {
+    "method_name": "dash",
+    "summary": "冲刺",
+    "params": [
+      "duration: 冲刺时长"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "e",
+    "summary": "元素战技",
+    "params": [
+      "hold: 传入hold则表示长按，不传参数则短按.注：纳西妲长按会自动转圈"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "skill",
+    "summary": "元素战技, 可以用字符'e'简写",
+    "params": [
+      "hold: 传入hold则表示长按，不传参数则短按.注：纳西妲长按会自动转圈"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "q",
+    "summary": "元素爆发, burst的简写",
+    "params": [],
+    "return": null
+  },
+  {
+    "method_name": "burst",
+    "summary": "元素爆发,可以用q简写",
+    "params": [],
+    "return": null
+  },
+  {
+    "method_name": "walk",
+    "summary": "行走",
+    "params": [
+      "direction: required, w|s|a|d 向四个方向行走",
+      "duration: required, 持续走多少秒"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "w",
+    "summary": "向前面行走",
+    "params": [
+      "duration: required, 持续时间"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "s",
+    "summary": "向后面行走",
+    "params": [
+      "duration: required, 持续时间"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "a",
+    "summary": "向左边行走",
+    "params": [
+      "duration: required, 持续时间"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "d",
+    "summary": "向右边行走",
+    "params": [
+      "duration: required, 持续时间"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "attack",
+    "summary": "连续攻击(秒). 0.2秒攻击一次",
+    "params": [
+      "duration: 持续时长"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "charge",
+    "summary": "重击，即长按攻击",
+    "params": [
+      "duration: 持续时长"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "keydown",
+    "summary": "键盘按下",
+    "params": [
+      "key: required, 按键名称"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "keyup",
+    "summary": "抬起按键",
+    "params": [
+      "key: required, 按键名称"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "keypress",
+    "summary": "按下后抬起",
+    "params": [
+      "key: required, 按键名称"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "mousedown",
+    "summary": "鼠标按下按键",
+    "params": [
+      "button: left|middle|right 分别表示鼠标左键、中键、右键，不传参数则默认左键"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "mouseup",
+    "summary": "鼠标按键抬起",
+    "params": [
+      "button: left|middle|right 分别表示鼠标左键、中键、右键，不传参数则默认左键"
+    ],
+    "return": null
+  },
+  {
+    "method_name": "click",
+    "summary": "点击鼠标",
+    "params": [
+      "button: left|middle|right 分别表示鼠标左键、中键、右键，不传参数则默认左键"
+    ],
+    "return": null
+  }
+]
 </script>
 <template>
   <ul>
@@ -336,10 +521,10 @@ function verifyContent() {
   </div>
   <div>
       <div>
-        <PinYinAutoComplete v-model="character1" >1号:</PinYinAutoComplete>
-        <PinYinAutoComplete v-model="character2" >2号:</PinYinAutoComplete>
-        <PinYinAutoComplete v-model="character3" >3号:</PinYinAutoComplete>
-        <PinYinAutoComplete v-model="character4" >4号:</PinYinAutoComplete>
+        <PinYinAutoComplete :data-list="store.charactersName" v-model="character1" >1号:</PinYinAutoComplete>
+        <PinYinAutoComplete :data-list="store.charactersName" v-model="character2" >2号:</PinYinAutoComplete> <br/>
+        <PinYinAutoComplete :data-list="store.charactersName" v-model="character3" >3号:</PinYinAutoComplete>
+        <PinYinAutoComplete :data-list="store.charactersName" v-model="character4" >4号:</PinYinAutoComplete>
       </div>
       <div>
         队伍简称:<input v-model="teamAlias" type="text" /> <br/>
@@ -349,16 +534,37 @@ function verifyContent() {
   <div>
     <button @click="newFightTeam">新建</button>
     <button @click="saveFightTeam">保存</button>
-    <button @click="runFightTeamFromMemory" v-if="verifyContent">运行战斗测试</button>
-    <button @click="stopFightTeam" v-if="verifyContent">停止运行战斗测试</button>
+    <button @click="runFightTeamFromMemory" v-if="shouldShow">运行战斗测试</button>
+    <button @click="stopFightTeam" v-if="shouldShow">停止战斗测试</button>
     <div ref="msgElement"> </div>
 <!--    <div id="editor10" style="width: 100%; height: 200px"></div>-->
-    <div ref="aceRef" style="width: 100%; height: 200px"></div>
+    <div ref="aceRef" style="width: 100%; height: 400px"></div>
+  </div>
+
+  <div>
+    <table>
+      <tr>
+        <th> 方法名称 </th>
+        <th>说明</th>
+        <th>参数</th>
+      </tr>
+      <tr v-for="doc in docs" v-bind:key="doc.method_name">
+        <td>{{doc.method_name}}</td>
+        <td>{{doc.summary.replaceAll("required", "[必填]")}}</td>
+        <td>
+          <div v-for="param in doc.params">
+            {{param.replace("required", "[必填]")}} <br/>
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>
 </template>
 
 <style scoped>
-
+table, th, td {
+  border:1px solid black;
+}
 .error-msg {
   color: red;
 }
