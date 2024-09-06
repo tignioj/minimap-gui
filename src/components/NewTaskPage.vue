@@ -4,10 +4,10 @@ import {
   playBackURL,
   positionURL,
   socketURL,
-  pathListFileURL, pathListSaveURL
+  pathListFileURL, pathListSaveURL, deleteFightTeamListURL
 } from '@/api';
 import { io } from 'socket.io-client';
-import {onMounted, ref, onUpdated, watch, onUnmounted, provide} from "vue";
+import {onMounted, ref, onUpdated, watch, onUnmounted, provide, onActivated} from "vue";
 import EditPanel from "@/components/task/EditPanel.vue";
 import EditPanelPreset from "@/components/task/EditPanelPreset.vue";
 import Manual from "@/components/task/Manual.vue";
@@ -15,6 +15,8 @@ import PointList from "@/components/task/PointList.vue";
 import CountrySelect from "@/components/task/CountrySelect.vue";
 import 'ace-builds/src-noconflict/mode-json'; // Load the language definition file used below
 import 'ace-builds/src-noconflict/theme-monokai';
+import {isValidDirectoryName} from "@/utils/string_validation_utils.js"
+
 import {
   injectKeyCNTextMap,
   injectKeyIconMap,
@@ -44,6 +46,7 @@ import {useRoute} from "vue-router";
 import router from "@/router.js";
 import { store } from '@/store.js'
 import {VAceEditor} from "vue3-ace-editor";
+import PinYinAutoComplete from "@/components/common/PinYinAutoComplete.vue";
 let intervalID;
 let jsonContent = ref('')
 
@@ -206,8 +209,14 @@ function errorMsg(text) {
 function setPlayingRecord(playing) {
   isPlaying.value = playing;
 }
+
 function getPathObject() {
   const name = nameInput.value.trim()
+  if (!isValidDirectoryName(name)){
+    throw "名称不合法"
+  }
+
+
   const country = countrySelect.value.trim()
   const anchorName = anchorNameInput.value.trim()
   const poj =  {
@@ -576,68 +585,77 @@ const appendNewNode = (node) => {
 
 // 保存到服务器
 function saveRecordButtonClick() {
-  const data = getPathObject()
-  if(data.positions.length < 1) {
-    errorMsg("空路径，禁止保存！")
-    return
+  try{
+    const data = getPathObject()
+    if(data.positions.length < 1) {
+      errorMsg("空路径，禁止保存！")
+      return
+    }
+    const count = data.positions.filter(item => item.type === "target").length;
+    const oldFileName = editFileName;
+    const newFileName = `${data.name}_${data.country}_${count}个_${formatDateTime()}.json`
+
+    fetch(`${pathListSaveURL}/${oldFileName}?new_filename=${newFileName}` , {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
+      },
+      body: JSON.stringify(data) // 将 JavaScript 对象转换为 JSON 字符串
+    }).then(response => {
+      if (!response.ok) { throw new Error('Network response was not ok ' + response.statusText); } return response.json(); }) // 解析响应为 JSON
+        .then(data => {
+          console.log('Success:', data); // 处理成功的响应
+          const result = data.data
+          if (data.success === true) {
+            info('保存到了' + result.full_path)
+            const currentPath = route.fullPath
+            let newPath;
+            if(currentPath.includes(".json"))  // 说明正在编辑文件
+              // 替换掉旧的文件名称
+              newPath = currentPath.substring(0,currentPath.lastIndexOf("/")+1) + result.new_filename;
+            else
+              newPath = currentPath + '/' +  result.new_filename
+            editFileName = result.new_filename
+
+            store.updateFileStructure()
+            store.updateTodoList()
+            console.log('又跳转一次', newPath)
+            router.replace(newPath)
+            // router.push(newPath)
+            // 通知ScripManager更新数据
+          } else {
+            errorMsg('保存失败' + data.message)
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error); // 处理错误
+          errorMsg(error)
+        });
+  } catch(err){
+    errorMsg(err)
   }
-  const count = data.positions.filter(item => item.type === "target").length;
-  const oldFileName = editFileName;
-  const newFileName = `${data.name}_${data.country}_${count}个_${formatDateTime()}.json`
 
-  fetch(`${pathListSaveURL}/${oldFileName}?new_filename=${newFileName}` , {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
-    },
-    body: JSON.stringify(data) // 将 JavaScript 对象转换为 JSON 字符串
-  })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json(); // 解析响应为 JSON
-      })
-      .then(data => {
-        console.log('Success:', data); // 处理成功的响应
-        const result = data.data
-        if (data.success === true) {
-          info('保存到了' + result.full_path)
-          const currentPath = route.fullPath
-          let newPath;
-          if(currentPath.includes(".json"))  // 说明正在编辑文件
-            // 替换掉旧的文件名称
-            newPath = currentPath.substring(0,currentPath.lastIndexOf("/")+1) + result.new_filename;
-          else
-            newPath = currentPath + '/' +  result.new_filename
-          editFileName = result.new_filename
-
-          store.updateFileStructure()
-          store.updateTodoList()
-          console.log('又跳转一次', newPath)
-          router.replace(newPath)
-          // router.push(newPath)
-          // 通知ScripManager更新数据
-        } else {
-          errorMsg('保存失败' + data.message)
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error); // 处理错误
-        errorMsg(error)
-      });
 }
 
 onUpdated(()=> {
   if(isShowJSONContent.value) {
-    jsonContent.value = JSON.stringify(getPathObject(), null, 2);
+    try {
+      const poj = getPathObject()
+      jsonContent.value = JSON.stringify(poj, null, 2);
+    } catch(e) {
+      console.error(e)
+    }
   }
 })
-// function checkJson() {
-//   const poj = getPathObject()
-//   jsonContent.value = JSON.stringify(poj, null, 2)
-//   console.log(poj)
-// }
+const folderAutoComplete = ref([])
+store.fileStructure.value.forEach((item) => {
+  folderAutoComplete.value.push(item.name)
+})
+
+function validator(nv,ov) {
+  if(nv) { return isValidDirectoryName(nv) }
+}
+
 const isShowJSONContent = ref(false)
 </script>
 <template>
@@ -682,10 +700,12 @@ const isShowJSONContent = ref(false)
         :value="jsonContent"
         lang="json"
         theme="monokai"
-        style="height: 300px;" />
+        style="height: 500px;" />
   </div>
     <div>
-      <label>名称<input type="text" placeholder="名称_附近标识" v-model="nameInput" /></label>
+<!--      <label>[必填]存储目录<input type="text" placeholder="名称" v-model="folderInput" /></label>-->
+      <PinYinAutoComplete placeholder="名称_附近标识" :validator="validator" :data-list="folderAutoComplete" v-model="nameInput" >名称:</PinYinAutoComplete>
+<!--      <label>附近地名:<input type="text" placeholder="璃月港口东北" v-model="nameInput" /></label> <br/>-->
       <label>传送点所在国家</label>
       <CountrySelect v-model="countrySelect" />
       <label>传送锚点名称<input type="text" placeholder="传送锚点" v-model="anchorNameInput"/></label>
