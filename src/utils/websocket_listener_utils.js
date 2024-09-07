@@ -1,4 +1,4 @@
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import {ref, onMounted, onBeforeUnmount, onDeactivated, onActivated} from 'vue';
 import { io } from 'socket.io-client';
 export const SOCKET_EVENT_PLAYBACK_START = 'socket_event_playback_start'
 export const SOCKET_EVENT_PLAYBACK_UPDATE = 'socket_event_playback_update'
@@ -30,11 +30,7 @@ export function useWebSocket(socketURL, {
 
     };
 
-    onMounted(() => {
-        connectSocket();
-    });
-
-    onBeforeUnmount(() => {
+    const disconnectSocket = () => {
         if (socket.value) {
             try {
                 socket.value.disconnect(true);
@@ -42,10 +38,19 @@ export function useWebSocket(socketURL, {
                 debugger
             }
         }
+    }
+    onMounted(() => {
+        connectSocket();
+    });
+
+    onBeforeUnmount(() => {
+        disconnectSocket()
     });
 
     return {
         socket,
         isConnected,
+        connectSocket,
+        disconnectSocket
     };
 }

@@ -43,9 +43,9 @@ function errorMsg(text) {
   msgElement.value.innerText = text;
   msgElement.value.classList.add('error-msg')
 }
-const {isConnected, socket, disconnectSocket} = useWebSocket(
+const {isConnected, socket, connectSocket,disconnectSocket} = useWebSocket(
     socketURL,
-    {}
+    ()=>{}
 )
 onMounted(()=> {
   // 此时与子组件监听同一个todoList
@@ -58,6 +58,7 @@ onMounted(()=> {
 })
 
 onActivated(()=> {
+  connectSocket()
   console.log('activated')
   socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> {
     info(data)
@@ -116,7 +117,7 @@ function updateAllData() {
     <p>选中勾选框后，点击执行清单，则会执行清单下的所有json任务</p>
     <h3>保存清单</h3>
     <p>点击保存后，清单将被保存到_internal/resources/user/todo.json</p>
-    <p>右边栏的文件目录在_internal/resources/pathlist</p>
+    <p>记录的json文件目录在_internal/resources/pathlist</p>
   </div>
 </template>
 
