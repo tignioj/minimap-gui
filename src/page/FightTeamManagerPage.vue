@@ -11,9 +11,16 @@ import {
 } from "@/api.js";
 import {html, pinyin} from "pinyin-pro";
 import ace, {edit} from 'ace-builds'
-// ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/')
-ace.config.set('basePath', '/node_modules/ace-builds/src-min-noconflict');
-import 'ace-builds/src-noconflict/ext-language_tools';
+import extTool from 'ace-builds/src-noconflict/ext-language_tools';
+import modeC_Cpp from 'ace-builds/src-noconflict/mode-c_cpp';
+import snippedC_Cpp from 'ace-builds/src-noconflict/snippets/c_cpp';
+import monokai from "ace-builds/src-noconflict/theme-monokai";
+
+ace.config.setModuleUrl('ace/ext/language_tools', extTool);
+ace.config.setModuleUrl("ace/mode/c_cpp", modeC_Cpp);
+ace.config.setModuleUrl("ace/theme/monokai", monokai);
+ace.config.setModuleUrl("ace/snippets/c_cpp", snippedC_Cpp);
+
 import {store} from "@/store.js";
 import PinYinAutoComplete from "@/components/common/PinYinAutoComplete.vue";
 const teams = ref([])
@@ -167,7 +174,7 @@ function saveFightTeam() {
       .catch(error => {
         console.error('Error:', error);
         errorMsg('保存失败' + String(error))
-      });
+      })
 }
 function newFightTeam() {
   // 清空数据
@@ -539,9 +546,11 @@ const docs = [
     <div ref="msgElement"> </div>
 <!--    <div id="editor10" style="width: 100%; height: 200px"></div>-->
     <div ref="aceRef" style="width: 100%; height: 400px"></div>
+
   </div>
 
   <div>
+    <p>采用和<a href="https://bgi.huiyadan.com/feats/domain.html#%E6%88%98%E6%96%97%E7%AD%96%E7%95%A5%E8%84%9A%E6%9C%AC%E7%BC%96%E5%86%99">BGI一样的战斗脚本语言</a>，但是我这个没做识别，所以要自己指定角色位置</p>
     <table>
       <tr>
         <th> 方法名称 </th>
