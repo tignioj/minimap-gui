@@ -79,7 +79,9 @@ function updateFightTeamList() {
           defaultTeam.value = result.default
 
           if(teams.value.length > 0) {
-            if (selectedFightTeam.value === '') {
+            if (result.default) {
+              selectedFightTeam.value = result.default
+            } else if (selectedFightTeam.value === '') {
               selectedFightTeam.value = teams.value[0]
             }
           }
