@@ -5,6 +5,7 @@ import {inject, onActivated, onMounted, ref, watch} from "vue";
 import {pathListRemoveURL, pathListListURL, pathListSaveURL, playBackURL} from "@/api.js";
 import router from "@/router.js";
 import {store} from "@/store.js";
+import PinYinAutoComplete from "@/components/common/PinYinAutoComplete.vue";
 const openFolders =ref([])
 const fileStructure = ref(store.fileStructure)
 // 文件过滤功能
@@ -174,12 +175,23 @@ function info(msg) {
 function errorMsg(msg) {
   console.error(msg)
 }
+const folders = ref([])
+watch(fileStructure, (nv, ov)=> {
+  if(nv) {
+    folders.value.length = 0
+    nv.forEach((item)=> {
+      folders.value.push(item.name)
+    })
+  }
+  console.log(folders)
+}, {deep: true})
 </script>
 
 <template>
   <div class="file-management">
     <!-- 文件管理功能 -->
-    <input type="text" v-model="fileSearchInput" placeholder="搜索文件">
+<!--    <input type="text" v-model="fileSearchInput" placeholder="搜索文件">-->
+    <pin-yin-auto-complete v-model="fileSearchInput" :data-list="folders" placeholder="搜索文件" />
     <br/>
     <label for="todoSelect">已选择{{ selectedFiles.length }}个文件</label>
     <select v-model="todoSelect" :disabled="todoList.length===0">
