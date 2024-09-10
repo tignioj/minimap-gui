@@ -57,6 +57,10 @@ const setDefaultFightTeamURL = `${serverURL}/fight_team/set_default`;
 const runDailyMissionTaskURL= `${serverURL}/daily_mission/run`;
 const stopDailyMissionTaskURL= `${serverURL}/daily_mission/stop`;
 
+// 地脉
+const runLeyLineOutcropURL= `${serverURL}/leyline_outcrop/run`;
+const stopLeyLineOutcropURL= `${serverURL}/leyline_outcrop/stop`;
+
 export {
     serverURL,
     positionURL,
@@ -89,4 +93,8 @@ export {
     // 每日委托
     runDailyMissionTaskURL,
     stopDailyMissionTaskURL,
+
+    // 地脉
+    runLeyLineOutcropURL,
+    stopLeyLineOutcropURL
 };

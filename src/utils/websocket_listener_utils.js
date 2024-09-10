@@ -13,6 +13,12 @@ export const SOCKET_EVENT_DAILY_MISSION_UPDATE = 'socket_event_daily_mission_upd
 export const SOCKET_EVENT_DAILY_MISSION_END = 'socket_event_daily_mission_end'
 export const SOCKET_EVENT_DAILY_MISSION_EXCEPTION = 'socket_event_daily_mission_exception'
 
+// 地脉
+export const SOCKET_EVENT_LEYLINE_OUTCROP_START = 'socket_event_leyline_mission_start'
+export const SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE = 'socket_event_leyline_outcrop_update'
+export const SOCKET_EVENT_LEYLINE_OUTCROP_END = 'socket_event_leyline_outcrop_end'
+export const SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION = 'socket_event_leyline_outcrop_exception'
+
 export function useWebSocket(socketURL, {
     onKeyEvent = null,
 }) {

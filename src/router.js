@@ -9,6 +9,7 @@ import LogPage from "@/page/LogPage.vue";
 import FightTeamManagerPage from "@/page/FightTeamManagerPage.vue";
 import AboutPage from "@/page/AboutPage.vue";
 import DailyMissionPage from "@/page/DailyMissionPage.vue";
+import LeyLineOutCrop from "@/page/LeyLineOutCrop.vue";
 
 const routes = [
     { path: '/', component: ScriptManagerPage, meta: { keepAlive: true }, // 需要缓存
@@ -25,6 +26,9 @@ const routes = [
 
     { path: '/task/gouliang/edit', component: NewGouLiangTaskPage},
     { path: '/task/gouliang/edit/:fileName', component: NewGouLiangTaskPage},
+
+
+    { path: '/leyline', component: LeyLineOutCrop},
     { path: '/logs', component: LogPage},
     { path: '/team', component: FightTeamManagerPage},
     { path: '/about', component: AboutPage},
