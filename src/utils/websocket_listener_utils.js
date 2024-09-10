@@ -1,10 +1,17 @@
 import {ref, onMounted, onBeforeUnmount, onDeactivated, onActivated} from 'vue';
 import { io } from 'socket.io-client';
+
 export const SOCKET_EVENT_PLAYBACK_START = 'socket_event_playback_start'
 export const SOCKET_EVENT_PLAYBACK_UPDATE = 'socket_event_playback_update'
 export const SOCKET_EVENT_PLAYBACK_END = 'socket_event_playback_end'
 export const SOCKET_EVENT_PLAYBACK_EXCEPTION = 'socket_event_playback_exception'
 export const SOCKET_EVENT_KEY_EVENT = 'key_event'
+
+
+export const SOCKET_EVENT_DAILY_MISSION_START = 'socket_event_daily_mission_start'
+export const SOCKET_EVENT_DAILY_MISSION_UPDATE = 'socket_event_daily_mission_update'
+export const SOCKET_EVENT_DAILY_MISSION_END = 'socket_event_daily_mission_end'
+export const SOCKET_EVENT_DAILY_MISSION_EXCEPTION = 'socket_event_daily_mission_exception'
 
 export function useWebSocket(socketURL, {
     onKeyEvent = null,
