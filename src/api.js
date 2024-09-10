@@ -53,6 +53,10 @@ const runFightTeamFromMemoryRL = `${serverURL}/fight_team/run_memory`;
 const stopFightTeamListURL = `${serverURL}/fight_team/stop`;
 const setDefaultFightTeamURL = `${serverURL}/fight_team/set_default`;
 
+// 每日委托
+const runDailyMissionTaskURL= `${serverURL}/daily_mission/run`;
+const stopDailyMissionTaskURL= `${serverURL}/daily_mission/stop`;
+
 export {
     serverURL,
     positionURL,
@@ -82,4 +86,7 @@ export {
     getFightTeamContentURL,
     setDefaultFightTeamURL,
 
+    // 每日委托
+    runDailyMissionTaskURL,
+    stopDailyMissionTaskURL,
 };
