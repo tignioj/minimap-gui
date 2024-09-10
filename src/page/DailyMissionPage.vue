@@ -67,8 +67,6 @@ onMounted(()=> {
   socket.value.on(SOCKET_EVENT_DAILY_MISSION_EXCEPTION, (data)=> { errorMsg(data) })
 })
 
-const executeTotalTime = ref(400)
-const fightDuration = ref(50)
 
 </script>
 <template>
@@ -76,9 +74,12 @@ const fightDuration = ref(50)
   <p ref="msgRef"></p>
   <button @click="dailyMissionRun">执行每日委托</button>
   <button @click="dailyMissionStop">停止执行</button>
-  <h3>说明</h3>
-  <p>只能做蒙德的战斗委托，委托相关配置请在<RouterLink to="/config/editor">配置</RouterLink>中找到'委托配置',
-    战斗队伍请到<RouterLink to="/team">战斗队伍管理</RouterLink> 中设置默认队伍</p>
+  <h3>使用手册</h3>
+  <p>1. 将委托地点调整到蒙德，等委托更新后才可以使用，仅能完成战斗委托。</p>
+  <p>2. 前往<RouterLink to="/team">战斗队伍管理</RouterLink> 中设置或者添加您的默认队伍,怪物可能包含各种元素盾,确保您的队伍有足够的伤害完成委托。</p>
+  <p>3. 建议队伍中配备风c以应对各种元素盾。 </p>
+  <p>4. 根据战斗委托的特性: '按数量消灭怪物时，若第一次没打完全部怪物，第二次再去, 仅需要打剩下未死亡的怪物', 因此无需担心首次没做完，本程序会一直检测直到超时。</p>
+  <p>5. 超时时间以及其他委托相关配置请在<RouterLink to="/config/editor">配置</RouterLink>中找到'委托配置'。 </p>
 
 </template>
 
