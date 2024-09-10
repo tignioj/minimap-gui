@@ -42,7 +42,7 @@ const cnTextMap = {
 const actions=["", "stop_flying"];
 const pointTypes=["path", "target"];
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
-const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹"];
+const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔"];
 const executor = 'GouLiangPathExecutor'
 </script>
 <template>
