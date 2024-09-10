@@ -211,9 +211,10 @@ function setPlayingRecord(playing) {
 }
 
 function getPathObject() {
-  const name = nameInput.value.trim()
+  let name = nameInput.value.trim()
   if (!isValidDirectoryName(name)){
-    throw "名称不合法"
+    // throw new Error("名称不合法")
+    name = "默认_标识"
   }
 
 
@@ -446,6 +447,14 @@ const playBackFromHere = () => {
 function playBack(fromIndex) {
   if(isPlaying.value) { return; }
 
+  let data;
+  try {
+    data = getPathObject()
+  } catch (error) {
+    errorMsg(error)
+    return;
+  }
+
   if (points.value.length < 1)  {
     errorMsg('空路径，无法回放！')
     return
@@ -454,7 +463,6 @@ function playBack(fromIndex) {
   isRecording.value = false  // 停止记录
 
   setPlayingRecord(true)
-  const data = getPathObject()
   if (!isUndefinedNullOrEmpty(fromIndex)) {
     data['from_index'] = Number(fromIndex)
   }
