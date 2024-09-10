@@ -45,15 +45,13 @@ const cnTextMap = {
 const actions=["", "stop_flying"];
 const pointTypes=["path", "target"];
 const moveModes = ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
-const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹"];
+const regions = ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔"];
 const executor = 'FightPathExecutor'
 const fightTeamSelectModel = ref(null)
 const pathObjectExtend = ref( {
   'fight_team': fightTeamSelectModel
 })
-const afterDataLoaded = (data) => {
-  fightTeamSelectModel.value = data['fight_team'];
-}
+const afterDataLoaded = (data) => { }
 </script>
 <template>
 <NewTaskPage :executor="executor"
@@ -67,12 +65,14 @@ const afterDataLoaded = (data) => {
              @after-data-loaded="afterDataLoaded"
              >
   <div>
-    请选择战斗队伍:
+    请选择含有“枫原万叶”的战斗队伍:
     <FightTeamSelect v-model="fightTeamSelectModel"/>
+    <br/>
+    游戏内队伍顺序必须<b>按照文件名顺序</b>
   </div>
 </NewTaskPage>
 
-<!--  <Manual/>-->
+  <p>为什么要万叶：因为只有他能吸材料；后续会考虑加入图像识别掉落物品。</p>
 </template>
 <style scoped>
 
