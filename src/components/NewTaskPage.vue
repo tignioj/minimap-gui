@@ -313,10 +313,14 @@ function loadFileFromServer(fileName) {
 
 const executorRouterMap = {
   'CollectPathExecutor': '/task/collect/edit',
-  // '': '/task/collect/edit',
-  // undefined: '/task/collect/edit',
   'FightPathExecutor': '/task/fight/edit',
-  'DailyMissionPathExecutor': '/task/daily/edit',
+
+  // 暂时没想好怎么预览这些执行器，先用战斗执行器预览吧
+  'LeyLineOutcropPathExecutor': '/task/fight/edit',
+  'DailyMissionPathExecutor': '/task/fight/edit',
+  undefined: '/task/collect/edit',
+  '': '/task/collect/edit',
+  null: '/task/collect/edit',
 }
 
 function loadDataToPage(data) {
