@@ -32,6 +32,8 @@ const routes = [
     { path: '/task/leyline/edit/:fileName', component: NewLeyLineOutCropPage},
     { path: '/task/daily/edit/:fileName', component: NewDailyMissionPage},
 
+
+    { path: '/leyline', component: LeyLineOutCrop},
     { path: '/logs', component: LogPage},
     { path: '/team', component: FightTeamManagerPage},
     { path: '/about', component: AboutPage},
