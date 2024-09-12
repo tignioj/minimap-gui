@@ -1,21 +1,11 @@
 <script setup>
 
 import NewTaskPage from "@/components/NewTaskPage.vue";
-import {
-  faArrowTrendUp, faBan, faBullseye,
-  faClover, faExpand,
-  faMapMarkerAlt,
-  faPlane,
-  faPlaneArrival, faQuestion,
-  faWalking,
-  faWater
-} from "@fortawesome/free-solid-svg-icons";
 import Manual from "@/components/task/Manual.vue";
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
-import CountrySelect from "@/components/task/CountrySelect.vue";
 import {ref} from "vue";
 // https://fontawesome.com/search
-const actions=["", "stop_flying"];
+const actions=["", "stop_flying", 'shield']
 const executor = 'FightPathExecutor'
 const fightTeamSelectModel = ref(null)
 const pathObjectExtend = ref( {
