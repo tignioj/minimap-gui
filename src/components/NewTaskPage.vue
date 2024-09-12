@@ -51,32 +51,8 @@ let intervalID;
 let jsonContent = ref('')
 
 // https://fontawesome.com/search
-const iconMapping = {
-  'normal': faWalking,
-  'fly': faPlane,
-  'jump': faArrowTrendUp,
-  'swim': faWater,
-  'up_down_grab_leaf': faClover,
-  'stop_flying': faPlaneArrival,
-  'path': faMapMarkerAlt,
-  'target': faBullseye,
-  'nahida_collect': faExpand,
-  '': faBan,
-  undefined: faQuestion,
-  null: faQuestion,
-};
-const cnTextMap = {
-  'normal': '普通',
-  'fly': '飞行',
-  'jump': '跳跃',
-  'swim': '游泳',
-  'up_down_grab_leaf': '四叶印',
-  'path':'路径',
-  'target': '目标',
-  'nahida_collect':'纳西妲采集',
-  '': '无',
-  'stop_flying': '下落攻击'
-}
+// const iconMapping =
+// const cnTextMap =
 
 // let actions=["", "stop_flying", "nahida_collect"];
 // let pointTypes=["path", "target"];
@@ -87,28 +63,52 @@ const cnTextMap = {
 const props = defineProps({
   iconMapping: {
     type: Object,
-    required: true
+    default:  {
+      'normal': faWalking,
+      'fly': faPlane,
+      'jump': faArrowTrendUp,
+      'swim': faWater,
+      'up_down_grab_leaf': faClover,
+      'stop_flying': faPlaneArrival,
+      'path': faMapMarkerAlt,
+      'target': faBullseye,
+      'nahida_collect': faExpand,
+      '': faBan,
+      undefined: faQuestion,
+      null: faQuestion,
+    }
   },
   cnTextMap: {
     type: Object,
     // default: cnTextMap, // eslint-disable-line vue/valid-define-props
-    required: true
+    default: {
+      'normal': '普通',
+      'fly': '飞行',
+      'jump': '跳跃',
+      'swim': '游泳',
+      'up_down_grab_leaf': '四叶印',
+      'path':'路径',
+      'target': '目标',
+      'nahida_collect':'纳西妲采集',
+      '': '无',
+      'stop_flying': '下落攻击'
+    }
   },
   actions: {
     type: Array,
-    required: true,
+    default: ["", "stop_flying", "nahida_collect"]
   },
   pointTypes: {
     type: Array,
-    required: true
+    default: ["path", "target"]
   },
   moveModes: {
     type: Array,
-    required: true
+    default: ["normal", "fly", "jump", "swim", "up_down_grab_leaf"]
   },
   regions: {
     type: Array,
-    required: true
+    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹"]
   },
   executor: {
     type: String,
@@ -316,8 +316,8 @@ const executorRouterMap = {
   'FightPathExecutor': '/task/fight/edit',
 
   // 暂时没想好怎么预览这些执行器，先用战斗执行器预览吧
-  'LeyLineOutcropPathExecutor': '/task/fight/edit',
-  'DailyMissionPathExecutor': '/task/fight/edit',
+  'LeyLineOutcropPathExecutor': '/task/leyline/edit',
+  'DailyMissionPathExecutor': '/task/daily/edit',
   undefined: '/task/collect/edit',
   '': '/task/collect/edit',
   null: '/task/collect/edit',
