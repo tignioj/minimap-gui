@@ -29,7 +29,7 @@ import {
   faClover, faExpand,
   faMapMarkerAlt,
   faPlane,
-  faPlaneArrival, faQuestion,
+  faPlaneArrival, faQuestion, faShield,
   faWalking,
   faWater
 } from "@fortawesome/free-solid-svg-icons";
@@ -73,6 +73,7 @@ const props = defineProps({
       'path': faMapMarkerAlt,
       'target': faBullseye,
       'nahida_collect': faExpand,
+      'shield': faShield,
       '': faBan,
       undefined: faQuestion,
       null: faQuestion,
@@ -91,12 +92,13 @@ const props = defineProps({
       'target': '目标',
       'nahida_collect':'纳西妲采集',
       '': '无',
-      'stop_flying': '下落攻击'
+      'stop_flying': '下落攻击',
+      'shield': '开盾'
     }
   },
   actions: {
     type: Array,
-    default: ["", "stop_flying", "nahida_collect"]
+    default: ["", "stop_flying", "nahida_collect", 'shield']
   },
   pointTypes: {
     type: Array,
@@ -108,7 +110,7 @@ const props = defineProps({
   },
   regions: {
     type: Array,
-    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹"]
+    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔"]
   },
   executor: {
     type: String,
@@ -138,6 +140,16 @@ const emit = defineEmits({
     }
   }
 })
+function info(text) {
+    msgElement?.value.classList.remove('error-msg')
+    console.log(text)
+    msgElement.value.innerText = text
+}
+function errorMsg(text) {
+  msgElement?.value.classList.add('error-msg')
+  console.error(text)
+  msgElement.value.innerText = text
+}
 
 provide(injectKeyPointMoveModes, props.moveModes);
 provide(injectKeyPointTypes, props.pointTypes);
@@ -146,6 +158,9 @@ provide(injectKeyRegions, props.regions)
 
 provide(injectKeyCNTextMap, props.cnTextMap)
 provide(injectKeyIconMap, props.iconMapping);
+
+provide('info', info)
+provide('errorMsg', errorMsg)
 
 const playBackButton = ref(null)
 // 加载数据
@@ -191,20 +206,7 @@ function showEditPanel() {
   if (!isCtrlPressed.value) { editPanel.value.showEditPanel() }
 }
 function hideEditPanel() { editPanel.value.hideEditPanel() }
-function info(text) {
-  try {
-    msgElement?.value.classList.remove('error-msg')
-    console.log(text)
-    msgElement.value.innerText = text
-  } catch (e) {
-    debugger
-  }
-}
-function errorMsg(text) {
-  msgElement?.value.classList.add('error-msg')
-  console.error(text)
-  msgElement.value.innerText = text
-}
+
 
 function setPlayingRecord(playing) {
   isPlaying.value = playing;
