@@ -16,6 +16,7 @@ import CountrySelect from "@/components/task/CountrySelect.vue";
 import 'ace-builds/src-noconflict/mode-json'; // Load the language definition file used below
 import 'ace-builds/src-noconflict/theme-monokai';
 import {isValidDirectoryName} from "@/utils/string_validation_utils.js"
+import {formatDateTime} from "@/utils/timeutils.js";
 
 import {
   injectKeyCNTextMap,
@@ -541,18 +542,7 @@ const stopRecordButtonClick = ()=> {
   isRecording.value = false
 }
 
-function formatDateTime() {
-  let now = new Date();
 
-  let year = now.getFullYear();
-  let month = (now.getMonth() + 1).toString().padStart(2, '0');
-  let day = now.getDate().toString().padStart(2, '0');
-  let hours = now.getHours().toString().padStart(2, '0');
-  let minutes = now.getMinutes().toString().padStart(2, '0');
-  let seconds = now.getSeconds().toString().padStart(2, '0');
-
-  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-}
 function saveDictAsJsonFile(dict, fileName) {
   // 将对象转换为 JSON 字符串
   const jsonString = JSON.stringify(dict, null, 2); // 格式化 JSON 字符串
@@ -578,7 +568,7 @@ function saveDictAsJsonFile(dict, fileName) {
 const downloadRecordButtonClick = () => {
   const obj = getPathObject()
   const count = obj.positions.filter(item => item.type === "target").length;
-  saveDictAsJsonFile(obj, `${obj.name}_${obj.country}_${count}个_${formatDateTime()}.json`)
+  saveDictAsJsonFile(obj, `${obj.name}_${obj.country}_${count}个_${formatDateTime('YYYYMMDD_HHmmss')}.json`)
 }
 const playBackClick = ()=> {
   if (!isPlaying.value) playBack()

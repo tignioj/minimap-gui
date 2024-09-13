@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, ref} from 'vue'
+import {nextTick, ref, watch} from 'vue'
 import {store} from "@/store.js";
 
 const logBoxVisible = ref(false)
@@ -8,7 +8,12 @@ let isResizing = false // 标记是否正在调整大小
 
 // 示例日志内容，包含不同的类型和信息
 const logs = ref(store.logs)
-
+watch(()=> logs.value.length, () => {
+  // nextTick(() => {
+  if(logBox.value)
+    logBox.value.scrollTop = logBox.value.scrollHeight
+  // })
+})
 const logBox = ref(null)
 // 切换日志框的显示/隐藏
 const toggleLogBox = () => {
@@ -58,6 +63,7 @@ const stopResize = () => {
   window.removeEventListener('mousemove', resize)
   window.removeEventListener('mouseup', stopResize)
 }
+
 </script>
 
 <template>
@@ -79,7 +85,8 @@ const stopResize = () => {
           <h3>日志</h3>
           <div>
             <div v-for="(log, index) in logs" :key="index">
-              <span :style="{ color: getColor(log.type) }">{{ log.message }}</span>
+              <span :style="{ color: getColor(log.type) }">
+                {{log.datetime}} - {{ log.message }}</span>
             </div>
           </div>
         </div>
@@ -109,6 +116,7 @@ const stopResize = () => {
   padding: 10px;
   overflow-y: auto; /* 显示垂直滚动条 */
   overflow-x: hidden; /* 隐藏水平滚动条 */
+  font-size: 0.8em;
 }
 
 /* 左边框用于拖动调整大小的条 */

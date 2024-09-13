@@ -47,17 +47,19 @@ const updateTodoList = (onSuccess, onError) => {
         if(onError)onError(err)
     });
 }
+import {formatDateTime} from "@/utils/timeutils.js";
 
 const maxLength = 1000
 // [{"from":"", "level": "INFO", msg: "" }]
-const logs= ref([])
+const logs= ref([ ])
 
 const infoLog = function (message) { appendLogs({type: 'info', message}) }
-const errorLog = function () { appendLogs({type: 'error', message}) }
-const warningLog = function () { appendLogs({type: 'warning', message}) }
+const errorLog = function (message) { appendLogs({type: 'error', message}) }
+const warningLog = function (message) { appendLogs({type: 'warning', message}) }
 
 const appendLogs = (text) => {
-    logs.value.push(text)
+    const timeText = Object.assign({'datetime': formatDateTime('YYYY-MM-DD HH:mm:ss')}, text)
+    logs.value.push(timeText)
     // 如果日志超过最大长度，删除最早的日志
     if (logs.value.length > maxLength) {
         logs.value.shift(); // 删除数组的第一个元素
