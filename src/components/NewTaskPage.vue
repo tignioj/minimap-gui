@@ -141,11 +141,13 @@ const emit = defineEmits({
   }
 })
 function info(text) {
+    store.infoLog(text)
     msgElement?.value.classList.remove('error-msg')
     console.log(text)
     msgElement.value.innerText = text
 }
 function errorMsg(text) {
+  store.errorLog(text)
   msgElement?.value.classList.add('error-msg')
   console.error(text)
   msgElement.value.innerText = text

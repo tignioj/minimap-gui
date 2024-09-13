@@ -50,10 +50,12 @@ const updateTodoList = (onSuccess, onError) => {
 
 const maxLength = 1000
 // [{"from":"", "level": "INFO", msg: "" }]
-const logs= ref([
-    {from: "NewCollectTaskPage", level: "INFO", msg: "你好"},
-    {from: "NewFightTaskPage", level: "ERROR", msg: "错误"}
-])
+const logs= ref([])
+
+const infoLog = function (message) { appendLogs({type: 'info', message}) }
+const errorLog = function () { appendLogs({type: 'error', message}) }
+const warningLog = function () { appendLogs({type: 'warning', message}) }
+
 const appendLogs = (text) => {
     logs.value.push(text)
     // 如果日志超过最大长度，删除最早的日志
@@ -168,8 +170,9 @@ export const store = {
 
     //日志操作
     logs,
-    appendLogs,
-    cleanLogs,
+    infoLog,
+    errorLog,
+    warningLog,
 
     // 补全
     charactersName,

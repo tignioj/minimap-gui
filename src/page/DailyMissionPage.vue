@@ -6,8 +6,10 @@ import {useWebSocket,
   SOCKET_EVENT_DAILY_MISSION_END,SOCKET_EVENT_DAILY_MISSION_START,
   SOCKET_EVENT_DAILY_MISSION_UPDATE
 } from "@/utils/websocket_listener_utils.js";
+import {store} from "@/store.js";
 const msgRef = ref(null)
 function info(msg) {
+  store.infoLog(msg)
   if (msgRef.value) {
     msgRef.value.innerText = msg
     msgRef.value.classList.remove("error-msg")
@@ -15,6 +17,7 @@ function info(msg) {
   console.log(msg)
 }
 function errorMsg(msg) {
+  store.errorLog(msg)
   if (msgRef.value) {
     msgRef.value.innerText = msg
     msgRef.value.classList.add("error-msg")

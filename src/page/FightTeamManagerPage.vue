@@ -36,10 +36,12 @@ const fightTeamContent = ref('')
 
 
 function info(msg) {
+  store.infoLog(msg)
   msgElement.value.classList.remove("error-msg")
   msgElement.value.innerText = msg
 }
 function errorMsg(msg) {
+  store.errorLog(msg)
   msgElement.value.classList.add("error-msg")
   msgElement.value.innerText = msg
 }

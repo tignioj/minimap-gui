@@ -14,6 +14,7 @@ import {
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
+import {store} from "@/store.js";
 const todoListRef = ref();  // 初始化为 null
 const todoList = ref([]); // 初始化为空数组
 // 监控 todoListRef.value.todoList 的变化
@@ -34,11 +35,13 @@ const todoList = ref([]); // 初始化为空数组
 
 const msgElement = ref(null)
 function info(text) {
+  store.infoLog(text)
   msgElement.value.classList.remove('error-msg')
   msgElement.value.innerText = text;
   console.log(text)
 }
 function errorMsg(text) {
+  store.errorLog(text)
   console.log('异常:', text)
   msgElement.value.innerText = text;
   msgElement.value.classList.add('error-msg')

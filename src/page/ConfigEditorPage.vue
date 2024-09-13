@@ -4,8 +4,23 @@ import { VAceEditor } from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-yaml'; // Load the language definition file used below
 import 'ace-builds/src-noconflict/theme-monokai'; // Load the theme definition file used below
 import {getConfigURL, saveConfigURL} from '@/api.js';
+import {store} from "@/store.js";
 
 const content = ref(''); // 初始化为一个空字符串
+const msgEle = ref(null)
+
+function errorMsg(msg) {
+  store.errorLog(msg)
+  if (msgEle.value) {
+    msgEle.value.innerText = msg;
+  }
+}
+function info(msg) {
+  store.infoLog(msg)
+  if (msgEle.value) {
+    msgEle.value.innerText = msg;
+  }
+}
 
 function saveConfig() {
   const yamlContent = content.value
@@ -17,11 +32,10 @@ function saveConfig() {
     body: yamlContent,  // 直接发送 YAML 文本
   }).then(response => response.json())
       .then(data => {
-        alert(data.message);
+        info(data.message);
       })
       .catch(error => {
-        console.error('Error:', error);
-        alert('保存失败' + String(error))
+        errorMsg(error)
       });
 }
 fetch(getConfigURL)
@@ -42,12 +56,12 @@ fetch(getConfigURL)
     });
 
 </script>
-
 <template>
+  <button @click="saveConfig()">保存</button>
+  <p ref="msgEle"></p>
   <v-ace-editor
       v-model:value="content"
       lang="yaml"
       theme="monokai"
-      style="height: 800px" />
-  <button @click="saveConfig()">保存</button>
+      style="height: 800px;" />
 </template>

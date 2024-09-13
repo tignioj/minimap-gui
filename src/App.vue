@@ -11,10 +11,13 @@ main {
 <script setup>
 import router from "@/router.js";
 import {useRoute} from "vue-router";
+import LogPage from "@/page/LogPage.vue";
+import {provide} from "vue";
 const route = useRoute()
 const activateClass = (link) => {
   route.fullPath.includes(link)
 }
+
 const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
 </script>
 <template>
@@ -22,6 +25,10 @@ const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
     <strong>Current route path:</strong> {{ $route.fullPath }}
   </p>
     <nav>
+      <LogPage style="position: fixed; right: 10px; top: 10px; z-index: 1000"/>
+<!--      <keep-alive>-->
+<!--        <component :is="LogPage" style="position: fixed; right: 10px; top: 10px"  ></component>-->
+<!--      </keep-alive>-->
       <a @click="router.go(-1)" style="cursor: pointer">返回</a> |
       <RouterLink :class="{'active-link': route.fullPath === '/'}" to="/">清单管理</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath.includes('/task/collect/edit')}" to="/task/collect/edit">创建采集任务</RouterLink> |
@@ -41,4 +48,5 @@ const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
         </keep-alive>
       </router-view>
     </main>
+
 </template>
