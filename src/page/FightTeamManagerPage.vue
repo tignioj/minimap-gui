@@ -529,6 +529,7 @@ const docs = [
   <div>
   </div>
   <div>
+    <h2>角色名称必须按照游戏中队伍顺序填写, 否则无法正确切换人物</h2>
       <div>
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character1" >1号:</PinYinAutoComplete>
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character2" >2号:</PinYinAutoComplete> <br/>
