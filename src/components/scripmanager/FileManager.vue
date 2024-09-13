@@ -16,6 +16,9 @@ const todoSelect = ref(null)
 const todoList = defineModel('todoList', { default: [] })
 const selectedFolder = ref([])
 const selectedFiles = ref([])
+const info = inject('info')
+const errorMsg = inject('errorMsg')
+
 
 // 一旦检测到todoList长度发生变化，则选择默认的第一个
 watch(()=> todoList.value?.length, (nv, ov)=> {
@@ -133,7 +136,7 @@ function removeFiles() {
   if(files.length === 0 && folders.length === 0) {return;}
   if(!confirm(`确定删除${files.length}个文件?以及${folders.length}个文件夹?`)){ return }
 
-  console.log('确定删除文件', files,folders)
+  info(`确定删除文件${files}, 以及删除文件夹:${folders}`)
   fetch(pathListRemoveURL, {
     method: 'POST', // 请求方法
     headers: {
@@ -167,13 +170,6 @@ function removeFiles() {
         console.error('Error:', error); // 处理错误
         errorMsg(error)
       });
-}
-
-function info(msg) {
-  console.log(msg)
-}
-function errorMsg(msg) {
-  console.error(msg)
 }
 const folders = ref([])
 watch(fileStructure, (nv, ov)=> {

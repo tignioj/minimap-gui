@@ -1,5 +1,5 @@
 <script setup>
-import {onActivated, onMounted, ref, watch} from "vue";
+import {inject, onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
@@ -14,18 +14,25 @@ defineExpose({
   setTodoRunning,
   updateTodoList
 })
+const info = inject('info')
+const errorMsg = inject('errorMsg')
 
 function addFilesToList(todoItem, files) {
   if(!files || isUndefinedNullOrEmpty(todoItem)) return;
   if(files.length < 1) return
+  let count = 0;
   console.log(`ToDo组件往${todoItem}, 添加${files}`)
   todoList.value.forEach(item => {
     if(item.name === todoItem) {
       files.forEach(file=> {
-        if(!item.files.includes(file)) item.files.push(file)
+        if(!item.files.includes(file)) {
+          item.files.push(file);
+          count++;
+        }
       })
     }
   })
+  info(`从选中的${files.length}个文件中,成功添加${count}个文件到${todoItem}`)
 }
   updateTodoList()
 
@@ -69,7 +76,7 @@ function createTodo() {
   let success = true
   todoList.value.forEach(item => {
     if (listName === item.name) {
-      console.log('创建失败!,已经存在同名称的清单:', listName)
+      errorMsg('创建失败!,已经存在同名称的清单:', listName)
       success = false
     }
   })
@@ -128,6 +135,12 @@ function stopTodo() {
 
 function runTodo() {
   const jsonString = JSON.stringify(todoList.value)
+  const count = todoList.value.filter(item => item.enable).length;
+  if(count === 0) {
+    // TODO 不要用alert，而是统一信息渠道
+    errorMsg('未勾选任何清单，无法执行')
+    return
+  }
   setTodoRunning(true)
   fetch(todoRunURL, {
     method: 'POST', // 请求方法
@@ -178,12 +191,6 @@ function saveTodo() {
       console.error('Error:', error); // 处理错误
       errorMsg(error)
     });
-}
-function info(msg) {
-  console.log(msg)
-}
-function errorMsg(msg) {
-  console.error(msg)
 }
 
 
