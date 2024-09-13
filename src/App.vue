@@ -31,7 +31,7 @@ const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
       <RouterLink :class="{'active-link': route.fullPath === '/leyline'}" to="/leyline">地脉</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath === '/team'}"  to="/team">战斗队伍管理</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath === '/config/editor'}"  to="/config/editor">配置</RouterLink> |
-      <RouterLink :class="{'active-link': route.fullPath === '/logs'}"  to="/logs">日志</RouterLink> |
+<!--      <RouterLink :class="{'active-link': route.fullPath === '/logs'}"  to="/logs">日志</RouterLink> |-->
       <RouterLink :class="{'active-link': route.fullPath === '/about'}"  to="/about">关于</RouterLink> |
     </nav>
     <main>
