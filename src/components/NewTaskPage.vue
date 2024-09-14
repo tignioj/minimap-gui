@@ -599,7 +599,7 @@ function saveRecordButtonClick() {
     }
     const count = data.positions.filter(item => item.type === "target").length;
     const oldFileName = editFileName;
-    const newFileName = `${data.name}_${data.country}_${count}个_${formatDateTime()}.json`
+    const newFileName = `${data.name}_${data.country}_${count}个_${formatDateTime('YYYYMMDD_HHmmss')}.json`
 
     fetch(`${pathListSaveURL}/${oldFileName}?new_filename=${newFileName}` , {
       method: 'POST',
