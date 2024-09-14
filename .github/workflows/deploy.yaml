@@ -5,15 +5,16 @@ on:
     tags:
       - 'v*'  # 监听标签推送事件
   workflow_dispatch:  # 手动触发事件
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+    permissions:
+      contents: write
+      pages: write
+      actions: read
 
     steps:
       - name: Checkout repository
