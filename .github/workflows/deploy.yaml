@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'  # 监听标签推送事件
+  workflow_dispatch:  # 手动触发事件
 
 jobs:
   build:
@@ -16,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.17.0'  # Node.js 版本
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
@@ -25,23 +26,23 @@ jobs:
         run: npm run build  # 编译 Vue.js 项目
 
       - name: Compress build files
-        run: zip -r minimap-gui-${{ github.ref_name }}.zip dist  # 根据标签版本压缩文件并命名
+        run: zip -r minimap-gui-${{ github.ref_name || 'manual-build' }}.zip dist  # 手动触发时文件名默认 "manual-build"
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref }}  # 使用推送的标签名
-          release_name: Release ${{ github.ref }}  # 发布名称
-          draft: false  # 发布为正式版（而不是草稿）
-          prerelease: false  # 不是预发布版
+          tag_name: ${{ github.ref_name || 'manual-build' }}  # 没有标签时使用默认值
+          release_name: Release ${{ github.ref_name || 'manual-build' }}
+          draft: false
+          prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub 自动生成的 token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # 通过 create_release 获取 release 的上传 URL
-          asset_path: ./minimap-gui-${{ github.ref_name }}.zip  # 上传压缩后的文件
-          asset_name: minimap-gui-${{ github.ref_name }}.zip  # 文件名包含版本号
-          asset_content_type: application/zip  # 文件类型
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./minimap-gui-${{ github.ref_name || 'manual-build' }}.zip
+          asset_name: minimap-gui-${{ github.ref_name || 'manual-build' }}.zip
+          asset_content_type: application/zip
