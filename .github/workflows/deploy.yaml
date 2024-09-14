@@ -47,8 +47,9 @@ jobs:
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.MINIMAP_GUI_RELEASE }}
         with:
-          token: ${{ secrets.MINIMAP_GUI_RELEASE }}
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./minimap-gui-${{ github.ref_name || 'manual-build' }}.zip
           asset_name: minimap-gui-${{ github.ref_name || 'manual-build' }}.zip
