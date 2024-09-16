@@ -358,11 +358,12 @@ function fetchNewPosition() {
         return response.json()
       })
       .then(data => {
-        if (!data) {
+        if (!data['success']) {
           setPlayingRecord(false)
           throw "请求位置失败！请检查小地图是否在左上角"
         }
-        const newPosition = { x: data[0], y: data[1] };
+        const pos = data.data
+        const newPosition = { x: pos[0], y: pos[1] };
         refCanvas.value.updateCanvasCenter(newPosition);
         userXInput.value = newPosition.x
         userYInput.value = newPosition.y
