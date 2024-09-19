@@ -19,7 +19,7 @@ const xInput = defineModel('xInput', { default: 0})
 const yInput = defineModel('yInput', {default: 0})
 
 const pointType = ref(null)
-const pointMoveMode = ref(null)
+const pointMoveMode = defineModel('pointMoveMode')
 const pointAction = ref(null)
 
 const emit = defineEmits(['appendNewNode'])

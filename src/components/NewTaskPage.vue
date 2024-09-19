@@ -111,7 +111,7 @@ const props = defineProps({
   },
   regions: {
     type: Array,
-    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔"]
+    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔", "层岩巨渊"]
   },
   executor: {
     type: String,
@@ -179,7 +179,8 @@ const anchorNameInput = ref('传送锚点')
 const msgElement = ref(null)
 const userXInput = ref(0)
 const userYInput = ref(0)
-const countrySelect = ref(String(props.regions[0]))
+const userMoveMode = ref()
+const countrySelect = ref('璃月')
 const editPanel = ref(null)  // 引用组件
 const editPanelPreset = ref(null)
 const { isCtrlPressed } = useKeyBoardListener()
@@ -259,28 +260,6 @@ function handleFileSelect(event) {
 const route = useRoute()
 
 
-// onActivated(()=> {
-//   console.log(route.fullPath)
-//   // 如果新的路径不是正在编辑的文件，则刷新数据
-//   const editFileName = route.params.fileName
-//   if(editFileName && editFileName.endsWith(".json")) {
-//     loadFileFromServer(editFileName)
-//   } else {
-//     // 应当清空数据
-//     console.log('请清空数据')
-//   }
-//   console.log('activated')
-//   console.log('调用一次setInterval')
-//   intervalID = setInterval(fetchNewPosition, 100); // 每100毫秒请求一次
-// })
-// onDeactivated(()=> {
-//   console.log("deactivated")
-//   console.log('清除interval')
-//   window.clearInterval(intervalID)
-// })
-
-
-
 function loadFileFromServer(fileName) {
   const fileURL = `${pathListFileURL}/` + fileName
   fetch(fileURL).then(response => {
@@ -340,7 +319,7 @@ function loadDataToPage(data) {
   points.value.length = 0
   if(positions && positions.length > 0) {
     points.value.push(...positions)
-    refCanvas.value.updateCanvasCenter(positions[0]);
+    // refCanvas.value.updateCanvasCenter(positions[0]);
     selectedPointIndex.value = 0
   }
   emit('afterDataLoaded', data)
@@ -362,12 +341,16 @@ function fetchNewPosition() {
           setPlayingRecord(false)
           throw "请求位置失败！请检查小地图是否在左上角"
         }
-        const pos = data.data
+        const result = data.data
+        const pos = result.position
         const newPosition = { x: pos[0], y: pos[1] };
-        refCanvas.value.updateCanvasCenter(newPosition);
         userXInput.value = newPosition.x
         userYInput.value = newPosition.y
-        info(`成功获取位置${newPosition.x},${newPosition.y}`)
+        countrySelect.value = result.map_name
+        userMoveMode.value = result.move_mode
+        console.log(result)
+        refCanvas.value.updateCanvasCenter(newPosition);
+        info(`成功获取位置${result.map_name},${newPosition.x},${newPosition.y}`)
       })
       .catch(error => {
         console.error('Error fetching position:', error)
@@ -668,6 +651,7 @@ const isShowJSONContent = ref(false)
 <template>
   <div id="head">
     <MyCanvas ref="refCanvas"
+              :countrySelect="countrySelect"
               @updateSelectedPoint="updateSelectedPoint"
               @cursorWithinPointIndex="cursorWithinPointIndex"
               @hideEditPanel="hideEditPanel"
@@ -727,6 +711,7 @@ const isShowJSONContent = ref(false)
         :isRecording="isRecording"
         v-model:x-input="userXInput"
         v-model:y-input="userYInput"
+        v-model:pointMoveMode="userMoveMode"
         :move-modes="moveModes"
         :actions="actions"/>
   </div>
