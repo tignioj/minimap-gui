@@ -9,7 +9,7 @@ const socketURL = 'ws://127.0.0.1:5000';
  * 或者null
  * @type {string}
  */
-const positionURL = `${serverURL}/minimap/get_position`; // 返回
+const positionURL = `${serverURL}/minimap/get_insert_node`; // 返回
 
 /**
  * 返回指定坐标和宽高的地图
