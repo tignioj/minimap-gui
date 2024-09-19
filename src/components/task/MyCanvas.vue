@@ -18,6 +18,10 @@ const props = defineProps({
   isRecording: {
     type: Boolean,
     default: false
+  },
+  countrySelect: {
+    type: String,
+    required: true
   }
 });
 
@@ -65,6 +69,7 @@ watch(()=> props.selectedPointIndex, (nv, ov) => {
 
 // 更新画布中心
 function updateCanvasCenter(newPoint) {
+  console.log(props.countrySelect)
   if(!newPoint) return
   canvasCenter.x = newPoint.x
   canvasCenter.y = newPoint.y
@@ -105,12 +110,12 @@ function drawUserPoint(x,y) {
   ctx.lineWidth = 2;
   ctx.stroke(); // 绘制圆圈
 }
-
 function drawMap(x,y) {
   const canvas = myCanvas.value;
   const ctx = canvas.getContext('2d');
   const width = 500
-  let imageUrl = `${serverURL}/minimap/get_region_map?x=${x}&y=${y}&width=${width}`
+  let imageUrl = `${serverURL}/minimap/get_region_map?region=${props.countrySelect}&x=${x}&y=${y}&width=${width}`
+  console.log(props.countrySelect)
   // 创建一个 Image 对象
   const img = new Image();
 
@@ -274,6 +279,7 @@ onMounted(()=> {
 
 </script>
 <template>
+  {{ countrySelect }}
   <!--默认情况下canvas无法获取焦点，tabindex=0使得canvas可以获取焦点从而监听键盘-->
   <canvas
       ref="myCanvas"
