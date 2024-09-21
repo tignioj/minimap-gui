@@ -111,7 +111,7 @@ const props = defineProps({
   },
   regions: {
     type: Array,
-    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔", "层岩巨渊"]
+    default: ["蒙德", "璃月", "须弥", "稻妻", "枫丹", "纳塔", "层岩巨渊", "渊下宫"]
   },
   executor: {
     type: String,
