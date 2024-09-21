@@ -128,8 +128,17 @@ function drawMap(x,y) {
   // 等待图片加载完成
   img.onload = function() {
     // 绘制图片到 canvas 上
+
+    // 计算图片在Canvas中的位置，保持居中
+    const imgWidth = img.width;
+    const imgHeight = img.height;
+    const imgX = (canvasWidth - imgWidth) / 2;
+    const imgY = (canvasHeight - imgHeight) / 2;
+    // ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    // ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+    ctx.drawImage(img, imgX, imgY)
+
     if(myCanvas.value) {
       drawPoints()
       drawLines()
@@ -279,7 +288,6 @@ onMounted(()=> {
 
 </script>
 <template>
-  {{ countrySelect }}
   <!--默认情况下canvas无法获取焦点，tabindex=0使得canvas可以获取焦点从而监听键盘-->
   <canvas
       ref="myCanvas"
