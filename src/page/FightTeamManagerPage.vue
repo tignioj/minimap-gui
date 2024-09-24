@@ -1,6 +1,5 @@
 <script setup>
 
-import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {
   createFightTeamListURL, deleteFightTeamListURL,
