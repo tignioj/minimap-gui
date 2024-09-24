@@ -68,6 +68,7 @@ const appendLogs = (text) => {
 const cleanLogs = ()=> logs.value.length = 0
 
 const charactersName = [
+    "基尼奇",
     "玛拉妮",
     "艾梅莉埃",
     "希格雯",
