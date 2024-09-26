@@ -40,16 +40,5 @@ export default defineConfig(({ command }) => {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-    build: {
-      outDir: 'dist',
-      assetsDir: 'static/assets',
-      rollupOptions: {
-        output: {
-          entryFileNames: 'static/assets/[name].[hash].js',
-          chunkFileNames: 'static/assets/[name].[hash].js',
-          assetFileNames: 'static/assets/[name].[hash].[ext]'
-        }
-      }
-    },
   };
 });

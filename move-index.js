@@ -1,31 +1,43 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const srcPath = path.join(__dirname, 'dist', 'index.html');
-const destDir = path.join(__dirname, 'dist', 'templates');
-const destPath = path.join(destDir, 'index.html');
+const distDir = path.join(__dirname, 'dist');
 
-if (!fs.existsSync(destDir)) {
-    fs.mkdirSync(destDir, { recursive: true });
+async function ensureDir(dir) {
+    try {
+        await fs.access(dir);
+    } catch {
+        await fs.mkdir(dir, { recursive: true });
+    }
 }
 
-fs.renameSync(srcPath, destPath);
+async function restructure() {
+    try {
+        // 创建 Flask 应用所需的目录结构
+        await ensureDir(path.join(distDir, 'static'));
+        await ensureDir(path.join(distDir, 'templates'));
 
-console.log('index.html has been moved to templates directory.');
+        // 移动 index.html 到 templates 目录
+        await fs.rename(path.join(distDir, 'index.html'), path.join(distDir, 'templates', 'index.html'));
 
+        // 移动所有其他文件到 static 目录
+        const entries = await fs.readdir(distDir, { withFileTypes: true });
+        for (const entry of entries) {
+            if (entry.name !== 'static' && entry.name !== 'templates') {
+                const srcPath = path.join(distDir, entry.name);
+                const destPath = path.join(distDir, 'static', entry.name);
+                await fs.rename(srcPath, destPath);
+            }
+        }
 
-const srcICOPath = path.join(__dirname, 'dist', 'favicon.ico');
-const desICOtDir = path.join(__dirname, 'dist', 'static');
-const destICOPath = path.join(desICOtDir, 'favicon.ico');
-
-if (!fs.existsSync(desICOtDir)) {
-    fs.mkdirSync(desICOtDir, { recursive: true });
+        console.log('文件重组完成，现在符合 Flask 结构。');
+    } catch (err) {
+        console.error('重组过程中发生错误:', err);
+    }
 }
 
-fs.renameSync(srcICOPath, destICOPath);
-
-console.log('favicon.ico has been moved to static directory.');
+restructure();
