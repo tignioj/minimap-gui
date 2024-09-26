@@ -41,13 +41,15 @@ export default defineConfig(({ command }) => {
     }
   },
     build: {
+      outDir: 'dist',
+      assetsDir: 'static/assets',
       rollupOptions: {
         output: {
-          entryFileNames: 'assets/[name]-[hash].js',
-          chunkFileNames: 'assets/[name]-[hash].js',
-          assetFileNames: 'assets/[name]-[hash].[ext]',
-        },
-      },
+          entryFileNames: 'static/assets/[name].[hash].js',
+          chunkFileNames: 'static/assets/[name].[hash].js',
+          assetFileNames: 'static/assets/[name].[hash].[ext]'
+        }
+      }
     },
   };
 });

@@ -28,7 +28,7 @@ jobs:
       - name: Deploy to another repository
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.MINIMAP_GUI_RELEASE }}
           publish_dir: ./dist  # 这里指定你的编译结果目录
-          publish_branch: main  # 要推送到的目标仓库的分支
+          publish_branch: flask-deploy # 要推送到的目标仓库的分支
           repository: tignioj/minimap-gui-deploy  # 目标仓库
