@@ -4,6 +4,7 @@ import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
 import {store} from "@/store.js";
+import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
 const openTodos =ref([])
 const todoList = store.todoList
 const todoRunning = ref(false)
@@ -83,6 +84,8 @@ function createTodo() {
   if (!success) {return}
 
   const todo = {
+    enable: true,
+    fight_duration: 20,
     name: listName,
     files: []
   }
@@ -210,6 +213,10 @@ function editJson(fileName) {
       <li v-for="item in todoList">
         <input type="checkbox" v-model="item.enable">
         {{item.name}}
+
+        <FightTeamSelect v-model="item.fight_team" />
+        时长: <input type="number" min=1 max=600 :value="item.fight_duration"  style="width: 40px"/>秒,
+
         <button @click="toggleTodo(item.name)">展示清单</button>
         <ul v-if="openTodos.includes(item.name)">
           <li v-for="file in item.files" :key="file">

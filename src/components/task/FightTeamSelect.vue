@@ -26,12 +26,12 @@ fetch(getFightTeamListURL)
     });
 
 const fightTeamSelectModel = defineModel({
-  default: null
+  default: ""
 })
 </script>
 <template>
   <select v-model="fightTeamSelectModel">
-    <option :value="null" selected >使用默认队伍({{ defaultFightTeam }})</option>
+    <option value="" selected >使用默认队伍({{ defaultFightTeam }})</option>
     <option v-for="(team, index) in teams" :key="index" :value="team">
       {{ team }}
     </option>
