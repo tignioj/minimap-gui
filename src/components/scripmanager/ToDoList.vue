@@ -1,5 +1,5 @@
 <script setup>
-import {inject, onActivated, onMounted, ref, watch} from "vue";
+import {computed, inject, onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
 import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
@@ -17,6 +17,13 @@ defineExpose({
 })
 const info = inject('info')
 const errorMsg = inject('errorMsg')
+
+// 统计打勾的清单中一共有多少个文件
+const totalEnabledFiles = computed(() => {
+  return todoList.value
+      .filter(item => item.enable)
+      .reduce((total, item) => total + item.files.length, 0);
+});
 
 function addFilesToList(todoItem, files) {
   if(!files || isUndefinedNullOrEmpty(todoItem)) return;
@@ -126,7 +133,7 @@ function stopTodo() {
         info(data.data)
         setTodoRunning(false)
       } else {
-        errorMsg(data.data)
+        errorMsg(data.message)
       }
     })
     .catch(error => {
@@ -144,6 +151,7 @@ function runTodo() {
     errorMsg('未勾选任何清单，无法执行')
     return
   }
+  todoList.value.filter(item => item.files)
   setTodoRunning(true)
   fetch(todoRunURL, {
     method: 'POST', // 请求方法
@@ -162,7 +170,7 @@ function runTodo() {
         setTodoRunning(true)
       }
     } else {
-      errorMsg(data.data)
+      errorMsg(data.message)
     }
   }).catch(error => {
     console.error('Error:', error); // 处理错误
@@ -207,7 +215,7 @@ function editJson(fileName) {
     <!-- 清单管理功能 -->
     <button @click="createTodo">新建清单</button>
     <button @click="deleteTodo">删除清单</button>
-    <button @click="todoRunning?stopTodo():runTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
+    <button :disabled="!totalEnabledFiles" @click="todoRunning?stopTodo():runTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
     <button @click="saveTodo">保存清单</button>
     <ul id="listContainer">
       <li v-for="item in todoList">
@@ -215,7 +223,6 @@ function editJson(fileName) {
         {{item.name}}
 
         <FightTeamSelect v-model="item.fight_team" />
-        {{item.fight_duration}}
         战斗超时: <input type="number" min=1 max=600 v-model="item.fight_duration"  style="width: 40px"/>秒,
 
         <button @click="toggleTodo(item.name)">展示清单</button>

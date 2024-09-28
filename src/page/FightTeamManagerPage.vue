@@ -538,7 +538,7 @@ const docs = [
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character4" >4号:</PinYinAutoComplete>
       </div>
       <div>
-        队伍简称:<input v-model="teamAlias" type="text" /> <br/>
+        队伍简称:<input v-model="teamAlias" type="text" /> <br/> 游戏中队伍名，切换队伍时需要用到
       </div>
   </div>
 
