@@ -215,7 +215,7 @@ function editJson(fileName) {
         {{item.name}}
 
         <FightTeamSelect v-model="item.fight_team" />
-        时长: <input type="number" min=1 max=600 :value="item.fight_duration"  style="width: 40px"/>秒,
+        战斗超时: <input type="number" min=1 max=600 :value="item.fight_duration"  style="width: 40px"/>秒,
 
         <button @click="toggleTodo(item.name)">展示清单</button>
         <ul v-if="openTodos.includes(item.name)">
