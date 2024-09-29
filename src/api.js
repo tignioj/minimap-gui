@@ -56,10 +56,14 @@ const setDefaultFightTeamURL = `${serverURL}/fight_team/set_default`;
 // 每日委托
 const runDailyMissionTaskURL= `${serverURL}/daily_mission/run`;
 const stopDailyMissionTaskURL= `${serverURL}/daily_mission/stop`;
+const dailyMissionSetConfigURL = `${serverURL}/daily_mission/set_config`;
+const dailyMissionGetConfigURL = `${serverURL}/daily_mission/get_config`;
 
 // 地脉
 const runLeyLineOutcropURL= `${serverURL}/leyline_outcrop/run`;
 const stopLeyLineOutcropURL= `${serverURL}/leyline_outcrop/stop`;
+const leyLineOutcropSetConfigURL = `${serverURL}/leyline_outcrop/set_config`;
+const leyLineOutcropGetConfigURL = `${serverURL}/leyline_outcrop/get_config`;
 
 export {
     serverURL,
@@ -93,8 +97,12 @@ export {
     // 每日委托
     runDailyMissionTaskURL,
     stopDailyMissionTaskURL,
+    dailyMissionGetConfigURL,
+    dailyMissionSetConfigURL,
 
     // 地脉
     runLeyLineOutcropURL,
-    stopLeyLineOutcropURL
+    stopLeyLineOutcropURL,
+    leyLineOutcropSetConfigURL,
+    leyLineOutcropGetConfigURL
 };
