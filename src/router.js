@@ -15,8 +15,9 @@ import NewDailyMissionPage from "@/page/NewDailyMissionPage.vue";
 
 const routes = [
     { path: '/', component: ScriptManagerPage, meta: { keepAlive: true }, // 需要缓存
-        // redirect: '/task/collect/edit',
+        // redirect: '/daily',
         // redirect: '/team',
+        // redirect: '/leyline',
     },
     { path: '/daily', component: DailyMissionPage},
     { path: '/config/editor', component: ConfigEditorPage , meta: { keepAlive: true } },

@@ -132,7 +132,7 @@ function saveFightTeam() {
         if (data.success) {
           info(data.message);
           selectedFightTeam.value = newTeamName
-          updateFightTeamList()
+          store.updateFightTeamList()
         } else {
           errorMsg(data.message)
         }
@@ -244,7 +244,7 @@ function deleteFightTeam(item) {
       if (json.success === true)  {
         info(json.message)
         cleanContent()
-        updateFightTeamList()
+        store.updateFightTeamList()
       }
       else errorMsg(json.message)
     })
