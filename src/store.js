@@ -1,7 +1,9 @@
 // store.js
 import {reactive, ref} from 'vue'
-import {pathListListURL, todoGetURL} from "@/api.js";
+import {getFightTeamListURL, pathListListURL, todoGetURL} from "@/api.js";
 
+
+// 文件管理=====================
 const fileStructure = ref([
     {name: '甜甜花', 'files': ['1.json', '2.json']},
     {name: '风车菊', 'files': ['3.json', '4.json']},
@@ -24,12 +26,14 @@ const updateFileStructure = (onSuccess, onError)=> {
         if(onError) onError(err)
     })
 }
+// 清单=====================
 const todoList = ref([
-    {"name":"test",
-     "enable": false,
-    "fight_duration": 20,
-    "fight_team": "",
-     "files": [ "月莲_卡扎莱宫_须弥_5个.json", "月莲_桓那兰那_须弥_4个_20240826_063626.json", ] }
+    {name:"test",
+     enable: false,
+    fight_duration: 20,
+    team_enable: false,
+    fight_team: "",
+     files: [ "月莲_卡扎莱宫_须弥_5个.json", "月莲_桓那兰那_须弥_4个_20240826_063626.json", ] }
 ])
 const updateTodoList = (onSuccess, onError) => {
     fetch(todoGetURL).then(res => {
@@ -51,6 +55,7 @@ const updateTodoList = (onSuccess, onError) => {
         if(onError)onError(err)
     });
 }
+// 日志=====================
 import {formatDateTime} from "@/utils/timeutils.js";
 
 const maxLength = 1000
@@ -71,6 +76,34 @@ const appendLogs = (text) => {
 }
 const cleanLogs = ()=> logs.value.length = 0
 
+
+// 战斗队伍=====================
+const teams = ref([])
+const defaultFightTeam = ref('')
+const updateFightTeamList = function () {
+    fetch(getFightTeamListURL)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(json => {
+            if (json.success === true) {
+                const result = json.data
+                defaultFightTeam.value = result.default
+                teams.value.length = 0
+                teams.value.push(...result.files)
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+updateFightTeamList()
+
+
+// 常量
 const charactersName = [
     "基尼奇",
     "玛拉妮",
@@ -170,16 +203,25 @@ const charactersName = [
 ]
 
 export const store = {
+    // 文件管理
     fileStructure,
     updateFileStructure,
+    // 清单
     todoList,
     updateTodoList,
+
+    // 战斗队伍
+    teams,
+    defaultFightTeam,
+    updateFightTeamList,
 
     //日志操作
     logs,
     infoLog,
     errorLog,
     warningLog,
+
+
 
     // 补全
     charactersName,

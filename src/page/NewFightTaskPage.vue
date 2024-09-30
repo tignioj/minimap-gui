@@ -2,7 +2,6 @@
 
 import NewTaskPage from "@/components/NewTaskPage.vue";
 import Manual from "@/components/task/Manual.vue";
-import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
 import {ref} from "vue";
 import {getFightTeamListURL} from "@/api.js";
 // https://fontawesome.com/search

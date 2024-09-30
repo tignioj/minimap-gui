@@ -165,7 +165,7 @@ getConfig()
   <button @click="dailyMissionRun">执行每日委托</button>
   <button @click="dailyMissionStop">停止执行</button>
   <h2>委托设置</h2>
-  战斗队伍: <FightTeamSelect v-model="daily_task_fight_team"/> <br/>
+  战斗队伍: <FightTeamSelect v-model:fightTeamSelect="daily_task_fight_team"/> <br/>
   每日委托总计最长执行时间，允许范围(60~3600)秒
   <input type="number" v-model="daily_task_execute_timeout" @blur="limitDailyTaskExecuteTimeout"/> <br/>
 

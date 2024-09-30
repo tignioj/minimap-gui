@@ -22,8 +22,7 @@ ace.config.setModuleUrl("ace/snippets/c_cpp", snippedC_Cpp);
 
 import {store} from "@/store.js";
 import PinYinAutoComplete from "@/components/common/PinYinAutoComplete.vue";
-const teams = ref([])
-const selectedFightTeam = ref('')
+
 const character1 = ref('', { type: String })
 const character2 = ref('', { type: String })
 const character3 = ref('', { type: String })
@@ -45,54 +44,18 @@ function errorMsg(msg) {
   msgElement.value.innerText = msg
 }
 
-// function trim(txt) {
-//   return txt.replace(/[\s*?:"|<>\\\/\[\]\(\)_\.（）。]+/g, '');
-// }
-// watch(character1, (nv,ov)=> {
-//   if(nv!==ov) {
-//     character1.value = trim(nv);
-//   }
-// })
-// watch(character2, (nv,ov)=> {
-//   if(nv!==ov) { character2.value = trim(nv); }
-// })
-// watch(character3, (nv,ov)=> {
-//   if(nv!==ov) { character3.value = trim(nv); }
-// })
-// watch(character4, (nv,ov)=> {
-//   if(nv!==ov) { character4.value = trim(nv); }
-// })
-// watch(teamAlias, (nv,ov)=> {
-//   if(nv!==ov) { teamAlias.value = trim(nv); }
-// })
-const defaultTeam = ref('')
-function updateFightTeamList() {
-  fetch(getFightTeamListURL)
-      .then(response => {
-        if (!response.ok) { throw new Error('Network response was not ok'); }
-        return response.json();
-      })
-      .then(json => {
-        if (json.success === true) {
-          const result = json.data
-          teams.value.length = 0
-          teams.value.push(...result.files)
-          defaultTeam.value = result.default
+const teams = store.teams
+const selectedFightTeam = ref('')
+const defaultTeam = store.defaultFightTeam
+onMounted(()=> {
+  selectedFightTeam.value = defaultTeam.value
+})
+watch(defaultTeam, (nv, ov)=> {
+  if(nv!==ov) {
+    selectedFightTeam.value = nv
+  }
+})
 
-          if(teams.value.length > 0) {
-            if (result.default) {
-              selectedFightTeam.value = result.default
-            } else if (selectedFightTeam.value === '') {
-              selectedFightTeam.value = teams.value[0]
-            }
-          }
-        }
-      })
-      .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-      });
-}
-updateFightTeamList()
 
 function showFightTeam(team_name) {
   selectedFightTeam.value = team_name

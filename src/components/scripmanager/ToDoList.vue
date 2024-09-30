@@ -93,6 +93,8 @@ function createTodo() {
   const todo = {
     enable: true,
     fight_duration: 20,
+    team_enable: false,
+    fight_team: '',
     name: listName,
     files: []
   }
@@ -209,6 +211,44 @@ function editJson(fileName) {
   // TODO 只有文件名，如何知道应该跳转到哪个路由？
   router.push('/task/collect/edit/' + fileName)
 }
+// const fightTeamSelector = ref()
+
+// fightTeamSelector.value.updateFightTeamList()
+// const correctDuration = (item) => {
+//   if (item.fight_duration < 1) {
+//     item.fight_duration = 1
+//   } else if (item.fight_duration > 600) {
+//     item.fight_duration = 600
+//   } else {
+//     // 确保值为整数
+//     item.fight_duration = Math.round(item.fight_duration)
+//   }
+// }
+
+const correctDuration = (item) => {
+  if (item.fight_duration === '' || item.fight_duration === null) {
+    item.fight_duration = 20
+  } else {
+    let duration = Number(item.fight_duration)
+    if (isNaN(duration) || duration < 1) {
+      item.fight_duration = 1
+    } else if (duration > 600) {
+      item.fight_duration = 600
+    } else {
+      item.fight_duration = Math.round(duration)
+    }
+  }
+}
+const draggedItemIndex = ref(null);
+const dragStart = (index) => {
+  draggedItemIndex.value = index;
+};
+
+const drop = (index) => {
+  const itemToMove = todoList.value.splice(draggedItemIndex.value, 1)[0];
+  todoList.value.splice(index, 0, itemToMove);
+  draggedItemIndex.value = null;
+};
 </script>
 <template>
   <div class="list-management">
@@ -217,24 +257,77 @@ function editJson(fileName) {
     <button @click="deleteTodo">删除清单</button>
     <button :disabled="!totalEnabledFiles" @click="todoRunning?stopTodo():runTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
     <button @click="saveTodo">保存清单</button>
-    <ul id="listContainer">
-      <li v-for="item in todoList">
-        <input type="checkbox" v-model="item.enable">
-        {{item.name}}
 
-        <FightTeamSelect v-model="item.fight_team" />
-        战斗超时: <input type="number" min=1 max=600 v-model="item.fight_duration"  style="width: 40px"/>秒,
+    <table id="listContainer">
+      <thead>
+      <tr>
+        <th>拖拽</th>
+        <th>启用</th>
+        <th>名称</th>
+        <th>切换队伍</th>
+        <th>战斗超时(秒)</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <template v-for="(item, index) in todoList" :key="item.name">
+        <tr
+            draggable="true"
+            @dragstart="dragStart(index)"
+            @dragover.prevent
+            @drop="drop(index)"
+        >
+          <td><span class="drag-handle">☰</span></td>
+          <td><input type="checkbox" v-model="item.enable"></td>
+          <td>{{ item.name }}</td>
+          <td>
+            <input type="checkbox" v-model="item.team_enable" />
+            <FightTeamSelect ref="fightTeamSelector" v-model:teamEnable="item.team_enable" v-model:fightTeamSelect="item.fight_team" />
+          </td>
+          <td>
+            <input :disabled="!item.team_enable" type="number" min="1" max="600" v-model="item.fight_duration" style="width: 60px" @blur="correctDuration(item)" />
+          </td>
+          <td>
+            <button @click="toggleTodo(item.name)">展示清单</button>
+          </td>
+        </tr>
+        <tr v-if="openTodos.includes(item.name)">
+          <td colspan="6">
+            <table>
+              <tbody>
+              <tr v-for="file in item.files" :key="file">
+                <td>{{ file }}</td>
+                <td>
+                  <button @click="editJson(file)">编辑</button>
+                  <button @click="removeFileFromTodo(item.name, file)">移出清单</button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </template>
+      </tbody>
+    </table>
 
-        <button @click="toggleTodo(item.name)">展示清单</button>
-        <ul v-if="openTodos.includes(item.name)">
-          <li v-for="file in item.files" :key="file">
-            {{file}}
-            <button @click="editJson(file)">编辑</button>
-            <button @click="removeFileFromTodo(item.name, file)">移出清单</button>
-          </li>
-        </ul>
-      </li>
-    </ul>
+<!--    <ul id="listContainer">-->
+<!--      <li v-for="item in todoList">-->
+<!--        <input type="checkbox" v-model="item.enable">-->
+<!--        {{item.name}}-->
+
+<!--        <FightTeamSelect v-model="item.fight_team" />-->
+<!--        战斗超时: <input type="number" min=1 max=600 v-model="item.fight_duration"  style="width: 40px"/>秒,-->
+
+<!--        <button @click="toggleTodo(item.name)">展示清单</button>-->
+<!--        <ul v-if="openTodos.includes(item.name)">-->
+<!--          <li v-for="file in item.files" :key="file">-->
+<!--            {{file}}-->
+<!--            <button @click="editJson(file)">编辑</button>-->
+<!--            <button @click="removeFileFromTodo(item.name, file)">移出清单</button>-->
+<!--          </li>-->
+<!--        </ul>-->
+<!--      </li>-->
+<!--    </ul>-->
   </div>
 </template>
 
@@ -243,5 +336,8 @@ function editJson(fileName) {
   padding: 10px;
   border: 1px solid #ccc;
   margin: 5px;
+}
+.drag-handle {
+  cursor: move;
 }
 </style>

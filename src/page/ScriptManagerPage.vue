@@ -115,9 +115,11 @@ provide('errorMsg', errorMsg)
 <!--        v-model:todoList="todoListRef?.todoList" />-->
   </div>
   <div>
-
     <h2>运行须知</h2>
-    <p>对于战斗脚本例如'丘丘萨满'请先到<RouterLink to="/team">战斗队伍管理</RouterLink> 中设置或者添加您的默认队伍 </p>
+    <ul>
+      <li>对于战斗脚本例如'丘丘萨满'请先到<RouterLink to="/team">战斗队伍管理</RouterLink> 中设置或者添加您的默认队伍 </li>
+      <li>如果不启用队伍，则无法开启护盾动作, 一些需要纳西妲采集的点位(例如慕风蘑菇)也无法正常执行</li>
+    </ul>
     <h2>使用手册</h2>
     <h3>新建清单</h3>
     <p>例如"打怪清单"、“采集清单", 用于存放将要执行的文件名称, 可以从文件列表中添加文件到清单</p>

@@ -158,7 +158,7 @@ getConfig()
   <button @click="leyLineStop">停止执行</button>
 
   <h2>地脉设置</h2>
-  战斗队伍: <FightTeamSelect v-model="leyline_fight_team"/> <br/>
+  战斗队伍: <FightTeamSelect v-model:fightTeamSelect="leyline_fight_team"/> <br/>
   地脉总计最长执行时间，允许范围(60~3600)秒
   <input type="number" v-model="leyline_outcrop_task_execute_timeout" @blur="limitLeyLineTaskExecuteTimeout"/> <br/>
 
