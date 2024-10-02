@@ -1,7 +1,14 @@
 <script setup>
-import {computed, inject, ref} from 'vue';
-import {oneDragonRunURL} from "@/api.js";
+import {computed, inject, onMounted, ref} from 'vue';
+import {oneDragonRunURL, oneDragonStopURL, socketURL} from "@/api.js";
 import {store} from "@/store.js";
+import {
+  SOCKET_EVENT_ONE_DRAGON_END,
+  SOCKET_EVENT_ONE_DRAGON_EXCEPTION,
+  SOCKET_EVENT_ONE_DRAGON_START,
+  SOCKET_EVENT_ONE_DRAGON_UPDATE,
+  useWebSocket
+} from "@/utils/websocket_listener_utils.js";
 
 
 function info(msg) {
@@ -13,9 +20,9 @@ function errorMsg(msg) {
 
 const todoList = ref([
   { name: '清单', value: 'todo' , checked: false },
-  { name: '战斗委托', value: 'dailyMission' , checked: false},
-  { name: '地脉', value: 'leyLine' , checked: false},
-  { name: '领取奖励', value: 'claimReward' , checked: false}
+  { name: '战斗委托', value: 'dailyMission' , checked: true},
+  { name: '地脉', value: 'leyLine' , checked: true},
+  { name: '领取奖励', value: 'claimReward' , checked: true}
 ]);
 
 const dragItem = ref(null);
@@ -72,8 +79,23 @@ function runAll() {
   });
 }
 function stop() {
-
+  fetch(oneDragonStopURL).then(response=> {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  }).then(data => {
+    if (data.success === true) { info(data.message)
+    } else { errorMsg(data.message) }
+  }).catch(error => { console.error('Error:', error)}); // 处理错误 errorMsg(error)
 }
+
+const { socket} = useWebSocket(socketURL, {});
+onMounted(()=> {
+  socket.value.on(SOCKET_EVENT_ONE_DRAGON_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_ONE_DRAGON_END, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_ONE_DRAGON_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_ONE_DRAGON_EXCEPTION, (data)=> { errorMsg(data) })
+})
+
 </script>
 
 <template>

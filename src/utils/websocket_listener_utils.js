@@ -19,6 +19,13 @@ export const SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE = 'socket_event_leyline_outcrop
 export const SOCKET_EVENT_LEYLINE_OUTCROP_END = 'socket_event_leyline_outcrop_end'
 export const SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION = 'socket_event_leyline_outcrop_exception'
 
+// 一条龙
+export const SOCKET_EVENT_ONE_DRAGON_START = 'socket_event_one_dragon_start'
+export const SOCKET_EVENT_ONE_DRAGON_UPDATE = 'socket_event_one_dragon_update'
+export const SOCKET_EVENT_ONE_DRAGON_END = 'socket_event_one_dragon_end'
+export const SOCKET_EVENT_ONE_DRAGON_EXCEPTION = 'socket_event_one_dragon_exception'
+
+
 export function useWebSocket(socketURL, {
     onKeyEvent = null,
 }) {
