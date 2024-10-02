@@ -3,10 +3,22 @@ import {computed, inject, onMounted, ref} from 'vue';
 import {oneDragonRunURL, oneDragonStopURL, socketURL} from "@/api.js";
 import {store} from "@/store.js";
 import {
+  SOCKET_EVENT_DAILY_MISSION_END,
+  SOCKET_EVENT_DAILY_MISSION_EXCEPTION,
+  SOCKET_EVENT_DAILY_MISSION_START,
+  SOCKET_EVENT_DAILY_MISSION_UPDATE,
+  SOCKET_EVENT_LEYLINE_OUTCROP_END,
+  SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION,
+  SOCKET_EVENT_LEYLINE_OUTCROP_START,
+  SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE,
   SOCKET_EVENT_ONE_DRAGON_END,
   SOCKET_EVENT_ONE_DRAGON_EXCEPTION,
   SOCKET_EVENT_ONE_DRAGON_START,
   SOCKET_EVENT_ONE_DRAGON_UPDATE,
+  SOCKET_EVENT_PLAYBACK_END,
+  SOCKET_EVENT_PLAYBACK_EXCEPTION,
+  SOCKET_EVENT_PLAYBACK_START,
+  SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
 
@@ -94,6 +106,25 @@ onMounted(()=> {
   socket.value.on(SOCKET_EVENT_ONE_DRAGON_END, (data)=> { info(data) })
   socket.value.on(SOCKET_EVENT_ONE_DRAGON_UPDATE, (data)=> { info(data) })
   socket.value.on(SOCKET_EVENT_ONE_DRAGON_EXCEPTION, (data)=> { errorMsg(data) })
+
+  socket.value.on(SOCKET_EVENT_PLAYBACK_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_END, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_EXCEPTION, (data)=> { errorMsg(data) })
+  socket.value.on(SOCKET_EVENT_PLAYBACK_UPDATE, (data)=> { info(data) })
+
+
+  socket.value.on(SOCKET_EVENT_DAILY_MISSION_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DAILY_MISSION_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DAILY_MISSION_EXCEPTION, (data)=> { errorMsg(data) })
+  socket.value.on(SOCKET_EVENT_DAILY_MISSION_END, (data)=> { info(data) })
+
+  socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION, (data)=> { errorMsg(data) })
+  socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_END, (data)=> { info(data) })
+
+
+
 })
 
 </script>
