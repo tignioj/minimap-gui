@@ -58,6 +58,7 @@ const runDailyMissionTaskURL= `${serverURL}/daily_mission/run`;
 const stopDailyMissionTaskURL= `${serverURL}/daily_mission/stop`;
 const dailyMissionSetConfigURL = `${serverURL}/daily_mission/set_config`;
 const dailyMissionGetConfigURL = `${serverURL}/daily_mission/get_config`;
+const claimRewardURL = `${serverURL}/daily_mission/claim_reward`;
 
 // 地脉
 const runLeyLineOutcropURL= `${serverURL}/leyline_outcrop/run`;
@@ -99,6 +100,8 @@ export {
     stopDailyMissionTaskURL,
     dailyMissionGetConfigURL,
     dailyMissionSetConfigURL,
+
+    claimRewardURL,
 
     // 地脉
     runLeyLineOutcropURL,

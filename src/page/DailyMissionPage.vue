@@ -5,7 +5,7 @@ import {
   stopDailyMissionTaskURL,
   dailyMissionSetConfigURL,
   dailyMissionGetConfigURL,
-  todoSaveURL
+    claimRewardURL,
 } from "@/api.js";
 import {onMounted, ref, watch} from "vue";
 import {useWebSocket,
@@ -159,12 +159,32 @@ function getConfig() {
 }
 getConfig()
 
+function claimReward() {
+  fetch(claimRewardURL).then(response => {
+    if (!response.ok) { throw new Error('Network response was not ok ' + response.statusText); }
+    return response.json(); // 解析响应为 JSON
+  }).then(data => {
+    console.log('Success:', data); // 处理成功的响应
+    if(data.success) {
+      info(data.message)
+    } else {
+      errorMsg(data.message)
+    }
+  })
+      .catch(error => {
+        console.error('Error:', error); // 处理错误
+        errorMsg(error)
+      });
+}
+
 </script>
 <template>
   <p ref="msgRef"></p>
-  <button @click="dailyMissionRun">执行每日委托</button>
-  <button @click="dailyMissionStop">停止执行</button>
-  <h2>委托设置</h2>
+  <button @click="dailyMissionRun">执行每日委托</button> <button @click="dailyMissionStop">停止执行</button>
+  <br/>
+  <br/>
+  <button @click="claimReward">领取今日奖励(枫丹凯瑟琳)</button>
+  <h2>委托设置(保存后生效)</h2>
   战斗队伍: <FightTeamSelect v-model:fightTeamSelect="daily_task_fight_team"/> <br/>
   每日委托总计最长执行时间，允许范围(60~3600)秒
   <input type="number" v-model="daily_task_execute_timeout" @blur="limitDailyTaskExecuteTimeout"/> <br/>
