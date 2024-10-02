@@ -249,6 +249,19 @@ const drop = (index) => {
   todoList.value.splice(index, 0, itemToMove);
   draggedItemIndex.value = null;
 };
+
+// 计算下次执行日期的函数
+const getNextExecutionDate = (lastDate, frequency) => {
+  const date = new Date(lastDate)
+  date.setDate(date.getDate() + frequency)
+  return date.toISOString().split('T')[0]
+}
+
+// 格式化日期的函数
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 </script>
 <template>
   <div class="list-management">
@@ -266,6 +279,9 @@ const drop = (index) => {
         <th>名称</th>
         <th>切换队伍</th>
         <th>战斗超时(秒)</th>
+        <th>执行频率(几天/1次)</th>
+        <th>上次执行时间</th>
+        <th>下次执行时间</th>
         <th>操作</th>
       </tr>
       </thead>
@@ -287,6 +303,14 @@ const drop = (index) => {
           <td>
             <input :disabled="!item.team_enable" type="number" min="1" max="600" v-model="item.fight_duration" style="width: 60px" @blur="correctDuration(item)" />
           </td>
+          <td>
+            <input :name="item.name" v-model="item.frequency" :value="1"  type="radio" :checked="item.frequency===1">1
+            <input :name="item.name" v-model="item.frequency" :value="2"  type="radio" :checked="item.frequency===2">2
+            <input :name="item.name" v-model="item.frequency" :value="3"  type="radio" :checked="item.frequency===3">3
+            <input :name="item.name" v-model="item.frequency" :value="7"  type="radio" :checked="item.frequency===7">7
+          </td>
+          <td>{{ formatDate(item.lastExecutionDate) }}</td>
+          <td>{{ formatDate(getNextExecutionDate(item.lastExecutionDate, item.frequency)) }}</td>
           <td>
             <button @click="toggleTodo(item.name)">展示清单</button>
           </td>

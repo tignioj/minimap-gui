@@ -30,7 +30,8 @@ const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
 <!--        <component :is="LogPage" style="position: fixed; right: 10px; top: 10px"  ></component>-->
 <!--      </keep-alive>-->
       <a @click="router.go(-1)" style="cursor: pointer">返回</a> |
-      <RouterLink :class="{'active-link': route.fullPath === '/'}" to="/">清单管理</RouterLink> |
+      <RouterLink :class="{'active-link': route.fullPath === '/oneDragon'}" to="/oneDragon">一条龙</RouterLink> |
+      <RouterLink :class="{'active-link': route.fullPath === '/script'}" to="/script">清单管理</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath.includes('/task/collect/edit')}" to="/task/collect/edit">创建采集任务</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath.includes('/task/fight/edit')}"  to="/task/fight/edit">创建战斗任务</RouterLink> |
 <!--      <RouterLink :class="{'active-link': route.fullPath.includes('/task/gouliang/edit')}"  to="/task/gouliang/edit">创建狗粮任务</RouterLink> |-->

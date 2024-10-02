@@ -28,12 +28,16 @@ const updateFileStructure = (onSuccess, onError)=> {
 }
 // 清单=====================
 const todoList = ref([
-    {name:"test",
-     enable: false,
-    fight_duration: 20,
-    team_enable: false,
-    fight_team: "",
-     files: [ "月莲_卡扎莱宫_须弥_5个.json", "月莲_桓那兰那_须弥_4个_20240826_063626.json", ] }
+    {
+        name:"test",
+        enable: false,
+        fight_duration: 20,
+        team_enable: false,
+        fight_team: "",
+        files: [ "月莲_卡扎莱宫_须弥_5个.json", "月莲_桓那兰那_须弥_4个_20240826_063626.json"],
+        lastExecutionDate: "2024-10-1",
+        frequency: 1
+    }
 ])
 const updateTodoList = (onSuccess, onError) => {
     fetch(todoGetURL).then(res => {

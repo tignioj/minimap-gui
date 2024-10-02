@@ -15,7 +15,7 @@ const teamEnable = defineModel('teamEnable', {
 </script>
 <template>
   <select :disabled="!teamEnable" v-model="fightTeamSelectModel">
-    <option value="" selected >使用默认队伍({{ defaultFightTeam }})</option>
+    <option value="" selected >默认({{ defaultFightTeam }})</option>
     <option v-for="(team, index) in teams" :key="index" :value="team">
       {{ team }}
     </option>

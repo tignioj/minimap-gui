@@ -66,6 +66,10 @@ const stopLeyLineOutcropURL= `${serverURL}/leyline_outcrop/stop`;
 const leyLineOutcropSetConfigURL = `${serverURL}/leyline_outcrop/set_config`;
 const leyLineOutcropGetConfigURL = `${serverURL}/leyline_outcrop/get_config`;
 
+// 一条龙
+const oneDragonRunURL= `${serverURL}/one_dragon/run`;
+const oneDragonStopURL= `${serverURL}/one_dragon/stop`;
+
 export {
     serverURL,
     positionURL,
@@ -107,5 +111,9 @@ export {
     runLeyLineOutcropURL,
     stopLeyLineOutcropURL,
     leyLineOutcropSetConfigURL,
-    leyLineOutcropGetConfigURL
+    leyLineOutcropGetConfigURL,
+
+    // 一条龙
+    oneDragonRunURL,
+    oneDragonStopURL
 };

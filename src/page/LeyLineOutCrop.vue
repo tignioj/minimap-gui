@@ -84,6 +84,7 @@ const leyline_outcrop_task_fight_timeout = ref(40)
 const leyline_enable_wanye_pickup_after_reward = ref(true)
 // # 地脉指定队伍, 空白则使用默认队伍
 const leyline_fight_team = ref('')
+const leyline_type = ref('money')
 
 const limitLeyLineTaskExecuteTimeout = () => {
   leyline_outcrop_task_execute_timeout.value = Math.max(60, Math.min(3600, leyline_outcrop_task_execute_timeout.value))
@@ -100,6 +101,7 @@ function saveConfig() {
     leyline_outcrop_task_fight_timeout: leyline_outcrop_task_fight_timeout.value,
     leyline_enable_wanye_pickup_after_reward: leyline_enable_wanye_pickup_after_reward.value,
     leyline_fight_team: leyline_fight_team.value,
+    leyline_type: leyline_type.value
   }
   // // 序列化为 JSON 字符串
   const jsonString = JSON.stringify(data);
@@ -139,6 +141,7 @@ function getConfig() {
       leyline_outcrop_task_fight_timeout.value = result.leyline_outcrop_task_fight_timeout
       leyline_enable_wanye_pickup_after_reward.value = result.leyline_enable_wanye_pickup_after_reward
       leyline_fight_team.value = result.leyline_fight_team
+      leyline_type.value = result.leyline_type
     } else {
       errorMsg(data.message)
     }
@@ -158,6 +161,11 @@ getConfig()
   <button @click="leyLineStop">停止执行</button>
 
   <h2>地脉设置(保存后生效)</h2>
+  地脉类型:
+  <input name="leyLineType" type="radio" value="money" v-model="leyline_type" :checked="leyline_type === 'money'">摩拉
+  <input name="leyLineType" type="radio" value="exp" v-model="leyline_type" :checked="leyline_type === 'exp'">经验
+  <br/>
+
   战斗队伍: <FightTeamSelect v-model:fightTeamSelect="leyline_fight_team"/> <br/>
   地脉总计最长执行时间，允许范围(60~3600)秒
   <input type="number" v-model="leyline_outcrop_task_execute_timeout" @blur="limitLeyLineTaskExecuteTimeout"/> <br/>
