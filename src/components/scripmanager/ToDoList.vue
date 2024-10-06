@@ -5,6 +5,7 @@ import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from 
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
 import {store} from "@/store.js";
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
+import dayjs from "dayjs";
 const openTodos =ref([])
 const todoList = store.todoList
 const todoRunning = ref(false)
@@ -96,7 +97,9 @@ function createTodo() {
     team_enable: false,
     fight_team: '',
     name: listName,
-    files: []
+    files: [],
+    lastExecutionDate: dayjs().format('YYYY-MM-DD'),
+    frequency: 1
   }
   todoList.value.push(todo)
 }
@@ -145,7 +148,7 @@ function stopTodo() {
   setTodoRunning(false)
 }
 
-function runTodo() {
+function runAllTodo() {
   const jsonString = JSON.stringify(todoList.value)
   const count = todoList.value.filter(item => item.enable).length;
   if(count === 0) {
@@ -179,6 +182,43 @@ function runTodo() {
     errorMsg(error)
   });
 }
+
+function runOneTodo(todo) {
+  todo.enable = true
+  const jsonString = JSON.stringify([todo])
+  const count = todoList.value.filter(item => item.enable).length;
+  if(count === 0) {
+    // TODO 不要用alert，而是统一信息渠道
+    errorMsg('未勾选任何清单，无法执行')
+    return
+  }
+  todoList.value.filter(item => item.files)
+  setTodoRunning(true)
+  fetch(todoRunURL, {
+    method: 'POST', // 请求方法
+    headers: {
+      'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
+    },
+    body: jsonString // 将 JavaScript 对象转换为 JSON 字符串
+  }).then(response => {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  })
+      .then(data => {
+        if (data.success === true) {
+          // info(data.data)
+          if(data.status === 'playback_already_running') {
+            setTodoRunning(true)
+          }
+        } else {
+          errorMsg(data.message)
+        }
+      }).catch(error => {
+    console.error('Error:', error); // 处理错误
+    errorMsg(error)
+  });
+}
+
 function saveTodo() {
   // // 序列化为 JSON 字符串
     const jsonString = JSON.stringify(todoList.value);
@@ -252,15 +292,12 @@ const drop = (index) => {
 
 // 计算下次执行日期的函数
 const getNextExecutionDate = (lastDate, frequency) => {
-  const date = new Date(lastDate)
-  date.setDate(date.getDate() + frequency)
-  return date.toISOString().split('T')[0]
+  return dayjs(lastDate).add(frequency, 'day').format('YYYY-MM-DD');
 }
 
 // 格式化日期的函数
 const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  return dayjs(dateString).format('YYYY-MM-DD');
 }
 </script>
 <template>
@@ -268,7 +305,7 @@ const formatDate = (dateString) => {
     <!-- 清单管理功能 -->
     <button @click="createTodo">新建清单</button>
     <button @click="deleteTodo">删除清单</button>
-    <button :disabled="!totalEnabledFiles" @click="todoRunning?stopTodo():runTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
+    <button :disabled="!totalEnabledFiles" @click="todoRunning?stopTodo():runAllTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
     <button @click="saveTodo">保存清单</button>
 
     <table id="listContainer">
@@ -312,6 +349,7 @@ const formatDate = (dateString) => {
           <td>{{ formatDate(item.lastExecutionDate) }}</td>
           <td>{{ formatDate(getNextExecutionDate(item.lastExecutionDate, item.frequency)) }}</td>
           <td>
+            <button :disabled="item.files.length < 1 || todoRunning" @click="runOneTodo(item)">立刻执行</button>
             <button @click="toggleTodo(item.name)">展示清单</button>
           </td>
         </tr>
