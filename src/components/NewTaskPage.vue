@@ -27,7 +27,7 @@ import {
 } from "../keys.js"
 import {
   faArrowTrendUp, faBan, faBullseye,
-  faClover, faExpand,
+  faClover, faExpand, faGem,
   faMapMarkerAlt,
   faPlane,
   faPlaneArrival, faQuestion, faShield,
@@ -75,6 +75,7 @@ const props = defineProps({
       'target': faBullseye,
       'nahida_collect': faExpand,
       'shield': faShield,
+      'mining': faGem,
       '': faBan,
       undefined: faQuestion,
       null: faQuestion,
@@ -94,12 +95,13 @@ const props = defineProps({
       'nahida_collect':'纳西妲采集',
       '': '无',
       'stop_flying': '下落攻击',
-      'shield': '开盾'
+      'shield': '开盾',
+      'mining': '长e挖矿'
     }
   },
   actions: {
     type: Array,
-    default: ["", "stop_flying", "nahida_collect", 'shield']
+    default: ["", "stop_flying", "nahida_collect", 'shield', 'mining']
   },
   pointTypes: {
     type: Array,

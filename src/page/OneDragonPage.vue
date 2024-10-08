@@ -30,6 +30,8 @@ function errorMsg(msg) {
   store.errorLog(msg)
 }
 
+
+
 const todoList = ref([
   { name: '清单', value: 'todo' , checked: false },
   { name: '战斗委托', value: 'dailyMission' , checked: true},
@@ -37,15 +39,13 @@ const todoList = ref([
   { name: '领取奖励', value: 'claimReward' , checked: true}
 ]);
 
+const afterOneDragon = ref('')
+
+
+// 清单拖动
 const dragItem = ref(null);
-
-function dragStart(item) {
-  dragItem.value = item;
-}
-
-function dragOver(e) {
-  e.preventDefault();
-}
+function dragStart(item) { dragItem.value = item; }
+function dragOver(e) { e.preventDefault(); }
 
 function drop(item) {
   const fromIndex = todoList.value.indexOf(dragItem.value);
@@ -61,6 +61,7 @@ const checkedItems = computed(() => {
 function logCheckedItems() {
   console.log('选中的项目：', checkedItems.value);
 }
+
 function runAll() {
   logCheckedItems()
   const jsonString = JSON.stringify(todoList.value)
@@ -99,7 +100,6 @@ function stop() {
     } else { errorMsg(data.message) }
   }).catch(error => { console.error('Error:', error)}); // 处理错误 errorMsg(error)
 }
-
 const { socket} = useWebSocket(socketURL, {});
 onMounted(()=> {
   socket.value.on(SOCKET_EVENT_ONE_DRAGON_START, (data)=> { info(data) })
@@ -122,19 +122,25 @@ onMounted(()=> {
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE, (data)=> { info(data) })
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION, (data)=> { errorMsg(data) })
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_END, (data)=> { info(data) })
-
-
-
 })
+
+const gameFolder = ref('');
+
+function save() {
+
+}
 
 </script>
 
+
 <template>
+
+  <h2>一条龙清单</h2>
   <table>
     <thead>
     <tr>
       <th class="narrow-column">选择</th>
-      <th>操作</th>
+<!--      <th>操作</th>-->
       <th>任务名称</th>
     </tr>
     </thead>
@@ -147,7 +153,7 @@ onMounted(()=> {
       <td class="narrow-column">
         <input type="checkbox" v-model="item.checked">
       </td>
-      <td><button>执行</button></td>
+<!--      <td><button>执行</button></td>-->
       <td>{{ item.name }}</td>
     </tr>
     </tbody>
@@ -156,13 +162,20 @@ onMounted(()=> {
   <button @click="runAll" :disabled="checkedItems.length < 1">一键运行</button>
   <button @click="stop" >停止运行</button>
   <div>
-    <h2>运行设置</h2>
-    结束后:
-    <select>
+    <h2>一条龙设置（保存后生效）</h2>
+    <div>
+      游戏目录:
+      <input type="text" v-model="gameFolder" />
+      <p v-if="gameFolder">{{ gameFolder }}</p>
+    </div>    结束后:
+    <select v-model="afterOneDragon">
       <option value="">无</option>
       <option value="close">关闭游戏</option>
+      <option value="sleep">休眠</option>
       <option value="shutdown">关机</option>
     </select>
+    <br/>
+    <button @click="save">保存设置</button>
   </div>
 </template>
 <style scoped>

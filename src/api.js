@@ -35,9 +35,12 @@ const todoGetURL= `${serverURL}/todo/get`;
 const todoRunURL= `${serverURL}/todo/run`;
 const todoStopURL= `${serverURL}/todo/stop`;
 
-//
+// 配置
 const saveConfigURL = `${serverURL}/config/save`;
 const getConfigURL = `${serverURL}/config/get`;
+const setConfigInstance = `${serverURL}/config/set`;   // post方法 /set/实例名称
+const getConfigInstances = `${serverURL}/config/instances`; //get 获取所有实例
+
 
 const getFightTeamListURL = `${serverURL}/fight_team/list`;
 const getFightTeamContentURL= `${serverURL}/fight_team/get`;
@@ -86,9 +89,14 @@ export {
     todoGetURL,
     todoRunURL,
     todoStopURL,
+
+    // 配置
     saveConfigURL,
     getConfigURL,
+    setConfigInstance,
+    getConfigInstances,
 
+    // 队伍设置
     getFightTeamListURL,
     createFightTeamListURL,
     deleteFightTeamListURL,
@@ -115,5 +123,5 @@ export {
 
     // 一条龙
     oneDragonRunURL,
-    oneDragonStopURL
+    oneDragonStopURL,
 };
