@@ -38,8 +38,10 @@ const todoStopURL= `${serverURL}/todo/stop`;
 // 配置
 const saveConfigURL = `${serverURL}/config/save`;
 const getConfigURL = `${serverURL}/config/get`;
-const setConfigInstance = `${serverURL}/config/set`;   // post方法 /set/实例名称
+const setConfigInstance = `${serverURL}/config/set`;   // post方法 /set/<实例名称>
 const getConfigInstances = `${serverURL}/config/instances`; //get 获取所有实例
+const deleteConfigInstance = `${serverURL}/config/delete`; //get 删除指定实例，例如 /delete/instance1
+const loginConfigInstance = `${serverURL}/config/login`; //get 登录指定实例， 例如/login/instance1
 
 
 const getFightTeamListURL = `${serverURL}/fight_team/list`;
@@ -95,6 +97,8 @@ export {
     getConfigURL,
     setConfigInstance,
     getConfigInstances,
+    deleteConfigInstance,
+    loginConfigInstance,
 
     // 队伍设置
     getFightTeamListURL,

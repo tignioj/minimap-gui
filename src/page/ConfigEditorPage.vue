@@ -3,7 +3,7 @@ import {computed, ref} from 'vue';
 import { VAceEditor } from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-yaml'; // Load the language definition file used below
 import 'ace-builds/src-noconflict/theme-monokai'; // Load the theme definition file used below
-import {getConfigURL, getConfigInstances, setConfigInstance, saveConfigURL} from '@/api.js';
+import {getConfigURL, getConfigInstances, setConfigInstance, saveConfigURL, deleteConfigInstance} from '@/api.js';
 import {store} from "@/store.js";
 
 const content = ref(''); // 初始化为一个空字符串
@@ -124,8 +124,40 @@ function setInstance(name) {
         errorMsg(error)
       });
 }
-
 const currentInstance = ref('')
+
+function login(name) {
+  errorMsg('尚未实现该功能')
+}
+
+function deleteInstance(name) {
+  const ok = confirm("确认删除实例'" + name  + "'?")
+  if (ok) {
+    fetch(`${deleteConfigInstance}/${name}`).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            info(data.message);
+            currentInstance.value = name
+            // 删除实例后，重新加载对应实例的配置文件
+            loadConfig()
+            // 默认队伍刷新
+            store.updateFightTeamList()
+            // TodoList刷新
+            store.updateTodoList()
+            getInstances()
+          } else {
+            errorMsg(data.message);
+          }
+        })
+        .catch(error => {
+          errorMsg(error)
+        });
+  }
+}
+// 检查名称是否重复
+const isDuplicate = (name) => {
+  return instances.value.filter(item => item.name === name).length > 1;
+};
 
 </script>
 <template>
@@ -140,10 +172,11 @@ const currentInstance = ref('')
         <th class="narrow-column">服务器</th>
         <th>账户</th>
         <th>密码</th>
+        <th>操作</th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="item in instances" :key="item.name"
+      <tr v-for="(item, index) in instances" :key="index"
           draggable="true"
           @dragstart="dragStartInstance(item)"
           @dragover="dragOverInstance"
@@ -155,11 +188,15 @@ const currentInstance = ref('')
                  :checked="currentInstance===item.name">
         </td>
         <td class="narrow-column"> <input type="checkbox" v-model="item.enable"> </td>
-        <td class="narrow-column"> <input type="text" v-model="item.name"> </td>
+        <td class="narrow-column">
+          <!-- 动态设置输入框的class，当name重复时变红 -->
+          <input type="text" v-model="item.name" :class="{'duplicate': isDuplicate(item.name)}">
+        </td>
         <td class="narrow-column"> <input type="text" v-model="item.server"> </td>
         <td> <input v-model="item.account" type="text" /> </td>
         <td> <input v-model="item.password" type="password"/> </td>
-        <td><button>删除实例</button></td>
+        <td><button @click="deleteInstance(item.name)">删除实例</button></td>
+        <td><button @click="login(item.name)">登录</button></td>
       </tr>
       </tbody>
     </table>
@@ -175,3 +212,10 @@ const currentInstance = ref('')
       theme="monokai"
       style="height: 800px;" />
 </template>
+
+<style scoped>
+.duplicate {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+</style>
