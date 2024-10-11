@@ -1,6 +1,12 @@
 <script setup>
 import {computed, inject, onMounted, ref} from 'vue';
-import {oneDragonRunURL, oneDragonStopURL, socketURL} from "@/api.js";
+import {
+  oneDragonGetURL,
+  oneDragonRunURL,
+  oneDragonSaveURL,
+  oneDragonStopURL,
+  socketURL
+} from "@/api.js";
 import {store} from "@/store.js";
 import {
   SOCKET_EVENT_DAILY_MISSION_END,
@@ -32,12 +38,13 @@ function errorMsg(msg) {
 
 
 
-const todoList = ref([
+const oneDragonList = ref([
   { name: '清单', value: 'todo' , checked: false },
   { name: '战斗委托', value: 'dailyMission' , checked: true},
   { name: '地脉', value: 'leyLine' , checked: true},
   { name: '领取奖励', value: 'claimReward' , checked: true}
 ]);
+
 
 const afterOneDragon = ref('')
 
@@ -48,14 +55,14 @@ function dragStart(item) { dragItem.value = item; }
 function dragOver(e) { e.preventDefault(); }
 
 function drop(item) {
-  const fromIndex = todoList.value.indexOf(dragItem.value);
-  const toIndex = todoList.value.indexOf(item);
-  todoList.value.splice(fromIndex, 1);
-  todoList.value.splice(toIndex, 0, dragItem.value);
+  const fromIndex = oneDragonList.value.indexOf(dragItem.value);
+  const toIndex = oneDragonList.value.indexOf(item);
+  oneDragonList.value.splice(fromIndex, 1);
+  oneDragonList.value.splice(toIndex, 0, dragItem.value);
 }
 
 const checkedItems = computed(() => {
-  return todoList.value.filter(item => item.checked);
+  return oneDragonList.value.filter(item => item.checked);
 });
 
 function logCheckedItems() {
@@ -64,8 +71,8 @@ function logCheckedItems() {
 
 function runAll() {
   logCheckedItems()
-  const jsonString = JSON.stringify(todoList.value)
-  const count = todoList.value.filter(item => item.checked).length;
+  const jsonString = JSON.stringify(oneDragonList.value)
+  const count = oneDragonList.value.filter(item => item.checked).length;
   if(count === 0) {
     errorMsg('未勾选任何清单，无法执行')
     return
@@ -127,9 +134,51 @@ onMounted(()=> {
 const gameFolder = ref('');
 
 function save() {
+  logCheckedItems()
+  const jsonString = JSON.stringify(oneDragonList.value)
 
+  fetch(oneDragonSaveURL, {
+    method: 'POST', // 请求方法
+    headers: {
+      'Content-Type': 'application/json' // 指定发送的数据格式为 JSON
+    },
+    body: jsonString // 将 JavaScript 对象转换为 JSON 字符串
+  }).then(response => {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  })
+      .then(data => {
+        if (data.success === true) {
+          info(data.message)
+        } else {
+          errorMsg(data.message)
+        }
+      }).catch(error => {
+    console.error('Error:', error); // 处理错误
+    errorMsg(error)
+  });
 }
 
+
+function getOneDragonList() {
+  fetch(oneDragonGetURL).then(response => {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  })
+      .then(data => {
+        if (data.success === true) {
+          const result = data.data
+          console.log(result)
+          oneDragonList.value = result
+        } else {
+          errorMsg(data.message)
+        }
+      }).catch(error => {
+    console.error('Error:', error); // 处理错误
+    errorMsg(error)
+  });
+}
+getOneDragonList();
 </script>
 
 
@@ -145,7 +194,7 @@ function save() {
     </tr>
     </thead>
     <tbody>
-    <tr v-for="item in todoList" :key="item.value"
+    <tr v-for="item in oneDragonList" :key="item.value"
         draggable="true"
         @dragstart="dragStart(item)"
         @dragover="dragOver"
@@ -159,15 +208,17 @@ function save() {
     </tbody>
   </table>
   <br/>
+  <button @click="save">保存设置</button>
   <button @click="runAll" :disabled="checkedItems.length < 1">一键运行</button>
   <button @click="stop" >停止运行</button>
   <div>
     <h2>一条龙设置（保存后生效）</h2>
-    <div>
-      游戏目录:
-      <input type="text" v-model="gameFolder" />
-      <p v-if="gameFolder">{{ gameFolder }}</p>
-    </div>    结束后:
+<!--    <div>-->
+<!--      游戏目录:-->
+<!--      <input type="text" v-model="gameFolder" />-->
+<!--      <p v-if="gameFolder">{{ gameFolder }}</p>-->
+<!--    </div>    -->
+    结束后:
     <select v-model="afterOneDragon">
       <option value="">无</option>
       <option value="close">关闭游戏</option>
@@ -175,7 +226,6 @@ function save() {
       <option value="shutdown">关机</option>
     </select>
     <br/>
-    <button @click="save">保存设置</button>
   </div>
 </template>
 <style scoped>

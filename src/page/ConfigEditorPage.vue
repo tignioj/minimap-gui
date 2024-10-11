@@ -166,7 +166,6 @@ const isDuplicate = (name) => {
     <table>
       <thead>
       <tr>
-        <th class="narrow-column">当前</th>
         <th class="narrow-column">启用</th>
         <th class="narrow-column">名称</th>
         <th class="narrow-column">服务器</th>
@@ -182,11 +181,11 @@ const isDuplicate = (name) => {
           @dragover="dragOverInstance"
           @drop="dropInstances(item)">
 
-        <td class="narrow-column">
-          <input name="instance" type="radio" v-model="currentInstance"
-                 @change="setInstance(item.name)"
-                 :checked="currentInstance===item.name">
-        </td>
+<!--        <td class="narrow-column">-->
+<!--          <input name="instance" type="radio" v-model="currentInstance"-->
+<!--                 @change="setInstance(item.name)"-->
+<!--                 :checked="currentInstance===item.name">-->
+<!--        </td>-->
         <td class="narrow-column"> <input type="checkbox" v-model="item.enable"> </td>
         <td class="narrow-column">
           <!-- 动态设置输入框的class，当name重复时变红 -->
@@ -195,8 +194,13 @@ const isDuplicate = (name) => {
         <td class="narrow-column"> <input type="text" v-model="item.server"> </td>
         <td> <input v-model="item.account" type="text" /> </td>
         <td> <input v-model="item.password" type="password"/> </td>
-        <td><button @click="deleteInstance(item.name)">删除实例</button></td>
-        <td><button @click="login(item.name)">登录</button></td>
+        <td>
+          <button :disabled="currentInstance===item.name" @click="setInstance(item.name)">
+            {{ currentInstance === item.name ? "当前选中": "切换实例" }}
+          </button>
+          <button @click="deleteInstance(item.name)">删除实例</button>
+          <button @click="login(item.name)">登录</button>
+        </td>
       </tr>
       </tbody>
     </table>

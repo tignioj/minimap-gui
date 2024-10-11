@@ -74,6 +74,8 @@ const leyLineOutcropGetConfigURL = `${serverURL}/leyline_outcrop/get_config`;
 // 一条龙
 const oneDragonRunURL= `${serverURL}/one_dragon/run`;
 const oneDragonStopURL= `${serverURL}/one_dragon/stop`;
+const oneDragonGetURL= `${serverURL}/one_dragon/get`;  // 获取配置
+const oneDragonSaveURL= `${serverURL}/one_dragon/save`; // 保存一条龙配置
 
 export {
     serverURL,
@@ -128,4 +130,6 @@ export {
     // 一条龙
     oneDragonRunURL,
     oneDragonStopURL,
+    oneDragonGetURL,
+    oneDragonSaveURL
 };

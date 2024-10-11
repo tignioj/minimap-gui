@@ -18,7 +18,7 @@ const activateClass = (link) => {
   route.fullPath.includes(link)
 }
 
-const keepAlive = ['ConfigEditorPage', 'ScriptManagerPage']
+const keepAlive = ['ScriptManagerPage']
 </script>
 <template>
   <p>
