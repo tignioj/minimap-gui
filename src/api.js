@@ -29,11 +29,12 @@ const pathListRemoveURL= `${serverURL}/pathlist/delete`;
 const playBackURL= `${serverURL}/playback`;
 const playBackStopURL = `${serverURL}/playback/stop`;
 
-//
+// 清单
 const todoSaveURL = `${serverURL}/todo/save`;
 const todoGetURL= `${serverURL}/todo/get`;
 const todoRunURL= `${serverURL}/todo/run`;
 const todoStopURL= `${serverURL}/todo/stop`;
+const todoRemoveNotExitedFilesURL = `${serverURL}/todo/remove_not_exist_files`;
 
 // 配置
 const saveConfigURL = `${serverURL}/config/save`;
@@ -89,10 +90,13 @@ export {
     socketURL,
     playBackURL,
     playBackStopURL,
+
+    // 清单
     todoSaveURL,
     todoGetURL,
     todoRunURL,
     todoStopURL,
+    todoRemoveNotExitedFilesURL,
 
     // 配置
     saveConfigURL,

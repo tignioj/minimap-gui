@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, onActivated, onMounted, ref, watch} from "vue";
 import router from "@/router.js";
-import {pathListFileURL, todoGetURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
+import {pathListFileURL, todoGetURL, todoRemoveNotExitedFilesURL, todoRunURL, todoSaveURL, todoStopURL} from "@/api.js";
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
 import {store} from "@/store.js";
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
@@ -16,8 +16,8 @@ defineExpose({
   setTodoRunning,
   updateTodoList
 })
-const info = inject('info')
-const errorMsg = inject('errorMsg')
+const info = inject('script-info')
+const errorMsg = inject('script-errorMsg')
 
 // 统计打勾的清单中一共有多少个文件
 const totalEnabledFiles = computed(() => {
@@ -299,6 +299,30 @@ const getNextExecutionDate = (lastDate, frequency) => {
 const formatDate = (dateString) => {
   return dayjs(dateString).format('YYYY-MM-DD');
 }
+function setYesterday(item) {
+  item.lastExecutionDate = dayjs(new Date()).add(-1, 'day').format('YYYY-MM-DD');
+}
+
+
+//  清理清单中失效的文件
+function removeNotExistedFiles() {
+  fetch(todoRemoveNotExitedFilesURL) .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  }).then(data => {
+    if (data.success === true) {
+      info(data.message)
+    } else {
+      errorMsg(data.message)
+    }
+    store.updateTodoList()
+  })
+  .catch(error => {
+      console.error('Error:', error); // 处理错误
+      errorMsg(error)
+      });
+}
+
 </script>
 <template>
   <div class="list-management">
@@ -307,13 +331,13 @@ const formatDate = (dateString) => {
     <button @click="deleteTodo">删除清单</button>
     <button :disabled="!totalEnabledFiles" @click="todoRunning?stopTodo():runAllTodo()">{{ todoRunning ? '停止执行': '执行清单' }}</button>
     <button @click="saveTodo">保存清单</button>
-
+    <button @click="removeNotExistedFiles()">移除失效文件</button>
     <table id="listContainer">
       <thead>
       <tr>
-        <th>拖拽</th>
         <th>启用</th>
         <th>名称</th>
+        <th>数量</th>
         <th>切换队伍</th>
         <th>战斗超时(秒)</th>
         <th>执行频率(几天/1次)</th>
@@ -330,9 +354,11 @@ const formatDate = (dateString) => {
             @dragover.prevent
             @drop="drop(index)"
         >
-          <td><span class="drag-handle">☰</span></td>
-          <td><input type="checkbox" v-model="item.enable"></td>
-          <td>{{ item.name }}</td>
+          <td>
+            <input type="checkbox" v-model="item.enable">
+          </td>
+          <td style="cursor: move">{{ item.name }} </td>
+          <td> {{isUndefinedNullOrEmpty(item.files)?0:item.files.length}} </td>
           <td>
             <input type="checkbox" v-model="item.team_enable" />
             <FightTeamSelect ref="fightTeamSelector" v-model:teamEnable="item.team_enable" v-model:fightTeamSelect="item.fight_team" />
@@ -346,11 +372,14 @@ const formatDate = (dateString) => {
             <input :name="item.name" v-model="item.frequency" :value="3"  type="radio" :checked="item.frequency===3">3
             <input :name="item.name" v-model="item.frequency" :value="7"  type="radio" :checked="item.frequency===7">7
           </td>
-          <td>{{ formatDate(item.lastExecutionDate) }}</td>
-          <td>{{ formatDate(getNextExecutionDate(item.lastExecutionDate, item.frequency)) }}</td>
+          <td>{{ formatDate(item.lastExecutionDate) }}
+            <button @click="setYesterday(item)">设为昨天</button>
+          </td>
+          <td>{{ formatDate(getNextExecutionDate(item.lastExecutionDate, item.frequency)) }}
+          </td>
           <td>
-            <button :disabled="item.files.length < 1 || todoRunning" @click="runOneTodo(item)">立刻执行</button>
-            <button @click="toggleTodo(item.name)">展示清单</button>
+            <button :disabled="item.files.length < 1 || todoRunning" @click="runOneTodo(item)">执行</button>
+            <button @click="toggleTodo(item.name)"> {{ openTodos.includes(item.name)?"收起":"查看" }} </button>
           </td>
         </tr>
         <tr v-if="openTodos.includes(item.name)">
@@ -399,7 +428,30 @@ const formatDate = (dateString) => {
   border: 1px solid #ccc;
   margin: 5px;
 }
-.drag-handle {
-  cursor: move;
+table {
+  border-collapse: collapse;
 }
+
+
+
+th, td {
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+tbody tr:hover {
+  background-color: #e8e8e8;
+}
+
+
+
 </style>

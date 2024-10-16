@@ -16,8 +16,8 @@ const todoSelect = ref(null)
 const todoList = defineModel('todoList', { default: [] })
 const selectedFolder = ref([])
 const selectedFiles = ref([])
-const info = inject('info')
-const errorMsg = inject('errorMsg')
+const info = inject('script-info')
+const errorMsg = inject('script-errorMsg')
 
 
 // 一旦检测到todoList长度发生变化，则选择默认的第一个
@@ -149,6 +149,10 @@ function removeFiles() {
       }).then(data => {
         console.log('Success:', data); // 处理成功的响应
         if (data.success) {
+          // 清理所有选中文件
+          selectedFiles.value.length = 0
+          selectedFolder.value.length = 0
+
           info(data.msg)
           const result = data.data
           const folders_removed = result.folders_removed
@@ -157,7 +161,6 @@ function removeFiles() {
             selectedFiles.value.splice(selectedFiles.value.indexOf(file), 1)
           })
           folders_removed?.forEach((folder)=> {
-            debugger
             selectedFolder.value.splice(selectedFolder.value.indexOf(folder), 1)
           })
           emit('filesChanged')

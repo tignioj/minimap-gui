@@ -94,8 +94,8 @@ function updateAllData() {
   console.log('更新所有数据')
   todoListRef.value.updateTodoList()
 }
-provide('info', info)
-provide('errorMsg', errorMsg)
+provide('script-info', info)
+provide('script-errorMsg', errorMsg)
 </script>
 <template>
   <div class="container">
