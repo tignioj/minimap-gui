@@ -14,7 +14,7 @@ import {
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
-import {store} from "@/store.js";
+import MessageComponent from "@/components/common/MessageComponent.vue";
 const todoListRef = ref();  // 初始化为 null
 const todoList = ref([]); // 初始化为空数组
 // 监控 todoListRef.value.todoList 的变化
@@ -35,16 +35,10 @@ const todoList = ref([]); // 初始化为空数组
 
 const msgElement = ref(null)
 function info(text) {
-  store.infoLog(text)
-  msgElement.value.classList.remove('error-msg')
-  msgElement.value.innerText = text;
-  console.log(text)
+  msgElement.value.info(text)
 }
 function errorMsg(text) {
-  store.errorLog(text)
-  console.log('异常:', text)
-  msgElement.value.innerText = text;
-  msgElement.value.classList.add('error-msg')
+  msgElement.value.error(text)
 }
 const {isConnected, socket, connectSocket,disconnectSocket} = useWebSocket(
     socketURL,
@@ -99,9 +93,7 @@ provide('script-errorMsg', errorMsg)
 </script>
 <template>
   <div class="container">
-    <div>
-      <p ref="msgElement"></p>
-    </div>
+    <MessageComponent ref="msgElement"/>
     <ToDoList ref="todoListRef" />
     <FileManager
         @filesChanged="updateAllData"
@@ -134,8 +126,5 @@ provide('script-errorMsg', errorMsg)
 <style scoped>
 .container {
   display: block;
-}
-.error-msg {
-  color: red;
 }
 </style>

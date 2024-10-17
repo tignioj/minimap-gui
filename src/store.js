@@ -109,6 +109,7 @@ updateFightTeamList()
 
 // 常量
 const charactersName = [
+    "希诺宁",
     "基尼奇",
     "玛拉妮",
     "艾梅莉埃",

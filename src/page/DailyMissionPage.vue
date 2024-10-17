@@ -15,22 +15,13 @@ import {useWebSocket,
 } from "@/utils/websocket_listener_utils.js";
 import {store} from "@/store.js";
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
+import MessageComponent from "@/components/common/MessageComponent.vue";
 const msgRef = ref(null)
 function info(msg) {
-  store.infoLog(msg)
-  if (msgRef.value) {
-    msgRef.value.innerText = msg
-    msgRef.value.classList.remove("error-msg")
-  }
-  console.log(msg)
+  msgRef.value.info(msg)
 }
 function errorMsg(msg) {
-  store.errorLog(msg)
-  if (msgRef.value) {
-    msgRef.value.innerText = msg
-    msgRef.value.classList.add("error-msg")
-  }
-  console.error(msg)
+  msgRef.value.error(msg)
 }
 
 function  dailyMissionRun() {
@@ -141,7 +132,6 @@ function getConfig() {
   }).then(data => {
     console.log('Success:', data); // 处理成功的响应
     if(data.success) {
-      info(data.message)
       const result = data.data
       // # 每日委托总计最长执行时间，允许范围(60~3600)秒
       daily_task_execute_timeout.value = result.daily_task_execute_timeout
@@ -149,7 +139,7 @@ function getConfig() {
       daily_task_destroy_timeout.value = result.daily_task_destroy_timeout
       daily_task_fight_team.value = result.daily_task_fight_team
     } else {
-      errorMsg(data.message)
+      errorMsg("无法加载委托配置" + data.message)
     }
   })
       .catch(error => {
@@ -179,11 +169,11 @@ function claimReward() {
 
 </script>
 <template>
-  <p ref="msgRef"></p>
+  <MessageComponent ref="msgRef"/>
   <button @click="dailyMissionRun">执行每日委托</button> <button @click="dailyMissionStop">停止执行</button>
   <br/>
   <br/>
-  <button @click="claimReward">领取今日奖励(枫丹凯瑟琳)</button>
+  <button @click="claimReward">领取今日奖励</button>
   <h2>委托设置(保存后生效)</h2>
   战斗队伍: <FightTeamSelect v-model:fightTeamSelect="daily_task_fight_team"/> <br/>
   每日委托总计最长执行时间，允许范围(60~3600)秒
@@ -205,8 +195,4 @@ function claimReward() {
 </template>
 
 <style scoped>
-.error-msg {
-  color: red;
-}
-
 </style>

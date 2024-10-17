@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {
   oneDragonGetURL,
   oneDragonRunURL,
@@ -7,7 +7,6 @@ import {
   oneDragonStopURL,
   socketURL
 } from "@/api.js";
-import {store} from "@/store.js";
 import {
   SOCKET_EVENT_DAILY_MISSION_END,
   SOCKET_EVENT_DAILY_MISSION_EXCEPTION,
@@ -27,26 +26,25 @@ import {
   SOCKET_EVENT_PLAYBACK_UPDATE,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
+import MessageComponent from "@/components/common/MessageComponent.vue";
+const msgComponentRef = ref(null)
 
 
 function info(msg) {
-  store.infoLog(msg)
+  msgComponentRef.value.info(msg)
 }
 function errorMsg(msg) {
-  store.errorLog(msg)
+  msgComponentRef.value.error(msg)
 }
 
-
-
 const oneDragonList = ref([
-  { name: '清单', value: 'todo' , checked: false },
+  { name: '清单', value: 'todo' , checked: false},
   { name: '战斗委托', value: 'dailyMission' , checked: true},
   { name: '地脉', value: 'leyLine' , checked: true},
-  { name: '领取奖励', value: 'claimReward' , checked: true}
+  { name: '领取奖励', value: 'claimReward' , checked: true},
+  { name: '系统命令', value: 'sleep' , checked: true}
 ]);
 
-
-const afterOneDragon = ref('')
 
 
 // 清单拖动
@@ -179,11 +177,11 @@ function getOneDragonList() {
   });
 }
 getOneDragonList();
+
 </script>
 
-
 <template>
-
+  <MessageComponent ref="msgComponentRef" />
   <h2>一条龙清单</h2>
   <table>
     <thead>
@@ -191,6 +189,7 @@ getOneDragonList();
       <th class="narrow-column">选择</th>
 <!--      <th>操作</th>-->
       <th>任务名称</th>
+      <th>选项</th>
     </tr>
     </thead>
     <tbody>
@@ -204,6 +203,16 @@ getOneDragonList();
       </td>
 <!--      <td><button>执行</button></td>-->
       <td>{{ item.name }}</td>
+
+      <td v-if="item.name === '系统命令'">
+        <select v-model="item.value">
+          <option value="no">无</option>
+          <option value="close">关闭游戏</option>
+          <option value="sleep">休眠</option>
+          <option value="shutdown">关机</option>
+        </select>
+      </td>
+      <td v-else></td>
     </tr>
     </tbody>
   </table>
@@ -211,26 +220,10 @@ getOneDragonList();
   <button @click="save">保存设置</button>
   <button @click="runAll" :disabled="checkedItems.length < 1">一键运行</button>
   <button @click="stop" >停止运行</button>
-  <div>
-    <h2>一条龙设置（保存后生效）</h2>
-<!--    <div>-->
-<!--      游戏目录:-->
-<!--      <input type="text" v-model="gameFolder" />-->
-<!--      <p v-if="gameFolder">{{ gameFolder }}</p>-->
-<!--    </div>    -->
-    结束后:
-    <select v-model="afterOneDragon">
-      <option value="">无</option>
-      <option value="close">关闭游戏</option>
-      <option value="sleep">休眠</option>
-      <option value="shutdown">关机</option>
-    </select>
-    <br/>
-  </div>
+
 </template>
 <style scoped>
 table {
-  width: 100%;
   border-collapse: collapse;
 }
 

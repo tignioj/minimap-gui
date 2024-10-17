@@ -11,24 +11,14 @@ import {useWebSocket,
   SOCKET_EVENT_LEYLINE_OUTCROP_END,SOCKET_EVENT_LEYLINE_OUTCROP_START,
   SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE
 } from "@/utils/websocket_listener_utils.js";
-import {store} from "@/store.js";
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
-const msgRef = ref(null)
+import MessageComponent from "@/components/common/MessageComponent.vue";
+const msgComponentRef = ref(null)
 function info(msg) {
-  store.infoLog(msg)
-  if (msgRef.value) {
-    msgRef.value.innerText = msg
-    msgRef.value.classList.remove("error-msg")
-  }
-  console.log(msg)
+  msgComponentRef.value.info(msg)
 }
 function errorMsg(msg) {
-  store.errorLog(msg)
-  if (msgRef.value) {
-    msgRef.value.innerText = msg
-    msgRef.value.classList.add("error-msg")
-  }
-  console.error(msg)
+  msgComponentRef.value.error(msg)
 }
 
 function  leyLineRun(leyLineType) {
@@ -132,18 +122,15 @@ function getConfig() {
     if (!response.ok) { throw new Error('Network response was not ok ' + response.statusText); }
     return response.json(); // 解析响应为 JSON
   }).then(data => {
-    console.log('Success:', data); // 处理成功的响应
     if(data.success) {
-      info(data.message)
       const result = data.data
-
       leyline_outcrop_task_execute_timeout.value = result.leyline_outcrop_task_execute_timeout
       leyline_outcrop_task_fight_timeout.value = result.leyline_outcrop_task_fight_timeout
       leyline_enable_wanye_pickup_after_reward.value = result.leyline_enable_wanye_pickup_after_reward
       leyline_fight_team.value = result.leyline_fight_team
       leyline_type.value = result.leyline_type
     } else {
-      errorMsg(data.message)
+      errorMsg("无法加载地脉配置:" + data.message)
     }
   })
       .catch(error => {
@@ -155,7 +142,7 @@ getConfig()
 </script>
 <template>
 
-  <p ref="msgRef"></p>
+  <MessageComponent ref="msgComponentRef" />
   <button @click="leyLineRun('experience')">执行地脉-经验</button>
   <button @click="leyLineRun('money')">执行地脉-摩拉</button>
   <button @click="leyLineStop">停止执行</button>
@@ -197,8 +184,4 @@ getConfig()
 </template>
 
 <style scoped>
-.error-msg {
-  color: red;
-}
-
 </style>

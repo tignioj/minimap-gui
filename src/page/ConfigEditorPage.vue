@@ -5,21 +5,16 @@ import 'ace-builds/src-noconflict/mode-yaml'; // Load the language definition fi
 import 'ace-builds/src-noconflict/theme-monokai'; // Load the theme definition file used below
 import {getConfigURL, getConfigInstances, setConfigInstance, saveConfigURL, deleteConfigInstance} from '@/api.js';
 import {store} from "@/store.js";
+import MessageComponent from "@/components/common/MessageComponent.vue";
 
 const content = ref(''); // 初始化为一个空字符串
 const msgEle = ref(null)
 
 function errorMsg(msg) {
-  store.errorLog(msg)
-  if (msgEle.value) {
-    msgEle.value.innerText = msg;
-  }
+  msgEle.value.error(msg)
 }
 function info(msg) {
-  store.infoLog(msg)
-  if (msgEle.value) {
-    msgEle.value.innerText = msg;
-  }
+  msgEle.value.info(msg)
 }
 
 function saveConfig() {
@@ -209,7 +204,7 @@ const isDuplicate = (name) => {
 
 
   <button @click="saveConfig()">保存</button>
-  <p ref="msgEle"></p>
+  <MessageComponent ref="msgEle"/>
   <v-ace-editor
       v-model:value="content"
       lang="yaml"

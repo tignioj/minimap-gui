@@ -48,6 +48,7 @@ import router from "@/router.js";
 import { store } from '@/store.js'
 import {VAceEditor} from "vue3-ace-editor";
 import PinYinAutoComplete from "@/components/common/PinYinAutoComplete.vue";
+import MessageComponent from "@/components/common/MessageComponent.vue";
 let intervalID;
 let jsonContent = ref('')
 
@@ -144,16 +145,10 @@ const emit = defineEmits({
   }
 })
 function info(text) {
-    store.infoLog(text)
-    msgElement?.value.classList.remove('error-msg')
-    console.log(text)
-    msgElement.value.innerText = text
+  msgElement.value.info(text)
 }
 function errorMsg(text) {
-  store.errorLog(text)
-  msgElement?.value.classList.add('error-msg')
-  console.error(text)
-  msgElement.value.innerText = text
+  msgElement.value.error(text)
 }
 
 provide(injectKeyPointMoveModes, props.moveModes);
@@ -673,7 +668,7 @@ const isShowJSONContent = ref(false)
       v-model:isPlaing="isPlaying"
      />
   <div>
-    <div ref="msgElement" >路径记录-回放</div>
+    <MessageComponent ref="msgElement"/>
     <button @click="startRecordButtonClick">开始记录</button>
     <button @click="stopRecordButtonClick">停止记录</button>
     <button @click="saveRecordButtonClick">保存到服务器</button>
@@ -743,8 +738,5 @@ const isShowJSONContent = ref(false)
 #head {
   display: flex;
   align-items: flex-start;
-}
-.error-msg {
-  color:red;
 }
 </style>
