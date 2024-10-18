@@ -494,6 +494,8 @@ const docs = [
   </div>
   <div>
     <h2>角色名称必须按照游戏中队伍顺序填写, 否则无法正确切换人物</h2>
+    <p>如果需要新建队伍，请先点击新建按钮，然后依次输入队友名称后，输入队伍简称用于切换队伍，最后点击保存</p>
+    <p>文件将保存到 _internal/resources/user-实例名称/team 目录下 </p>
       <div>
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character1" >1号:</PinYinAutoComplete>
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character2" >2号:</PinYinAutoComplete> <br/>
@@ -501,7 +503,7 @@ const docs = [
         <PinYinAutoComplete :data-list="store.charactersName" v-model="character4" >4号:</PinYinAutoComplete>
       </div>
       <div>
-        队伍简称:<input v-model="teamAlias" type="text" /> <br/> 游戏中队伍名，切换队伍时需要用到
+        队伍简称:<input v-model="teamAlias" type="text" /> 游戏中队伍名，切换队伍时需要用到
       </div>
   </div>
 

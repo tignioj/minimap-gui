@@ -253,7 +253,10 @@ function runAllInstance() {
   <button @click="runAllInstance()">一键运行所有实例</button>
 
   <h2>说明</h2>
+  <p>若要登录，前往<RouterLink to="/config/editor">配置</RouterLink>界面设置game_path为游戏目录, 每个实例都要配置一次</p>
   <p>每个实例都是独立的清单、战斗文件、配置文件</p>
+  <p>一条龙配置将保存到 _internal/resources/user-实例名称/one_dragon.json </p>
+  <p>账号密码配置将保存到 _internal/account.yaml </p>
   <p>切勿将服务器暴露到公网，否则密码泄露</p>
 
 </template>
