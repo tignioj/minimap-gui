@@ -1,10 +1,11 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, provide, ref} from 'vue';
 import {
-  oneDragonGetURL,
+  getConfigInstancesURL,
+  oneDragonGetURL, oneDragonRunAllInstanceURL,
   oneDragonRunURL,
   oneDragonSaveURL,
-  oneDragonStopURL,
+  oneDragonStopURL, saveInstancesConfigURL, setConfigInstanceURL,
   socketURL
 } from "@/api.js";
 import {
@@ -27,6 +28,9 @@ import {
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
 import MessageComponent from "@/components/common/MessageComponent.vue";
+import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
+import {store} from "@/store.js";
+import InstancesConfig from "@/components/onedragon/InstancesConfig.vue";
 const msgComponentRef = ref(null)
 
 
@@ -36,15 +40,18 @@ function info(msg) {
 function errorMsg(msg) {
   msgComponentRef.value.error(msg)
 }
+provide('info', info)
+provide('error', errorMsg)
 
 const oneDragonList = ref([
+  { name: '登录', value: 'login' , checked: false},
   { name: '清单', value: 'todo' , checked: false},
   { name: '战斗委托', value: 'dailyMission' , checked: true},
   { name: '地脉', value: 'leyLine' , checked: true},
   { name: '领取奖励', value: 'claimReward' , checked: true},
-  { name: '系统命令', value: 'sleep' , checked: true}
+  { name: '系统命令', value: 'sleepSys' , checked: true}
 ]);
-
+// sleepSys: 睡眠， closeGame: 关闭游戏， shutdownSys:关机
 
 
 // 清单拖动
@@ -67,7 +74,7 @@ function logCheckedItems() {
   console.log('选中的项目：', checkedItems.value);
 }
 
-function runAll() {
+function runCurrentInstance() {
   logCheckedItems()
   const jsonString = JSON.stringify(oneDragonList.value)
   const count = oneDragonList.value.filter(item => item.checked).length;
@@ -178,6 +185,26 @@ function getOneDragonList() {
 }
 getOneDragonList();
 
+const instanceConfigRef = ref(null)
+function runAllInstance() {
+  fetch(oneDragonRunAllInstanceURL).then(response => {
+    if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
+    return response.json(); // 解析响应为 JSON
+  })
+      .then(data => {
+        if (data.success === true) {
+          console.log("开始执行所有实例的一条龙")
+          getOneDragonList()
+          instanceConfigRef.value.updateInstances()
+        } else {
+          errorMsg(data.message)
+        }
+      }).catch(error => {
+    console.error('Error:', error); // 处理错误
+    errorMsg(error)
+  });
+}
+
 </script>
 
 <template>
@@ -206,10 +233,10 @@ getOneDragonList();
 
       <td v-if="item.name === '系统命令'">
         <select v-model="item.value">
-          <option value="no">无</option>
-          <option value="close">关闭游戏</option>
-          <option value="sleep">休眠</option>
-          <option value="shutdown">关机</option>
+          <option value="">无</option>
+          <option value="closeGame">关闭游戏</option>
+          <option value="sleepSys">休眠</option>
+          <option value="shutdownSys">关机</option>
         </select>
       </td>
       <td v-else></td>
@@ -218,8 +245,16 @@ getOneDragonList();
   </table>
   <br/>
   <button @click="save">保存设置</button>
-  <button @click="runAll" :disabled="checkedItems.length < 1">一键运行</button>
+  <button @click="runCurrentInstance" :disabled="checkedItems.length < 1">一键运行当前实例</button>
   <button @click="stop" >停止运行</button>
+
+  <InstancesConfig ref="instanceConfigRef" @on-set-instance="getOneDragonList" @on-delete-instance="getOneDragonList"/>
+  <hr/>
+  <button @click="runAllInstance()">一键运行所有实例</button>
+
+  <h2>说明</h2>
+  <p>每个实例都是独立的清单、战斗文件、配置文件</p>
+  <p>切勿将服务器暴露到公网，否则密码泄露</p>
 
 </template>
 <style scoped>

@@ -44,7 +44,7 @@ const getConfigInstancesURL = `${serverURL}/config/instances`; //get 获取所�
 const deleteConfigInstanceURL = `${serverURL}/config/delete`; //get 删除指定实例，例如 /delete/instance1
 const createInstanceConfigURL= `${serverURL}/config/create_instance`; //get 删除指定实例，例如 /delete/instance1
 const saveInstancesConfigURL= `${serverURL}/config/save_instances`; // 保存实例列表
-const loginConfigInstance = `${serverURL}/config/login`; //get 登录指定实例， 例如/login/instance1
+const loginConfigInstance = `${serverURL}/config/login`; // POST登录, 需要表单数据传输账号、密码、服务器名称
 
 
 const getFightTeamListURL = `${serverURL}/fight_team/list`;
@@ -79,6 +79,7 @@ const oneDragonRunURL= `${serverURL}/one_dragon/run`;
 const oneDragonStopURL= `${serverURL}/one_dragon/stop`;
 const oneDragonGetURL= `${serverURL}/one_dragon/get`;  // 获取配置
 const oneDragonSaveURL= `${serverURL}/one_dragon/save`; // 保存一条龙配置
+const oneDragonRunAllInstanceURL= `${serverURL}/one_dragon/run_all_instance`; // 执行所有的实例的一条龙
 
 export {
     serverURL,
@@ -139,5 +140,6 @@ export {
     oneDragonRunURL,
     oneDragonStopURL,
     oneDragonGetURL,
-    oneDragonSaveURL
+    oneDragonSaveURL,
+    oneDragonRunAllInstanceURL
 };
