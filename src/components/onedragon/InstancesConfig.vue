@@ -149,7 +149,7 @@ function login(account, password, server) {
         } else {
           errorMsg(data.message);
         }
-        getInstances()
+        updateInstances()
       })
       .catch(error => {
         errorMsg(error)
