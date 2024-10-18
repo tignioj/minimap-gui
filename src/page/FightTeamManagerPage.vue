@@ -4,7 +4,7 @@ import {computed, onMounted, reactive, ref, watch} from "vue";
 import {
   createFightTeamListURL, deleteFightTeamListURL,
   getFightTeamContentURL,
-  getFightTeamListURL, runFightTeamFromMemoryRL, runFightTeamFromSavedTextURL,
+  getFightTeamListURL, runFightTeamFromMemoryURL, runFightTeamFromSavedTextURL,
   setDefaultFightTeamURL, stopFightTeamListURL,
   updateFightTeamListURL,
 } from "@/api.js";
@@ -202,7 +202,7 @@ function runFightTeamFromMemory() {
   catch(error) { if(error instanceof ContentError) { errorMsg(error.message); return; } }
 
   const newTeamName = `${character1.value}_${character2.value}_${character3.value}_${character4.value}_(${teamAlias.value}).txt`;
-  const url = `${runFightTeamFromMemoryRL}/${newTeamName}`
+  const url = `${runFightTeamFromMemoryURL}/${newTeamName}`
   fetch(url, {
     method: "POST",
     headers: {

@@ -39,9 +39,11 @@ const todoRemoveNotExitedFilesURL = `${serverURL}/todo/remove_not_exist_files`;
 // 配置
 const saveConfigURL = `${serverURL}/config/save`;
 const getConfigURL = `${serverURL}/config/get`;
-const setConfigInstance = `${serverURL}/config/set`;   // post方法 /set/<实例名称>
-const getConfigInstances = `${serverURL}/config/instances`; //get 获取所有实例
-const deleteConfigInstance = `${serverURL}/config/delete`; //get 删除指定实例，例如 /delete/instance1
+const setConfigInstanceURL = `${serverURL}/config/set`;   // post方法 /set/<实例名称>
+const getConfigInstancesURL = `${serverURL}/config/instances`; //get 获取所有实例
+const deleteConfigInstanceURL = `${serverURL}/config/delete`; //get 删除指定实例，例如 /delete/instance1
+const createInstanceConfigURL= `${serverURL}/config/create_instance`; //get 删除指定实例，例如 /delete/instance1
+const saveInstancesConfigURL= `${serverURL}/config/save_instances`; // 保存实例列表
 const loginConfigInstance = `${serverURL}/config/login`; //get 登录指定实例， 例如/login/instance1
 
 
@@ -54,7 +56,7 @@ const updateFightTeamListURL = `${serverURL}/fight_team/update`;
 // get方法，传送一个文件名称给服务器，服务器从本地读取文件运行战斗脚本
 const runFightTeamFromSavedTextURL = `${serverURL}/fight_team/run`;
 // post方法，传输文件名以及文本内容，加载到服务器内存，从内存中解析战斗脚本
-const runFightTeamFromMemoryRL = `${serverURL}/fight_team/run_memory`;
+const runFightTeamFromMemoryURL = `${serverURL}/fight_team/run_memory`;
 
 const stopFightTeamListURL = `${serverURL}/fight_team/stop`;
 const setDefaultFightTeamURL = `${serverURL}/fight_team/set_default`;
@@ -101,17 +103,19 @@ export {
     // 配置
     saveConfigURL,
     getConfigURL,
-    setConfigInstance,
-    getConfigInstances,
-    deleteConfigInstance,
+    setConfigInstanceURL,
+    getConfigInstancesURL,
+    deleteConfigInstanceURL,
     loginConfigInstance,
+    createInstanceConfigURL,
+    saveInstancesConfigURL,
 
     // 队伍设置
     getFightTeamListURL,
     createFightTeamListURL,
     deleteFightTeamListURL,
     runFightTeamFromSavedTextURL,
-    runFightTeamFromMemoryRL,
+    runFightTeamFromMemoryURL,
     updateFightTeamListURL,
     stopFightTeamListURL,
     getFightTeamContentURL,
