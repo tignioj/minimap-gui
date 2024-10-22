@@ -223,8 +223,8 @@ function createInstance() {
         </td>
         <td class="narrow-column">
           <select v-model="newServer">
-<!--            <option value="bilibili">b服</option>-->
             <option value="official">官服</option>
+            <option value="bilibili">b服</option>
           </select>
         </td>
         <td> <input v-model="newAccount" type="text" /> </td>
@@ -263,8 +263,8 @@ function createInstance() {
         </td>
         <td class="narrow-column">
           <select v-model="item.server">
-<!--            <option value="bilibili">b服</option>-->
             <option value="official">官服</option>
+            <option value="bilibili">b服</option>
           </select>
         </td>
         <td> <input v-model="item.account" type="text" /> </td>
