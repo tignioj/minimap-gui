@@ -182,6 +182,10 @@ function createInstance() {
     account: trimStr(newAccount.value),
     password: trimStr(newPassword.value)
   }
+  if (data.name.length === 0) {
+    errorMsg("实例名称不可为空")
+    return
+  }
   const jsonString = JSON.stringify(data)
   fetch(createInstanceConfigURL, {
     method: 'POST', // 请求方法
@@ -191,8 +195,12 @@ function createInstance() {
     body: jsonString // 将 JavaScript 对象转换为 JSON 字符串
   }).then(response => response.json())
       .then(data => {
-        info(data.message);
-        updateInstances()
+        if (data.success === true){
+          info(data.message);
+          updateInstances()
+        } else {
+          errorMsg(data.message)
+        }
       })
       .catch(error => {
         errorMsg(error)
@@ -230,7 +238,7 @@ function createInstance() {
         <td> <input v-model="newAccount" type="text" /> </td>
         <td> <input v-model="newPassword" type="password"/> </td>
         <td>
-          <button  @click="createInstance()" :disabled="isDuplicateNew(newName)">新建实例</button>
+          <button  @click="createInstance()" :disabled="isDuplicateNew(newName) || newName.length === 0">新建实例</button>
         </td>
       </tr>
       </tbody>
