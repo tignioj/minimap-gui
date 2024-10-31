@@ -18,8 +18,8 @@ import DomainPage from "@/page/DomainPage.vue";
 const routes = [
     { path: '/',
         // redirect: '/config/editor',
-        // redirect: '/oneDragon',
-        redirect: '/domain',
+        redirect: '/oneDragon',
+        // redirect: '/domain',
         // redirect: '/team',
         // redirect: '/leyline',
     },

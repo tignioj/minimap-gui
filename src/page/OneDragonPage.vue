@@ -151,8 +151,6 @@ onMounted(()=> {
   socket.value.on(SOCKET_EVENT_DOMAIN_END, (data)=> { info(data) })
 })
 
-const gameFolder = ref('');
-
 function save() {
   logCheckedItems()
   const jsonString = JSON.stringify(oneDragonList.value)
@@ -198,17 +196,17 @@ function getOneDragonList() {
     errorMsg(error)
   });
 }
-// getOneDragonList();
+getOneDragonList();
 
 const instanceConfigRef = ref(null)
 function runAllInstance() {
+  info("开始执行所有实例的一条龙")
   fetch(oneDragonRunAllInstanceURL).then(response => {
     if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
     return response.json(); // 解析响应为 JSON
   })
       .then(data => {
         if (data.success === true) {
-          console.log("开始执行所有实例的一条龙")
           getOneDragonList()
           instanceConfigRef.value.updateInstances()
         } else {
