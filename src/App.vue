@@ -35,6 +35,7 @@ const keepAlive = ['ScriptManagerPage']
       <RouterLink :class="{'active-link': route.fullPath.includes('/task/collect/edit')}" to="/task/collect/edit">创建采集任务</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath.includes('/task/fight/edit')}"  to="/task/fight/edit">创建战斗任务</RouterLink> |
 <!--      <RouterLink :class="{'active-link': route.fullPath.includes('/task/gouliang/edit')}"  to="/task/gouliang/edit">创建狗粮任务</RouterLink> |-->
+      <RouterLink :class="{'active-link': route.fullPath === '/domain'}" to="/domain">秘境</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath === '/daily'}" to="/daily">每日委托</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath === '/leyline'}" to="/leyline">地脉</RouterLink> |
       <RouterLink :class="{'active-link': route.fullPath === '/team'}"  to="/team">战斗队伍管理</RouterLink> |

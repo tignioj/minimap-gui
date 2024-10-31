@@ -13,17 +13,20 @@ import LeyLineOutCrop from "@/page/LeyLineOutCrop.vue";
 import NewLeyLineOutCropPage from "@/page/NewLeyLineOutCropPage.vue";
 import NewDailyMissionPage from "@/page/NewDailyMissionPage.vue";
 import OneDragonPage from "@/page/OneDragonPage.vue";
+import DomainPage from "@/page/DomainPage.vue";
 
 const routes = [
     { path: '/',
-        redirect: '/oneDragon',
-        // redirect: '/daily',
+        // redirect: '/config/editor',
+        // redirect: '/oneDragon',
+        redirect: '/domain',
         // redirect: '/team',
         // redirect: '/leyline',
     },
     { path: '/script', component: ScriptManagerPage, meta: { keepAlive: true }, // 需要缓存
     },
     { path: '/oneDragon', component: OneDragonPage},
+    { path: '/domain', component: DomainPage},
     { path: '/daily', component: DailyMissionPage},
     { path: '/config/editor', component: ConfigEditorPage , meta: { keepAlive: true } },
     { path: '/task/collect/edit', component: NewCollectTaskPage },

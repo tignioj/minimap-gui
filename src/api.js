@@ -81,6 +81,14 @@ const oneDragonGetURL= `${serverURL}/one_dragon/get`;  // 获取配置
 const oneDragonSaveURL= `${serverURL}/one_dragon/save`; // 保存一条龙配置
 const oneDragonRunAllInstanceURL= `${serverURL}/one_dragon/run_all_instance`; // 执行所有的实例的一条龙
 
+
+// 秘境
+const domainListURL = `${serverURL}/domain/list`  // GET请求获取所有秘境列表
+const domainRunURL= `${serverURL}/domain/run`  // GET请求, URL参数domain_name=xx&fight_team=xx&timeout=xx
+const domainStopURL= `${serverURL}/domain/stop`  // GET 请求停止执行秘境
+const domainConfigGet = `${serverURL}/domain/config`  // GET
+const domainConfigSet = `${serverURL}/domain/config` // PUT 修改配置
+
 export {
     serverURL,
     positionURL,
@@ -141,5 +149,13 @@ export {
     oneDragonStopURL,
     oneDragonGetURL,
     oneDragonSaveURL,
-    oneDragonRunAllInstanceURL
+    oneDragonRunAllInstanceURL,
+
+    // 秘境
+    domainListURL,
+    domainRunURL,
+    domainStopURL,
+    domainConfigGet,
+    domainConfigSet
+
 };

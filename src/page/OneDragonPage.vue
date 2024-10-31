@@ -45,10 +45,11 @@ provide('error', errorMsg)
 
 const oneDragonList = ref([
   { name: '登录', value: 'login' , checked: false},
-  { name: '清单', value: 'todo' , checked: false},
   { name: '战斗委托', value: 'dailyMission' , checked: true},
+  { name: '秘境', value: 'domain', checked: true},
   { name: '地脉', value: 'leyLine' , checked: true},
   { name: '领取奖励', value: 'claimReward' , checked: true},
+  { name: '清单', value: 'todo' , checked: false},
   { name: '系统命令', value: 'sleepSys' , checked: true}
 ]);
 // sleepSys: 睡眠， closeGame: 关闭游戏， shutdownSys:关机
@@ -183,7 +184,7 @@ function getOneDragonList() {
     errorMsg(error)
   });
 }
-getOneDragonList();
+// getOneDragonList();
 
 const instanceConfigRef = ref(null)
 function runAllInstance() {
