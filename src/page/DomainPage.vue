@@ -412,6 +412,7 @@ function saveDomainConfig() {
 const domainLoopTimeout = ref(20)
 function runNow(domainName, fightTeam, timeout) {
   isRunningDomain.value = true
+  if (isUndefinedNullOrEmpty(fightTeam)) fightTeam = ''
   fetch(`${domainRunURL}?domain_name=${domainName}&fight_team=${fightTeam}&domain_loop_timeout=${timeout}`)
       .then(response => {
         if (!response.ok) throw new Error('Network response was not ok');
@@ -446,10 +447,22 @@ function stopRunning() {
 }
 const {socket} = useWebSocket(socketURL, {})
 onMounted(()=> {
-  socket.value.on(SOCKET_EVENT_DOMAIN_START, (data)=> { info(data) })
-  socket.value.on(SOCKET_EVENT_DOMAIN_UPDATE, (data)=> { info(data) })
-  socket.value.on(SOCKET_EVENT_DOMAIN_EXCEPTION, (data)=> { errorMsg(data) })
-  socket.value.on(SOCKET_EVENT_DOMAIN_END, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_START, (data)=> {
+    isRunningDomain.value = true
+    info(data)
+  })
+  socket.value.on(SOCKET_EVENT_DOMAIN_UPDATE, (data)=> {
+    isRunningDomain.value = true
+    info(data)
+  })
+  socket.value.on(SOCKET_EVENT_DOMAIN_EXCEPTION, (data)=> {
+    isRunningDomain.value = false
+    errorMsg(data)
+  })
+  socket.value.on(SOCKET_EVENT_DOMAIN_END, (data)=> {
+    info(data)
+    isRunningDomain.value = false
+  })
 })
 
 const isRunningDomain = ref(false)
