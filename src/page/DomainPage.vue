@@ -456,10 +456,8 @@ const isRunningDomain = ref(false)
 </script>
 
 <template>
-  timeout: {{domainLoopTimeout}}
   <MessageComponent ref="msgEle"/>
   <h2>秘境设置(保存后生效)</h2>
-  当前秘境计划: {{ domainWeekPlan }} <br/>
   限制总执行时长(单位/分钟)：<input type="number" min="1" max="600" v-model="domainLoopTimeout" />
   <button @click="saveDomainConfig" :disabled="domainLoopTimeout<1 || domainLoopTimeout > 600">保存设置</button>
   <button @click="stopRunning">停止运行</button>
