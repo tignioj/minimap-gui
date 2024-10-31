@@ -13,18 +13,27 @@ import {
   SOCKET_EVENT_DAILY_MISSION_EXCEPTION,
   SOCKET_EVENT_DAILY_MISSION_START,
   SOCKET_EVENT_DAILY_MISSION_UPDATE,
+
   SOCKET_EVENT_LEYLINE_OUTCROP_END,
   SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION,
   SOCKET_EVENT_LEYLINE_OUTCROP_START,
   SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE,
+
   SOCKET_EVENT_ONE_DRAGON_END,
   SOCKET_EVENT_ONE_DRAGON_EXCEPTION,
   SOCKET_EVENT_ONE_DRAGON_START,
   SOCKET_EVENT_ONE_DRAGON_UPDATE,
+
   SOCKET_EVENT_PLAYBACK_END,
   SOCKET_EVENT_PLAYBACK_EXCEPTION,
   SOCKET_EVENT_PLAYBACK_START,
   SOCKET_EVENT_PLAYBACK_UPDATE,
+
+  SOCKET_EVENT_DOMAIN_UPDATE,
+  SOCKET_EVENT_DOMAIN_EXCEPTION,
+  SOCKET_EVENT_DOMAIN_END,
+  SOCKET_EVENT_DOMAIN_START,
+  SOCKET_EVENT_KEY_EVENT,
   useWebSocket
 } from "@/utils/websocket_listener_utils.js";
 import MessageComponent from "@/components/common/MessageComponent.vue";
@@ -135,6 +144,11 @@ onMounted(()=> {
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_UPDATE, (data)=> { info(data) })
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_EXCEPTION, (data)=> { errorMsg(data) })
   socket.value.on(SOCKET_EVENT_LEYLINE_OUTCROP_END, (data)=> { info(data) })
+
+  socket.value.on(SOCKET_EVENT_DOMAIN_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_EXCEPTION, (data)=> { errorMsg(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_END, (data)=> { info(data) })
 })
 
 const gameFolder = ref('');

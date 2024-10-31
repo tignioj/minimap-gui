@@ -25,7 +25,11 @@ export const SOCKET_EVENT_ONE_DRAGON_UPDATE = 'socket_event_one_dragon_update'
 export const SOCKET_EVENT_ONE_DRAGON_END = 'socket_event_one_dragon_end'
 export const SOCKET_EVENT_ONE_DRAGON_EXCEPTION = 'socket_event_one_dragon_exception'
 
-
+//
+export const SOCKET_EVENT_DOMAIN_START = 'socket_event_domain_start'
+export const SOCKET_EVENT_DOMAIN_UPDATE = 'socket_event_domain_update'
+export const SOCKET_EVENT_DOMAIN_END = 'socket_event_domain_end'
+export const SOCKET_EVENT_DOMAIN_EXCEPTION = 'socket_event_domain_exception'
 export function useWebSocket(socketURL, {
     onKeyEvent = null,
 }) {

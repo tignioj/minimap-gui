@@ -1,9 +1,15 @@
 <script setup>
 import FightTeamSelect from "@/components/task/FightTeamSelect.vue";
-import {ref} from "vue";
-import {domainConfigGet, domainConfigSet, domainListURL, domainRunURL, domainStopURL} from "@/api.js";
+import {onMounted, ref} from "vue";
+import {domainConfigGet, domainConfigSet, domainListURL, domainRunURL, domainStopURL, socketURL} from "@/api.js";
 import MessageComponent from "@/components/common/MessageComponent.vue";
 import {isUndefinedNullOrEmpty} from "@/utils/objutils.js";
+import {
+  SOCKET_EVENT_DOMAIN_END,
+  SOCKET_EVENT_DOMAIN_EXCEPTION,
+  SOCKET_EVENT_DOMAIN_START,
+  SOCKET_EVENT_DOMAIN_UPDATE, useWebSocket
+} from "@/utils/websocket_listener_utils.js";
 
 const msgEle = ref(null)
 function errorMsg(msg) {
@@ -404,9 +410,9 @@ function saveDomainConfig() {
 }
 
 const domainLoopTimeout = ref(20)
-function runNow(domainName, fightTeam) {
+function runNow(domainName, fightTeam, timeout) {
   isRunningDomain.value = true
-  fetch(`${domainRunURL}?domain_name=${domainName}&fight_team=${fightTeam}&time_out=${domainLoopTimeout.value}`)
+  fetch(`${domainRunURL}?domain_name=${domainName}&fight_team=${fightTeam}&domain_loop_timeout=${timeout}`)
       .then(response => {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
@@ -438,10 +444,19 @@ function stopRunning() {
       })
       .catch(error => { console.error('There was a problem with the fetch operation:', error); });
 }
+const {socket} = useWebSocket(socketURL, {})
+onMounted(()=> {
+  socket.value.on(SOCKET_EVENT_DOMAIN_START, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_UPDATE, (data)=> { info(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_EXCEPTION, (data)=> { errorMsg(data) })
+  socket.value.on(SOCKET_EVENT_DOMAIN_END, (data)=> { info(data) })
+})
+
 const isRunningDomain = ref(false)
 </script>
 
 <template>
+  timeout: {{domainLoopTimeout}}
   <MessageComponent ref="msgEle"/>
   <h2>秘境设置(保存后生效)</h2>
   当前秘境计划: {{ domainWeekPlan }} <br/>
@@ -477,7 +492,7 @@ const isRunningDomain = ref(false)
           <input type="radio" name="7" @click="toggle(6,item.name)"  :value="item.name" v-model="domainWeekPlan[6]" :checked="domainWeekPlan[6] === item.name"/>
         </td>
         <td><FightTeamSelect v-model:fight-team-select="domainTeamMapper[item.name]"/> </td>
-        <td> <button @click="runNow(item.name, domainTeamMapper[item.name])" :disabled="isRunningDomain">立刻执行</button> </td>
+        <td> <button @click="runNow(item.name, domainTeamMapper[item.name], domainLoopTimeout)" :disabled="isRunningDomain">立刻执行</button> </td>
       </tr>
       </tbody>
     </table>
