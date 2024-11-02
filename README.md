@@ -15,6 +15,9 @@
 ## 战斗队伍管理
 ![team-manager.png](team-manager.png)
 
+# 秘境
+![domain.png](domain.png)
+
 
 ## 通过flask部署
 获取资源方式： 
